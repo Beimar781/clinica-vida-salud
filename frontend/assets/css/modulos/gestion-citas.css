@@ -26,3 +26,9 @@
 .comprobante dd { margin: 0; }
 .comprobante__codigo { font-size: 1.4rem; font-weight: 700; color: var(--vs-blue-900); letter-spacing: .04em; }
 @media (max-width: 600px) { .comprobante > div { grid-template-columns: 1fr; gap: .1rem; } }
+
+/* CU-11: tarjetas de médicos */
+.medico-tarjeta { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem; margin-bottom: .75rem; border: 1px solid var(--vs-border); border-radius: 8px; background: var(--vs-sky-50); }
+.medico-tarjeta:last-child { margin-bottom: 0; }
+.medico-tarjeta h3 { margin: 0 0 .25rem; }
+.medico-tarjeta p { margin: .15rem 0; }

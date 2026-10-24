@@ -24,6 +24,10 @@ use Illuminate\Support\Facades\DB;
  */
 class AgendarCitaService
 {
+    public const MENSAJE_PACIENTE_OCUPADO = 'El paciente ya tiene una cita activa a esa hora.';
+
+    public const MENSAJE_PACIENTE_INACTIVO = 'El paciente está inactivo: no se le pueden registrar citas.';
+
     public function __construct(private readonly DisponibilidadService $disponibilidad) {}
 
     /**
@@ -37,7 +41,7 @@ class AgendarCitaService
     public function validarReglas(Paciente $paciente, Medico $medico, Especialidad $especialidad): void
     {
         if (! $paciente->estado) {
-            throw new ReglaCitaException('El paciente está inactivo: no se le pueden registrar citas.');
+            throw new ReglaCitaException(self::MENSAJE_PACIENTE_INACTIVO);
         }
         if (! $medico->estado) {
             throw new ReglaCitaException(DisponibilidadService::MENSAJE_MEDICO_INACTIVO);
@@ -200,7 +204,7 @@ class AgendarCitaService
             ->exists();
 
         if ($choca) {
-            throw new ReglaCitaException('El paciente ya tiene una cita activa a esa hora.');
+            throw new ReglaCitaException(self::MENSAJE_PACIENTE_OCUPADO);
         }
     }
 
@@ -212,7 +216,7 @@ class AgendarCitaService
         }
 
         return str_contains($e->getMessage(), 'citas_paciente')
-            ? new ReglaCitaException('El paciente ya tiene una cita activa a esa hora.')
+            ? new ReglaCitaException(self::MENSAJE_PACIENTE_OCUPADO)
             : new HorarioOcupadoException;
     }
 }
