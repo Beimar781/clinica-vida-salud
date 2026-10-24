@@ -29,43 +29,43 @@ class BaseDatosTest extends SistemaTestCase
         $this->especialidadId = DB::table('especialidades')->insertGetId([
             'nombre' => 'T-Especialidad', 'nombre_normalizado' => 't-especialidad',
         ]);
-        $this->medicoId = $this->crearMedico('T-M1', 'T-REG1');
-        $this->otroMedicoId = $this->crearMedico('T-M2', 'T-REG2');
-        $this->pacienteId = $this->crearPaciente('T-P1', 'T-001');
-        $this->otroPacienteId = $this->crearPaciente('T-P2', 'T-002');
+        $this->medicoId = $this->insertarMedico('T-M1', 'T-REG1');
+        $this->otroMedicoId = $this->insertarMedico('T-M2', 'T-REG2');
+        $this->pacienteId = $this->insertarPaciente('T-P1', 'T-001');
+        $this->otroPacienteId = $this->insertarPaciente('T-P2', 'T-002');
     }
 
     public function test_rechaza_dos_citas_superpuestas_del_mismo_medico(): void
     {
-        $this->crearCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
+        $this->insertarCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
 
         $this->assertViolaExclusion(
-            fn () => $this->crearCita('T-C2', $this->medicoId, $this->otroPacienteId, '08:15', '08:45')
+            fn () => $this->insertarCita('T-C2', $this->medicoId, $this->otroPacienteId, '08:15', '08:45')
         );
     }
 
     public function test_rechaza_dos_citas_superpuestas_del_mismo_paciente(): void
     {
-        $this->crearCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
+        $this->insertarCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
 
         $this->assertViolaExclusion(
-            fn () => $this->crearCita('T-C2', $this->otroMedicoId, $this->pacienteId, '08:00', '08:30')
+            fn () => $this->insertarCita('T-C2', $this->otroMedicoId, $this->pacienteId, '08:00', '08:30')
         );
     }
 
     public function test_una_cita_cancelada_no_ocupa_horario(): void
     {
-        $this->crearCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30', 'CANCELADA');
+        $this->insertarCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30', 'CANCELADA');
 
-        $this->crearCita('T-C2', $this->medicoId, $this->pacienteId, '08:00', '08:30');
+        $this->insertarCita('T-C2', $this->medicoId, $this->pacienteId, '08:00', '08:30');
 
         $this->assertSame(2, DB::table('citas')->whereIn('codigo', ['T-C1', 'T-C2'])->count());
     }
 
     public function test_citas_contiguas_no_se_superponen(): void
     {
-        $this->crearCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
-        $this->crearCita('T-C2', $this->medicoId, $this->pacienteId, '08:30', '09:00');
+        $this->insertarCita('T-C1', $this->medicoId, $this->pacienteId, '08:00', '08:30');
+        $this->insertarCita('T-C2', $this->medicoId, $this->pacienteId, '08:30', '09:00');
 
         $this->assertSame(2, DB::table('citas')->whereIn('codigo', ['T-C1', 'T-C2'])->count());
     }
@@ -124,7 +124,7 @@ class BaseDatosTest extends SistemaTestCase
     {
         foreach ([['modalidad' => 'TELEFONICA'], ['estado' => 'PENDIENTE']] as $invalido) {
             try {
-                DB::transaction(fn () => $this->crearCita('T-C9', $this->medicoId, $this->pacienteId, '10:00', '10:30', 'PROGRAMADA', $invalido));
+                DB::transaction(fn () => $this->insertarCita('T-C9', $this->medicoId, $this->pacienteId, '10:00', '10:30', 'PROGRAMADA', $invalido));
                 $this->fail('Se aceptó un valor inválido: '.json_encode($invalido));
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode(), 'Debe fallar por el CHECK de la tabla.');
@@ -154,7 +154,7 @@ class BaseDatosTest extends SistemaTestCase
         }
     }
 
-    private function crearMedico(string $codigo, string $registro): int
+    private function insertarMedico(string $codigo, string $registro): int
     {
         $id = DB::table('medicos')->insertGetId([
             'codigo' => $codigo, 'nro_registro' => $registro, 'nombres' => 'Prueba', 'apellidos' => $codigo,
@@ -164,7 +164,7 @@ class BaseDatosTest extends SistemaTestCase
         return $id;
     }
 
-    private function crearPaciente(string $codigo, string $ci): int
+    private function insertarPaciente(string $codigo, string $ci): int
     {
         return DB::table('pacientes')->insertGetId([
             'codigo' => $codigo, 'ci' => $ci, 'nombres' => 'Prueba', 'apellidos' => $codigo,
@@ -172,7 +172,7 @@ class BaseDatosTest extends SistemaTestCase
         ]);
     }
 
-    private function crearCita(string $codigo, int $medicoId, int $pacienteId, string $inicio, string $fin, string $estado = 'PROGRAMADA', array $extra = []): void
+    private function insertarCita(string $codigo, int $medicoId, int $pacienteId, string $inicio, string $fin, string $estado = 'PROGRAMADA', array $extra = []): void
     {
         DB::table('citas')->insert($extra + [
             'codigo' => $codigo, 'paciente_id' => $pacienteId, 'medico_id' => $medicoId,

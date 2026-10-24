@@ -2,9 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cita;
+use App\Models\Especialidad;
+use App\Models\HorarioAtencion;
+use App\Models\Medico;
+use App\Models\Paciente;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Support\Texto;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -43,5 +50,67 @@ abstract class SistemaTestCase extends TestCase
     protected function idRol(string $nombre): int
     {
         return Rol::where('nombre', $nombre)->value('id');
+    }
+
+    /** Especialidad de prueba; el nombre normalizado se calcula igual que en el sistema. */
+    protected function crearEspecialidad(string $nombre = 'T-Especialidad', bool $activa = true): Especialidad
+    {
+        return Especialidad::create([
+            'nombre' => $nombre,
+            'nombre_normalizado' => Texto::normalizar($nombre),
+            'estado' => $activa,
+        ]);
+    }
+
+    /** Médico de prueba (código y registro «T-...»), con las especialidades indicadas. */
+    protected function crearMedico(array $datos = [], array $especialidades = []): Medico
+    {
+        $sufijo = strtoupper(Str::random(6));
+        $medico = Medico::create($datos + [
+            'codigo' => 'T-'.$sufijo,
+            'nro_registro' => 'T-REG-'.$sufijo,
+            'nombres' => 'Prueba',
+            'apellidos' => 'Médico '.$sufijo,
+            'ubicacion' => 'Sede de prueba',
+            'estado' => true,
+        ]);
+        $medico->especialidades()->sync(collect($especialidades)->map(fn ($e) => $e->id)->all());
+
+        return $medico;
+    }
+
+    /** Paciente de prueba (CI «T-...»). */
+    protected function crearPaciente(array $datos = []): Paciente
+    {
+        $sufijo = strtoupper(Str::random(6));
+
+        return Paciente::create($datos + [
+            'codigo' => 'T-'.$sufijo,
+            'ci' => 'T-'.$sufijo,
+            'nombres' => 'Paciente',
+            'apellidos' => 'Prueba '.$sufijo,
+            'fecha_nacimiento' => '1990-01-01',
+            'telefono' => '70000000',
+            'estado' => true,
+        ]);
+    }
+
+    /** Bloque de atención de un médico (dia_semana: 1 = lunes ... 7 = domingo). */
+    protected function crearHorario(Medico $medico, int $dia, string $inicio, string $fin, int $duracion = 30, bool $activo = true): HorarioAtencion
+    {
+        return HorarioAtencion::create([
+            'medico_id' => $medico->id, 'dia_semana' => $dia, 'hora_inicio' => $inicio,
+            'hora_fin' => $fin, 'duracion_min' => $duracion, 'estado' => $activo,
+        ]);
+    }
+
+    /** Cita de prueba (código «T-...»). */
+    protected function crearCita(Medico $medico, Paciente $paciente, Especialidad $especialidad, string $fecha, string $inicio, string $fin, string $estado = Cita::PROGRAMADA): Cita
+    {
+        return Cita::create([
+            'codigo' => 'T-'.strtoupper(Str::random(6)), 'paciente_id' => $paciente->id, 'medico_id' => $medico->id,
+            'especialidad_id' => $especialidad->id, 'fecha' => $fecha, 'hora_inicio' => $inicio, 'hora_fin' => $fin,
+            'estado' => $estado,
+        ]);
     }
 }

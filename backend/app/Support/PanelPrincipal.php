@@ -33,7 +33,7 @@ class PanelPrincipal
                 ['nombre' => 'Especialidades', 'ruta' => 'especialidades.index', 'icono' => 'cruz', 'cu' => 'CU-04', 'roles' => [Rol::ADMINISTRADOR]],
                 ['nombre' => 'Médicos', 'ruta' => 'medicos.index', 'icono' => 'medico', 'cu' => 'CU-05', 'roles' => [Rol::ADMINISTRADOR]],
                 ['nombre' => 'Horarios de atención', 'ruta' => 'horarios.index', 'icono' => 'reloj', 'cu' => 'CU-06', 'roles' => [Rol::ADMINISTRADOR]],
-                ['nombre' => 'Días sin atención', 'ruta' => 'bloqueos.index', 'icono' => 'calendario', 'cu' => 'CU-06', 'roles' => [Rol::ADMINISTRADOR]],
+                ['nombre' => 'Días sin atención', 'ruta' => 'dias-sin-atencion.index', 'icono' => 'calendario', 'cu' => 'CU-06', 'roles' => [Rol::ADMINISTRADOR]],
             ],
         ],
         [
