@@ -63,6 +63,19 @@
         boton.addEventListener('click', function () { window.print(); });
     });
 
+    // Botones de ojito (<x-campo-clave>): alternan el campo entre password y text. Delegado en el documento
+    // para que también sirva en secciones que se muestran después (por ejemplo la cuenta del médico).
+    document.addEventListener('click', function (evento) {
+        var boton = evento.target.closest('[data-mostrar-clave]');
+        if (!boton) { return; }
+        var campo = document.getElementById(boton.getAttribute('aria-controls'));
+        if (!campo) { return; }
+        var visible = campo.type === 'password';
+        campo.type = visible ? 'text' : 'password';
+        boton.setAttribute('aria-pressed', visible ? 'true' : 'false');
+        boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+
     // Botones o formularios con data-confirmar: piden confirmación antes de continuar.
     document.querySelectorAll('[data-confirmar]').forEach(function (elemento) {
         var evento = elemento.tagName === 'FORM' ? 'submit' : 'click';

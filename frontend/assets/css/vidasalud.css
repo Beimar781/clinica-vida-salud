@@ -112,6 +112,20 @@ small, .texto-suave { color: var(--vs-muted); }
 .campo textarea { min-height: 5rem; resize: vertical; }
 .campo input:focus, .campo select:focus, .campo textarea:focus { border-color: var(--vs-blue-600); outline: 3px solid var(--vs-sky-200); }
 .campo--error input, .campo--error select, .campo--error textarea { border-color: var(--vs-danger); }
+
+/* Campo de contraseña con botón de ojito (mostrar u ocultar) */
+.campo-clave { position: relative; display: flex; }
+.campo-clave input { padding-right: 2.9rem; }
+.campo-clave__ojo {
+    position: absolute; top: 50%; right: .3rem; transform: translateY(-50%);
+    display: inline-flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem; padding: 0;
+    color: var(--vs-blue-600); background: transparent; border: 0; border-radius: 6px; cursor: pointer;
+}
+.campo-clave__ojo:hover { color: var(--vs-blue-700); background: var(--vs-sky-100); }
+.campo-clave__ojo:focus-visible { outline: 3px solid var(--vs-sky-400); outline-offset: 1px; }
+.campo-clave__ojo .icono { width: 1.3rem; height: 1.3rem; vertical-align: 0; }
+.campo-clave__ojo .ojo--ocultar, .campo-clave__ojo[aria-pressed="true"] .ojo--mostrar { display: none; }
+.campo-clave__ojo[aria-pressed="true"] .ojo--ocultar { display: block; }
 .campo__error { color: var(--vs-danger); font-size: .85rem; font-weight: 600; }
 .campo__ayuda { color: var(--vs-muted); font-size: .82rem; }
 .campo--check { flex-direction: row; align-items: center; gap: .55rem; }

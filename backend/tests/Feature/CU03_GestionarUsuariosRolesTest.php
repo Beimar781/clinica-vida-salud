@@ -219,6 +219,19 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
         }
     }
 
+    public function test_los_formularios_de_usuario_tienen_el_boton_para_mostrar_la_contrasena(): void
+    {
+        $this->actingAs($this->admin)->get(route('usuarios.crear'))->assertOk()
+            ->assertSee('data-mostrar-clave', false)
+            ->assertSee('aria-label="Mostrar contraseña"', false);
+
+        // Al editar (restablecer la contraseña) el botón también está.
+        $otro = $this->crearUsuario('t-ojo-editar', [Rol::PACIENTE]);
+        $this->actingAs($this->admin)->get(route('usuarios.editar', $otro))->assertOk()
+            ->assertSee('data-mostrar-clave', false)
+            ->assertSee('Nueva contraseña (restablecer)');
+    }
+
     public function test_el_administrador_ve_el_listado_con_sus_roles_y_estado(): void
     {
         $this->actingAs($this->admin)->get(route('usuarios.index'))

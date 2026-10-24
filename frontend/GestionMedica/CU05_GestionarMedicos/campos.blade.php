@@ -55,8 +55,8 @@
         <div id="datos-cuenta" class="formulario" @unless ($marcaCuenta) hidden @endunless>
             <x-campo nombre="nombre_usuario" etiqueta="Nombre de usuario" maxlength="50" minlength="3" autocomplete="off"
                      pattern="[A-Za-z0-9._\-]+" data-mensaje="Use solo letras, números, punto, guion y guion bajo (sin espacios ni @)." />
-            <x-campo nombre="password" etiqueta="Contraseña" tipo="password" minlength="8" maxlength="72" autocomplete="new-password"
-                     ayuda="Mínimo 8 caracteres." />
+            <x-campo-clave nombre="password" etiqueta="Contraseña" minlength="8" maxlength="72" autocomplete="new-password"
+                           ayuda="Mínimo 8 caracteres." />
         </div>
     @endif
 </fieldset>

@@ -20,8 +20,8 @@
                     <div class="formulario formulario--columna">
                         <x-campo nombre="identificador" etiqueta="Correo o nombre de usuario"
                                  required maxlength="120" autocomplete="username" autofocus />
-                        <x-campo nombre="password" etiqueta="Contraseña" tipo="password"
-                                 required autocomplete="current-password" />
+                        <x-campo-clave nombre="password" etiqueta="Contraseña"
+                                       required autocomplete="current-password" />
                     </div>
                     <p class="texto-suave enlace-olvido"><a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a></p>
                     <div class="acciones">

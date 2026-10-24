@@ -27,10 +27,10 @@
                     @error('token')<span class="campo__error" role="alert" data-fijo>{{ $message }}</span>@enderror
                     @error('correo')<span class="campo__error" role="alert" data-fijo>{{ $message }}</span>@enderror
                     <div class="formulario formulario--columna">
-                        <x-campo nombre="password" etiqueta="Contraseña nueva" tipo="password"
-                                 required minlength="8" maxlength="255" autocomplete="new-password" autofocus />
-                        <x-campo nombre="password_confirmation" etiqueta="Confirmar contraseña" tipo="password"
-                                 required minlength="8" maxlength="255" autocomplete="new-password" />
+                        <x-campo-clave nombre="password" etiqueta="Contraseña nueva"
+                                       required minlength="8" maxlength="255" autocomplete="new-password" autofocus />
+                        <x-campo-clave nombre="password_confirmation" etiqueta="Confirmar contraseña"
+                                       required minlength="8" maxlength="255" autocomplete="new-password" />
                     </div>
                     <div class="acciones">
                         <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Guardar contraseña</button>

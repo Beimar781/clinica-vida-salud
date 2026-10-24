@@ -252,6 +252,27 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->get('/olvido-clave')->assertOk()->assertSee('Recuperar contraseña')->assertSee('Enviar enlace');
     }
 
+    public function test_el_login_tiene_el_boton_para_mostrar_la_contrasena(): void
+    {
+        $this->get('/login')->assertOk()
+            ->assertSee('data-mostrar-clave', false)
+            ->assertSee('aria-label="Mostrar contraseña"', false)
+            ->assertSee('type="button"', false)
+            ->assertSee('type="password" name="password"', false);
+    }
+
+    public function test_la_pantalla_de_contrasena_nueva_tiene_el_boton_en_sus_dos_campos(): void
+    {
+        $usuario = $this->crearUsuario('t-ojo-restablece', [Rol::PACIENTE]);
+        $token = $this->tokenPara($usuario);
+
+        $html = $this->get(route('password.reset', ['token' => $token, 'correo' => $usuario->correo]))->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($html, 'data-mostrar-clave'));
+        $this->assertStringContainsString('aria-controls="campo-password"', $html);
+        $this->assertStringContainsString('aria-controls="campo-password_confirmation"', $html);
+    }
+
     public function test_solicitar_el_enlace_con_una_cuenta_activa_envia_el_correo(): void
     {
         Notification::fake();

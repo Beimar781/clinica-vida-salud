@@ -8,9 +8,9 @@
              data-mensaje="Use solo letras, números, punto, guion y guion bajo (sin espacios ni @)." autocomplete="off" />
     <x-campo nombre="correo" etiqueta="Correo" tipo="email" :valor="$usuario->correo ?? null"
              required maxlength="120" autocomplete="off" />
-    <x-campo nombre="password" etiqueta="{{ $editando ? 'Nueva contraseña (restablecer)' : 'Contraseña' }}" tipo="password"
-             :required="! $editando" minlength="8" maxlength="72" autocomplete="new-password"
-             :ayuda="$editando ? 'Déjela vacía para conservar la actual. Mínimo 8 caracteres.' : 'Mínimo 8 caracteres.'" />
+    <x-campo-clave nombre="password" etiqueta="{{ $editando ? 'Nueva contraseña (restablecer)' : 'Contraseña' }}"
+                   :required="! $editando" minlength="8" maxlength="72" autocomplete="new-password"
+                   :ayuda="$editando ? 'Déjela vacía para conservar la actual. Mínimo 8 caracteres.' : 'Mínimo 8 caracteres.'" />
 </div>
 
 <fieldset @class(['campo', 'campo--error' => $errors->has('roles') || $errors->has('roles.*'), 'grupo-roles'])>
