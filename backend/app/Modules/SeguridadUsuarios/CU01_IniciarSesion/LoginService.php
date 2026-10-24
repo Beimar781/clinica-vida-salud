@@ -46,6 +46,7 @@ class LoginService
 
         if (! $this->verificarClave($usuario, $clave)) {
             RateLimiter::hit($llave, self::VENTANA_SEGUNDOS);
+            $this->iniciarBloqueo($llave);
             BitacoraService::registrar('LOGIN_FALLIDO', 'Usuario', 'Intento fallido para: '.$identificador, $usuario?->id);
 
             throw new LoginFallidoException(self::MENSAJE_CREDENCIALES);
@@ -85,6 +86,18 @@ class LoginService
         throw new LoginFallidoException(
             'Demasiados intentos fallidos. Espere '.RateLimiter::availableIn($llave).' segundos e intente nuevamente.'
         );
+    }
+
+    /**
+     * Al llegar al tercer fallo la cuenta queda bloqueada 60 segundos contados desde ese fallo (y no desde
+     * el primero): se reinicia la ventana del contador con el máximo de intentos ya acumulado.
+     */
+    private function iniciarBloqueo(string $llave): void
+    {
+        if (RateLimiter::attempts($llave) >= self::MAX_INTENTOS) {
+            RateLimiter::clear($llave);
+            RateLimiter::increment($llave, self::VENTANA_SEGUNDOS, self::MAX_INTENTOS);
+        }
     }
 
     /**

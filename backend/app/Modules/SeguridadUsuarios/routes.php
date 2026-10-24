@@ -1,7 +1,9 @@
 <?php
 
 use App\Modules\SeguridadUsuarios\CU01_IniciarSesion\LoginController;
+use App\Modules\SeguridadUsuarios\CU01_IniciarSesion\OlvidoClaveController;
 use App\Modules\SeguridadUsuarios\CU01_IniciarSesion\PanelController;
+use App\Modules\SeguridadUsuarios\CU01_IniciarSesion\RestablecerClaveController;
 use App\Modules\SeguridadUsuarios\CU02_CerrarSesion\LogoutController;
 use App\Modules\SeguridadUsuarios\CU03_GestionarUsuariosRoles\UsuariosController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +16,14 @@ Route::middleware('guest')->group(function () {
     // CU-01: Iniciar sesión
     Route::get('/login', [LoginController::class, 'mostrarFormulario'])->name('login');
     Route::post('/login', [LoginController::class, 'autenticar'])->name('login.autenticar');
+
+    // CU-01: Iniciar sesión (flujo alternativo: recuperar contraseña)
+    // Los dos envíos (pedir el enlace y guardar la clave nueva) comparten el límite de 5 por minuto por equipo;
+    // abrir las pantallas (GET) tiene un límite aparte y más amplio para no bloquear a quien solo navega.
+    Route::get('/olvido-clave', [OlvidoClaveController::class, 'mostrar'])->middleware('throttle:30,1,clave-pantallas')->name('password.request');
+    Route::post('/olvido-clave', [OlvidoClaveController::class, 'enviar'])->middleware('throttle:5,1,clave-envios')->name('password.email');
+    Route::get('/restablecer-clave/{token}', [RestablecerClaveController::class, 'mostrar'])->middleware('throttle:30,1,clave-pantallas')->name('password.reset');
+    Route::post('/restablecer-clave', [RestablecerClaveController::class, 'guardar'])->middleware('throttle:5,1,clave-envios')->name('password.update');
 });
 
 // CU-01: Iniciar sesión (destino después de ingresar: panel principal por paquetes)

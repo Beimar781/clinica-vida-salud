@@ -51,6 +51,10 @@ El sistema queda disponible en http://localhost:8000. No necesita Node ni conexi
 | mrojas | maria.rojas@correo.test | Paciente | `Demo1234*` |
 | jperez | juan.perez@correo.test | Paciente | `Demo1234*` |
 
+## Recuperar la contraseña
+
+En el inicio de sesión, «¿Olvidaste tu contraseña?» pide el correo de la cuenta y envía un enlace de un solo uso que vence a los 60 minutos. En local `MAIL_MAILER=log` no envía correos de verdad: el enlace se lee en `backend/storage/logs/laravel.log`, en la línea que dice «ENLACE DE RECUPERACION». En producción (Railway) el correo sale por la API de Brevo con `MAIL_MAILER=brevo`, `BREVO_API_KEY` y `MAIL_FROM_ADDRESS` (el remitente verificado en Brevo).
+
 También se cargan 5 especialidades, 5 médicos con horarios, 8 pacientes, 3 días sin atención y 12 citas en distintos estados. Para ingresar se puede usar el correo o el nombre de usuario.
 
 Para reiniciar los datos de demostración (por ejemplo antes de una presentación), desde `backend/`:
@@ -80,7 +84,7 @@ clinica-vida-salud/
 │   ├── app/Modules/
 │   │   ├── SeguridadUsuarios/        ← P1: Seguridad y Usuarios
 │   │   │   ├── routes.php            ← URLs del paquete, agrupadas por CU
-│   │   │   ├── CU01_IniciarSesion/   ← CU-01: LoginController, PanelController, LoginRequest, LoginService
+│   │   │   ├── CU01_IniciarSesion/   ← CU-01: LoginController, PanelController, OlvidoClaveController, RestablecerClaveController, LoginService, RecuperarClaveService
 │   │   │   ├── CU02_CerrarSesion/    ← CU-02: LogoutController, LogoutService
 │   │   │   └── CU03_GestionarUsuariosRoles/  ← CU-03: UsuariosController, UsuarioRequest, UsuarioService
 │   │   ├── GestionMedica/            ← P2: CU04_..., CU05_..., CU06_...

@@ -17,6 +17,7 @@ return [
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
     /*
@@ -82,6 +83,20 @@ return [
     | confirmation screen. By default, the timeout lasts for three hours.
     |
     */
+
+    /*
+    | Recuperar contraseña (flujo alternativo de CU-01): el enlace vence a los 60 minutos y no se
+    | puede pedir otro antes de 60 segundos. Tabla técnica «password_reset_tokens».
+    */
+
+    'passwords' => [
+        'users' => [
+            'provider' => 'users',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+    ],
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 

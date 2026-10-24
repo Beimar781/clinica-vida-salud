@@ -23,6 +23,7 @@
                         <x-campo nombre="password" etiqueta="Contraseña" tipo="password"
                                  required autocomplete="current-password" />
                     </div>
+                    <p class="texto-suave enlace-olvido"><a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a></p>
                     <div class="acciones">
                         <button type="submit" class="btn btn-primario"><x-icono nombre="entrar" /> Ingresar</button>
                         <a class="btn btn-secundario" href="{{ route('inicio') }}">Volver al inicio</a>

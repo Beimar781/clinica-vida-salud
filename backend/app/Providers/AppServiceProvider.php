@@ -2,10 +2,15 @@
 
 namespace App\Providers;
 
+use App\Support\BrevoTransport;
 use App\Support\PanelPrincipal;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -35,7 +40,34 @@ class AppServiceProvider extends ServiceProvider
         // @recurso('css/vidasalud.css') → URL versionada de un asset de frontend/assets.
         Blade::directive('recurso', fn (string $expresion) => "<?php echo e(\\App\\Support\\Recursos::url({$expresion})); ?>");
 
+        // Correo real en producción (MAIL_MAILER=brevo): envío por la API web de Brevo (Railway bloquea el SMTP).
+        Mail::extend('brevo', fn (array $config) => new BrevoTransport(config('services.brevo.key')));
+
+        $this->correoDeRecuperacion();
+
         $this->cargarModulos();
+    }
+
+    /**
+     * CU-01 (flujo alternativo: recuperar contraseña): correo en español con el nombre de la clínica.
+     * En local (MAIL_MAILER=log) el enlace también queda en una línea propia del log, fácil de copiar.
+     */
+    private function correoDeRecuperacion(): void
+    {
+        ResetPassword::toMailUsing(function ($usuario, string $token) {
+            $url = route('password.reset', ['token' => $token, 'correo' => $usuario->getEmailForPasswordReset()]);
+
+            if (app()->environment('local')) {
+                Log::info('ENLACE DE RECUPERACION: '.$url);
+            }
+
+            return (new MailMessage)
+                ->subject('Recupera tu contraseña · Clínica Vida Salud')
+                ->view(
+                    ['seguridadusuarios::CU01_IniciarSesion.correo-recuperacion', 'seguridadusuarios::CU01_IniciarSesion.correo-recuperacion-texto'],
+                    ['usuario' => $usuario, 'url' => $url, 'minutos' => config('auth.passwords.users.expire')]
+                );
+        });
     }
 
     /**
