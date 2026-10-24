@@ -11,7 +11,8 @@ Autores: Juan Simeón García Cervantes y Beimar Ríos Benavides.
 | Ciclo | Casos de uso | Estado |
 |---|---|---|
 | Ciclo I | CU-01 a CU-11 (seguridad y usuarios, gestión médica, pacientes y citas) | Implementado, probado y desplegado |
-| Ciclo II | CU-12 a CU-22 (atención clínica, reportes y bitácora) | Se entrega en la segunda presentación |
+| Adelanto del Ciclo II | CU-19 Consultar bitácora (solo el administrador) | Implementado y probado: la consulta de la bitácora ya está disponible |
+| Ciclo II | CU-12 a CU-18 y CU-20 a CU-22 (cancelación y estados de cita, agenda, historial, atención clínica, reportes, registro del paciente, perfil y recordatorios) | Se entrega en la segunda presentación |
 
 Además de los casos de uso del Ciclo I, el sistema incluye la recuperación de contraseña por correo electrónico y el bloqueo temporal de la cuenta tras 3 intentos fallidos de inicio de sesión.
 
@@ -182,6 +183,7 @@ clinica-vida-salud/
 │   │   ├── GestionMedica/            ← P2: CU04_..., CU05_..., CU06_...
 │   │   ├── GestionPacientes/         ← P3: CU07_...
 │   │   ├── GestionCitas/             ← P4: CU08_... a CU11_... y Compartido/ (disponibilidad)
+│   │   ├── ReportesBitacora/         ← P6: CU19_ConsultarBitacora (BitacoraController, BitacoraRequest, ConsultaBitacoraService)
 │   │   └── README.md                 ← tabla de paquetes y casos de uso
 │   ├── app/Models/                   ← una clase por tabla del modelo de datos (CE del análisis)
 │   ├── app/Services/                 ← BitacoraService (registro de operaciones)
@@ -190,7 +192,7 @@ clinica-vida-salud/
 │   ├── database/                     ← migraciones, seeders y schema.sql (modelo físico)
 │   └── tests/Feature/                ← una prueba por caso de uso (CUxx_NombreTest.php)
 ├── frontend/                         ← pantallas (Blade + CSS + JavaScript, sin Node ni CDN)
-│   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/   ← pantalla de cada CU, misma ruta que en backend
+│   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/ · ReportesBitacora/   ← pantalla de cada CU, misma ruta que en backend
 │   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita) y pantallas de error
 │   └── assets/                       ← css/vidasalud.css (común) y css/modulos/, js/, img/
 ├── Dockerfile · .dockerignore        ← imagen para el despliegue en Railway (ver la sección anterior)

@@ -1,0 +1,17 @@
+/* P6 Reportes y Bitácora · estilos propios del paquete (usan las variables de vidasalud.css) */
+
+/* ---------- CU-19: filtros de la bitácora ---------- */
+.filtros-bitacora { display: grid; gap: .8rem 1rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); align-items: end; margin-bottom: 1.1rem; }
+.filtros-bitacora__botones { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+/* ---------- CU-19: tabla de registros ---------- */
+.tabla-bitacora { font-size: .88rem; }
+.tabla-bitacora .no-parte { white-space: nowrap; }
+.tabla-bitacora .detalle-bitacora { min-width: 16rem; max-width: 34rem; overflow-wrap: anywhere; color: var(--vs-text); }
+
+/* Etiquetas de la acción (se combinan con .etiqueta-estado): rojo, verde, gris y azul */
+.accion-rojo { background: #FBE3E3; color: #9C2B2B; border-color: #EFB4B4; }
+.accion-verde { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }
+.accion-gris { background: #ECEFF2; color: #4C5B69; border-color: #D3D9DF; }
+.accion-azul { background: var(--vs-sky-100); color: var(--vs-blue-700); border-color: var(--vs-sky-200); }
+.tabla-bitacora .etiqueta-estado { white-space: nowrap; }

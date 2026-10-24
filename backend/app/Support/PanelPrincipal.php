@@ -50,6 +50,12 @@ class PanelPrincipal
                 ['nombre' => 'Reservar cita', 'ruta' => 'reservas.crear', 'icono' => 'cita', 'cu' => 'CU-11', 'roles' => [Rol::PACIENTE]],
             ],
         ],
+        [
+            'clave' => 'reportes-bitacora', 'nombre' => 'Reportes y bitácora', 'icono' => 'documento',
+            'funciones' => [
+                ['nombre' => 'Bitácora', 'ruta' => 'bitacora.index', 'icono' => 'historial', 'cu' => 'CU-19', 'roles' => [Rol::ADMINISTRADOR]],
+            ],
+        ],
     ];
 
     /**

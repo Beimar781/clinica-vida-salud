@@ -221,6 +221,9 @@ CREATE SEQUENCE pacientes_codigo_seq START 1;
 CREATE SEQUENCE medicos_codigo_seq   START 1;
 -- Ejemplo: SELECT 'CM-' || lpad(nextval('citas_codigo_seq')::text, 4, '0');
 
+-- Dirección IP desde la que se hizo la operación (opcional: los registros anteriores quedan sin IP).
+ALTER TABLE bitacora ADD COLUMN ip VARCHAR(45);
+
 -- La bitácora es de solo agregar: ningún UPDATE ni DELETE (RF19, trazabilidad)
 CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$
 BEGIN

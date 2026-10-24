@@ -17,6 +17,7 @@ Correspondencia con Laravel: CI = vista Blade, CC = método del controlador + se
 | CU-09 Registrar cita médica | Recepcionista | `CIRegistrarCita`: buscarPaciente, mostrarHorarios, confirmarCita, mostrarComprobante | `CCRegistrarCita`: buscar, calcularLibres, validarReglas, registrar | `CEPaciente`: buscar · `CECita`: citasDelDia, crear, estaLibre · `CEMedico`: horariosLibres |
 | CU-10 Reprogramar cita médica | Recepcionista | `CIReprogramarCita`: buscarCita, mostrarHorarios, confirmarCambio, mostrarComprobante | `CCReprogramarCita`: buscar, calcularLibres, reprogramar | `CECita`: obtener, citasDelDia, reprogramar · `CEMedico`: horariosLibres |
 | CU-11 Reservar cita en línea | Paciente | `CIReservarCita`: buscarMedicos, mostrarHorarios, confirmarReserva, mostrarComprobante | `CCReservarCita`: buscar, calcularLibres, reservar | `CECita`: citasDelDia, crear, estaLibre · `CEMedico`: buscar, horariosLibres |
+| CU-19 Consultar bitácora (adelantado del Ciclo II; el documento aún no trae su diagrama, nombres propuestos) | Administrador | `CIBitacora`: mostrarListado, filtrar | `CCBitacora`: consultar | `CEBitacora`: buscar · `CEUsuario`: obtener |
 
 Notas:
 - El modelo físico es el de `database/schema.sql`. En los diagramas el atributo se llama `password`; en la base de datos es `password_hash`. En `CEHorario` el atributo `duracion_min` se muestra como `duracion` en la interfaz.

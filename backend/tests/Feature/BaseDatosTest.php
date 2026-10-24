@@ -142,6 +142,16 @@ class BaseDatosTest extends SistemaTestCase
         }
     }
 
+    public function test_la_bitacora_tiene_la_columna_ip_opcional(): void
+    {
+        $columna = DB::selectOne("SELECT data_type, character_maximum_length, is_nullable FROM information_schema.columns WHERE table_name = 'bitacora' AND column_name = 'ip'");
+
+        $this->assertNotNull($columna, 'Falta la columna bitacora.ip');
+        $this->assertSame('character varying', $columna->data_type);
+        $this->assertSame(45, $columna->character_maximum_length);
+        $this->assertSame('YES', $columna->is_nullable);
+    }
+
     /** Los índices de database/schema.sql que usan las consultas del Ciclo I existen en la base migrada. */
     public function test_los_indices_del_esquema_existen(): void
     {

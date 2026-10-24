@@ -6,7 +6,7 @@ Una fila por caso de uso. «Prueba» es `backend/tests/Feature/CUxx_NombreTest.p
 
 | Elemento | Archivo | Prueba | Estado |
 |---|---|---|---|
-| Modelo físico del Ciclo I (13 tablas + las técnicas `migrations` y `password_reset_tokens`), EXCLUDE, secuencias, trigger de bitácora | `backend/database/migrations/*` (desde `backend/database/schema.sql`) | `backend/tests/Feature/BaseDatosTest.php` | Aprobado |
+| Modelo físico del Ciclo I (13 tablas + las técnicas `migrations` y `password_reset_tokens`), EXCLUDE, secuencias, trigger de bitácora; columna técnica `bitacora.ip` (migración `2026_10_01_000007_agregar_ip_a_bitacora`) | `backend/database/migrations/*` (desde `backend/database/schema.sql`) | `backend/tests/Feature/BaseDatosTest.php` | Aprobado |
 | Usuario con `password_hash`, middleware `rol` (el Administrador hereda las funciones de recepción en `Usuario::tieneRol`; no las de médico ni paciente), inicio público | `backend/app/Models/Usuario.php`, `backend/app/Http/Middleware/VerificarRol.php` | `backend/tests/Feature/BaseSeguridadTest.php` | Aprobado |
 | Normalización de texto | `backend/app/Support/Texto.php` | `backend/tests/Unit/TextoTest.php` | Aprobado |
 | Assets del frontend por la ruta `assets` (sin symlinks, anti path traversal, caché) | `backend/app/Http/Controllers/RecursoController.php`, `backend/app/Support/Recursos.php` | `backend/tests/Feature/RecursosTest.php` | Aprobado |
@@ -18,9 +18,9 @@ Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISI
 
 | CU | RF | Paquete | CI (pantalla) | CC (controlador · servicio) | Rutas | CE (modelos) | Tablas | Prueba | Estado |
 |---|---|---|---|---|---|---|---|---|---|
-| CU-01 Iniciar sesión | RF01 | P1 SeguridadUsuarios | `CILogin` · `CU01_IniciarSesion/login`, `panel`, `olvido`, `restablecer` (A3) | `CCLogin` · LoginController, PanelController · LoginService (LoginRequest). Flujo alternativo A3 «Recuperar contraseña»: OlvidoClaveController, RestablecerClaveController · RecuperarClaveService (OlvidoClaveRequest, RestablecerClaveRequest); correo `BrevoTransport` | `GET/POST /login`, `GET /panel`; A3: `GET/POST /olvido-clave`, `GET /restablecer-clave/{token}`, `POST /restablecer-clave` | `CEUsuario` (Usuario, Rol) | usuarios, rol_usuario, bitacora; técnica: password_reset_tokens | `CU01_IniciarSesionTest` (36) | Aprobado |
+| CU-01 Iniciar sesión | RF01 | P1 SeguridadUsuarios | `CILogin` · `CU01_IniciarSesion/login`, `panel`, `olvido`, `restablecer` (A3) | `CCLogin` · LoginController, PanelController · LoginService (LoginRequest). Flujo alternativo A3 «Recuperar contraseña»: OlvidoClaveController, RestablecerClaveController · RecuperarClaveService (OlvidoClaveRequest, RestablecerClaveRequest); correo `BrevoTransport` | `GET/POST /login`, `GET /panel`; A3: `GET/POST /olvido-clave`, `GET /restablecer-clave/{token}`, `POST /restablecer-clave` | `CEUsuario` (Usuario, Rol) | usuarios, rol_usuario, bitacora; técnica: password_reset_tokens | `CU01_IniciarSesionTest` (39) | Aprobado |
 | CU-02 Cerrar sesión | RF02 | P1 SeguridadUsuarios | `CILogout` · botón del menú (`layouts/app`) | `CCLogout` · LogoutController · LogoutService | `POST /logout` | `CEUsuario` (Usuario) | usuarios | `CU02_CerrarSesionTest` (5) | Aprobado |
-| CU-03 Gestionar usuarios y roles | RF03 | P1 SeguridadUsuarios | `CIUsuarios` · `CU03_GestionarUsuariosRoles/index`, `crear`, `editar`, `campos` | `CCUsuarios` · UsuariosController · UsuarioService (UsuarioRequest) | `/usuarios` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEUsuario` (Usuario), `CERol` (Rol) | usuarios, roles, rol_usuario | `CU03_GestionarUsuariosRolesTest` (16) | Aprobado |
+| CU-03 Gestionar usuarios y roles | RF03 | P1 SeguridadUsuarios | `CIUsuarios` · `CU03_GestionarUsuariosRoles/index`, `crear`, `editar`, `campos` | `CCUsuarios` · UsuariosController · UsuarioService (UsuarioRequest) | `/usuarios` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEUsuario` (Usuario), `CERol` (Rol) | usuarios, roles, rol_usuario | `CU03_GestionarUsuariosRolesTest` (18) | Aprobado |
 | CU-04 Gestionar especialidades médicas | RF04 | P2 GestionMedica | `CIEspecialidad` · `CU04_GestionarEspecialidadesMedicas/` | `CCEspecialidad` · EspecialidadController · EspecialidadService (EspecialidadRequest) | `/especialidades` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEEspecialidad` (Especialidad) | especialidades | `CU04_GestionarEspecialidadesMedicasTest` (8) | Aprobado |
 | CU-05 Gestionar médicos | RF05 | P2 GestionMedica | `CIMedicos` · `CU05_GestionarMedicos/` | `CCMedicos` · MedicosController · MedicoService (MedicoRequest) | `/medicos` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEMedico` (Medico), `CEEspecialidad` (Especialidad) | medicos, medico_especialidad | `CU05_GestionarMedicosTest` (16) | Aprobado |
 | CU-06 Gestionar horarios y días sin atención | RF06 | P2 GestionMedica | `CIHorarios` · `CU06_GestionarHorariosDiasSinAtencion/` | `CCHorarios` · HorariosController, DiasSinAtencionController · HorarioService, DiaSinAtencionService (HorarioRequest, DiaSinAtencionRequest) | `/horarios` (index, guardar, actualizar, desactivar, activar) y `/dias-sin-atencion` (index, guardar, desactivar, activar) | `CEHorario` (HorarioAtencion), `CEMedico` (Medico); BloqueoAgenda | horarios_atencion, bloqueos_agenda | `CU06_GestionarHorariosDiasSinAtencionTest` (17) | Aprobado |
@@ -30,15 +30,23 @@ Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISI
 | CU-10 Reprogramar cita médica | RF10 | P4 GestionCitas | `CIReprogramarCita` · `CU10_ReprogramarCitaMedica/` (y listado de citas) | `CCReprogramarCita` · ReprogramarCitaController · ReprogramarCitaService (ReprogramarCitaRequest), reutiliza AgendarCitaService y DisponibilidadService (`Compartido/`) | `GET /citas`, `GET|PUT /citas/{cita}/reprogramar`, `GET /citas/{cita}/reprogramada` | `CECita`, `CEMedico` | citas | `CU10_ReprogramarCitaMedicaTest` (17) | Aprobado |
 | CU-11 Reservar cita en línea | RF11 | P4 GestionCitas | `CIReservarCita` · `CU11_ReservarCitaEnLinea/` | `CCReservarCita` · ReservarCitaController · ReservarCitaService (ReservarCitaRequest), reutiliza AgendarCitaService, DisponibilidadService y CatalogoMedicosService (`Compartido/`) | `GET /reservas/crear`, `GET /reservas/reservar`, `POST /reservas`, `GET /reservas/{cita}/comprobante` | `CECita`, `CEMedico` | citas | `CU11_ReservarCitaEnLineaTest` (16) | Aprobado |
 
+## Adelantado del Ciclo II
+
+| CU | RF | Paquete | CI (pantalla) | CC (controlador · servicio) | Rutas | CE (modelos) | Tablas | Prueba | Estado |
+|---|---|---|---|---|---|---|---|---|---|
+| CU-19 Consultar bitácora | RF19 | P6 ReportesBitacora | `CIBitacora` · `CU19_ConsultarBitacora/index` | `CCBitacora` · BitacoraController · ConsultaBitacoraService (BitacoraRequest), catálogo `AccionesBitacora` | `GET /bitacora` (solo Administrador; solo lectura) | `CEBitacora` (Bitacora), `CEUsuario` | bitacora (con la columna técnica `ip`), usuarios | `CU19_ConsultarBitacoraTest` (23) | Aprobado |
+
+El documento aún no trae la ficha de CU-19 (RF19: «Registra y permite consultar los eventos relevantes del sistema (quién hizo qué y cuándo)»); el flujo propuesto está en el comentario de `BitacoraController`. Los nombres CI, CC y CE son propuestos.
+
 ## Reporte de prueba del Ciclo I (insumo de la sección 8.2)
 
-Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **214 pruebas, 1139 aserciones, todas aprobadas**.
+Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **249 pruebas, 1358 aserciones, todas aprobadas** (incluidas las 23 de CU-19, que se adelantó del Ciclo II).
 
 | CU | Archivo de prueba | Pruebas | Filas del plan 8.1 | Resultado |
 |---|---|---|---|---|
-| CU-01 | `CU01_IniciarSesionTest` | 36 | 4 (más recuperación de contraseña, bloqueo de 60 s y `BrevoTransport`) | Aprobado |
+| CU-01 | `CU01_IniciarSesionTest` | 39 | 4 (más recuperación de contraseña, bloqueo de 60 s y `BrevoTransport`) | Aprobado |
 | CU-02 | `CU02_CerrarSesionTest` | 5 | 2 | Aprobado |
-| CU-03 | `CU03_GestionarUsuariosRolesTest` | 16 | 3 | Aprobado |
+| CU-03 | `CU03_GestionarUsuariosRolesTest` | 18 | 3 | Aprobado |
 | CU-04 | `CU04_GestionarEspecialidadesMedicasTest` | 8 | 2 | Aprobado |
 | CU-05 | `CU05_GestionarMedicosTest` | 16 | 4 | Aprobado |
 | CU-06 | `CU06_GestionarHorariosDiasSinAtencionTest` | 17 | 5 | Aprobado |
@@ -48,7 +56,7 @@ Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrad
 | CU-10 | `CU10_ReprogramarCitaMedicaTest` | 17 | 4 | Aprobado |
 | CU-11 | `CU11_ReservarCitaEnLineaTest` | 16 | 4 | Aprobado |
 
-Las otras 32 pruebas (base de datos, seguridad, assets, normalización de texto y preparación del despliegue) están en la tabla «Base técnica».
+Las otras 39 pruebas (base de datos, seguridad, assets, normalización de texto y preparación del despliegue) están en la tabla «Base técnica».
 
 ## Flujo alternativo A3 de CU-01 · Recuperar contraseña (texto sugerido para la ficha del documento)
 
