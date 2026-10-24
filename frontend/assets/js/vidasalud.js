@@ -21,8 +21,8 @@
         var contenedor = campo.closest('.campo');
         if (!contenedor) { return; }
         contenedor.classList.remove('campo--error');
-        var aviso = contenedor.querySelector('.campo__error[data-cliente]');
-        if (aviso) { aviso.remove(); }
+        // Quita el mensaje del cliente y también el que llegó del servidor al corregir el campo.
+        contenedor.querySelectorAll('.campo__error:not(#error-roles)').forEach(function (aviso) { aviso.remove(); });
     }
 
     function mensajeDe(campo) {

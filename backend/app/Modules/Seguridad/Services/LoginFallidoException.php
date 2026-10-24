@@ -10,6 +10,4 @@ use RuntimeException;
  *
  * @CU CU-01 @RF RF01 @CI CILogin (mostrarError) @CC CCLogin
  */
-class LoginFallidoException extends RuntimeException
-{
-}
+class LoginFallidoException extends RuntimeException {}

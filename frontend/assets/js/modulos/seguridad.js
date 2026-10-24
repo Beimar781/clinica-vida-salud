@@ -1,4 +1,32 @@
 /* P1 Seguridad y Usuarios · comportamiento propio del paquete (lo común está en vidasalud.js) */
 (function () {
     'use strict';
+
+    // CU-03: el formulario de usuarios exige al menos un rol marcado antes de enviarse.
+    document.querySelectorAll('form[data-requiere-rol]').forEach(function (form) {
+        var aviso = form.querySelector('#error-roles');
+        var casillas = form.querySelectorAll('input[name="roles[]"]');
+        var grupo = form.querySelector('.grupo-roles');
+
+        function hayRol() {
+            return Array.prototype.some.call(casillas, function (c) { return c.checked; });
+        }
+
+        form.addEventListener('submit', function (evento) {
+            if (hayRol()) { return; }
+            evento.preventDefault();
+            aviso.textContent = 'Seleccione al menos un rol.';
+            grupo.classList.add('campo--error');
+            casillas[0].focus();
+        });
+
+        casillas.forEach(function (c) {
+            c.addEventListener('change', function () {
+                if (hayRol()) {
+                    aviso.textContent = '';
+                    grupo.classList.remove('campo--error');
+                }
+            });
+        });
+    });
 })();

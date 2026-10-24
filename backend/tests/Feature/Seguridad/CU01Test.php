@@ -5,6 +5,7 @@ namespace Tests\Feature\Seguridad;
 use App\Modules\Seguridad\Models\Rol;
 use App\Modules\Seguridad\Models\Usuario;
 use App\Modules\Seguridad\Services\LoginService;
+use App\Support\PanelPrincipal;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -153,7 +154,7 @@ class CU01Test extends TestCase
         $paciente = $this->crearUsuario('t-panel-p', [Rol::PACIENTE]);
         $medicoPaciente = $this->crearUsuario('t-panel-mp', [Rol::MEDICO, Rol::PACIENTE]);
 
-        $nombres = fn (Usuario $u) => collect(\App\Support\PanelPrincipal::paquetes($u, soloImplementadas: false))
+        $nombres = fn (Usuario $u) => collect(PanelPrincipal::paquetes($u, soloImplementadas: false))
             ->flatMap(fn ($p) => collect($p['funciones'])->pluck('nombre'))->all();
 
         $this->assertContains('Pacientes', $nombres($recepcion));

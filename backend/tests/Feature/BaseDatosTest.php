@@ -17,9 +17,13 @@ class BaseDatosTest extends TestCase
     use DatabaseTransactions;
 
     private int $especialidadId;
+
     private int $medicoId;
+
     private int $otroMedicoId;
+
     private int $pacienteId;
+
     private int $otroPacienteId;
 
     protected function setUp(): void
@@ -108,7 +112,7 @@ class BaseDatosTest extends TestCase
         DB::table('bitacora')->insert(['accion' => 'T-PRUEBA', 'fecha_hora' => now()]);
 
         foreach (['UPDATE bitacora SET accion = ? WHERE accion = ?' => ['T-OTRA', 'T-PRUEBA'],
-                  'DELETE FROM bitacora WHERE accion = ?' => ['T-PRUEBA']] as $sql => $parametros) {
+            'DELETE FROM bitacora WHERE accion = ?' => ['T-PRUEBA']] as $sql => $parametros) {
             try {
                 DB::transaction(fn () => DB::statement($sql, $parametros));
                 $this->fail('La bitácora aceptó una modificación: '.$sql);

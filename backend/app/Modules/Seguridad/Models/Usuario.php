@@ -17,6 +17,9 @@ class Usuario extends Authenticatable
 
     protected $hidden = ['password_hash'];
 
+    /** Igual que el DEFAULT TRUE de la tabla: una cuenta nueva nace activa también en memoria. */
+    protected $attributes = ['estado' => true];
+
     protected function casts(): array
     {
         return [

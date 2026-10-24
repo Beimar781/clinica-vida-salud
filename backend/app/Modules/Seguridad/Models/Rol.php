@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Rol extends Model
 {
     public const ADMINISTRADOR = 'Administrador';
+
     public const RECEPCIONISTA = 'Recepcionista';
+
     public const MEDICO = 'Médico';
+
     public const PACIENTE = 'Paciente';
 
     protected $table = 'roles';

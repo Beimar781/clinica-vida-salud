@@ -8,9 +8,9 @@ use App\Modules\Seguridad\Services\LoginFallidoException;
 use App\Modules\Seguridad\Services\LoginService;
 use App\Modules\Seguridad\Services\LogoutService;
 use App\Support\PanelPrincipal;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
 
 /**
  * Inicio y cierre de sesión y panel principal. Controlador delgado: la lógica está en los servicios.

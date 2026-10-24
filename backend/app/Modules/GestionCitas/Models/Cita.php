@@ -15,12 +15,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Cita extends Model
 {
     public const PROGRAMADA = 'PROGRAMADA';
+
     public const CONFIRMADA = 'CONFIRMADA';
+
     public const ATENDIDA = 'ATENDIDA';
+
     public const CANCELADA = 'CANCELADA';
+
     public const INASISTENCIA = 'INASISTENCIA';
 
     public const PRESENCIAL = 'PRESENCIAL';
+
     public const VIRTUAL = 'VIRTUAL';
 
     protected $table = 'citas';

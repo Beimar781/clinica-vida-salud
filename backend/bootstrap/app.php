@@ -2,13 +2,14 @@
 
 use App\Http\Controllers\RecursoController;
 use App\Support\Middleware\SinCache;
+use App\Support\Middleware\VerificarCuentaActiva;
 use App\Support\Middleware\VerificarRol;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,8 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/panel');
         $middleware->alias(['rol' => VerificarRol::class]);
-        // Ninguna página se guarda en el navegador: al cerrar sesión y volver atrás no se ve nada interno.
-        $middleware->web(append: [SinCache::class]);
+        // Ninguna página se guarda en el navegador y una cuenta desactivada pierde su sesión.
+        $middleware->web(append: [SinCache::class, VerificarCuentaActiva::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
