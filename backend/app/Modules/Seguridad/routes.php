@@ -15,4 +15,6 @@ Route::middleware('web')->group(function () {
     });
     Route::get('/panel', [AutenticacionController::class, 'mostrarPanel'])->middleware('auth')->name('panel');
 
+    // CU-02 Cerrar sesión (sin «auth»: si la sesión ya expiró solo se redirige al login)
+    Route::post('/logout', [AutenticacionController::class, 'cerrar'])->name('logout');
 });

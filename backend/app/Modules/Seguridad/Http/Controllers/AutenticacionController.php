@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Modules\Seguridad\Http\Requests\LoginRequest;
 use App\Modules\Seguridad\Services\LoginFallidoException;
 use App\Modules\Seguridad\Services\LoginService;
+use App\Modules\Seguridad\Services\LogoutService;
 use App\Support\PanelPrincipal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 
 /**
- * Inicio de sesión y panel principal. Controlador delgado: la lógica está en los servicios.
+ * Inicio y cierre de sesión y panel principal. Controlador delgado: la lógica está en los servicios.
  */
 class AutenticacionController extends Controller
 {
@@ -50,5 +51,15 @@ class AutenticacionController extends Controller
             'roles' => $usuario->nombresRoles(),
             'paquetes' => PanelPrincipal::paquetes($usuario),
         ]);
+    }
+
+    /**
+     * @CU CU-02 @RF RF02 @CI CILogout (solicitarCierre, mostrarInicio) @CC CCLogout (cerrar) @CE CEUsuario
+     */
+    public function cerrar(Request $request, LogoutService $logout): RedirectResponse
+    {
+        $logout->cerrar($request);
+
+        return redirect('/login')->with('exito', 'Sesión cerrada correctamente.');
     }
 }
