@@ -5,8 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * Datos base y de demostración: roles, usuarios de cada rol, especialidades, médicos con horarios,
- * días sin atención, pacientes con su historia clínica y algunas citas.
+ * Se puede ejecutar en cada arranque sin duplicar nada (todos los seeders son idempotentes).
+ *
+ *  - Siempre: roles, especialidades base y el administrador (contraseña de ADMIN_PASSWORD).
+ *  - Con SEMBRAR_DEMO=true (por defecto en local): además los usuarios de demostración, médicos con horarios,
+ *    días sin atención, pacientes con su historia clínica y algunas citas.
  */
 class DatabaseSeeder extends Seeder
 {
@@ -15,10 +18,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolSeeder::class,
             EspecialidadSeeder::class,
-            UsuarioSeeder::class,
-            MedicoSeeder::class,
-            PacienteSeeder::class,
-            CitaSeeder::class,
+            AdministradorSeeder::class,
         ]);
+
+        if (config('vidasalud.sembrar_demo')) {
+            $this->call([
+                UsuarioSeeder::class,
+                MedicoSeeder::class,
+                PacienteSeeder::class,
+                CitaSeeder::class,
+            ]);
+        }
     }
 }

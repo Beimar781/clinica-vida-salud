@@ -74,6 +74,59 @@ cd backend
 php artisan test
 ```
 
+## Despliegue en Railway
+
+El repositorio trae un `Dockerfile` en la raíz (PHP 8.3 con `pdo_pgsql`, `pgsql`, `zip` e `intl`, y Composer `--no-dev`) y un `.dockerignore`. Railway construye una sola imagen con todo el repositorio (`backend/` lee la carpeta hermana `frontend/`, por eso el servicio no usa `backend/` como directorio raíz). Al arrancar, el contenedor crea las carpetas de `storage`, migra la base, carga los datos base y enciende el servidor en el puerto que asigna Railway. Los seeders son idempotentes: pueden correr en cada arranque sin duplicar nada.
+
+**Pasos**
+
+1. En Railway: **New Project → Deploy from GitHub repo** y elegir `Beimar781/clinica-vida-salud`. Railway detecta el `Dockerfile` de la raíz. No hace falta cambiar el comando de inicio ni el directorio raíz.
+2. En el mismo proyecto: **+ New → Database → Add PostgreSQL**. El usuario de ese servicio puede ejecutar `CREATE EXTENSION btree_gist`, que usa la primera migración.
+3. En el servicio web, pestaña **Settings → Networking → Generate Domain** (queda algo como `https://clinica-vida-salud-production.up.railway.app`).
+4. En el servicio web, pestaña **Variables**, crear las de la tabla siguiente (las `DB_*` se enlazan al servicio de PostgreSQL con la sintaxis `${{Postgres.NOMBRE}}`; si el servicio se llama distinto, cambiar `Postgres` por ese nombre). `APP_URL` lleva el dominio del paso 3.
+5. Opcional: en **Settings → Deploy**, poner `/up` como ruta de salud (responde 200 cuando la aplicación está viva).
+6. Mantener **una sola réplica**: el bloqueo de 60 s tras 3 intentos fallidos usa la caché de archivos de esa instancia (si Railway reinicia el contenedor, el contador se reinicia y no pasa nada más).
+
+| Variable | Valor (solo ejemplos, sin valores reales) |
+|---|---|
+| `APP_NAME` | `Clínica Vida Salud` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_KEY` | resultado de `php artisan key:generate --show` (empieza con `base64:`) |
+| `APP_URL` | `https://<dominio>.up.railway.app` (con `https://`) |
+| `APP_LOCALE` | `es` |
+| `ADMIN_PASSWORD` | contraseña del administrador (obligatoria: sin ella el arranque falla con un mensaje claro) |
+| `ADMIN_CORREO` | opcional; correo real del administrador (por defecto `admin@vidasalud.test`) |
+| `SEMBRAR_DEMO` | `true` para cargar los datos de demostración; `false` (o sin definir) para dejar solo roles, especialidades base y administrador |
+| `DB_CONNECTION` | `pgsql` |
+| `DB_HOST` | `${{Postgres.PGHOST}}` |
+| `DB_PORT` | `${{Postgres.PGPORT}}` |
+| `DB_DATABASE` | `${{Postgres.PGDATABASE}}` |
+| `DB_USERNAME` | `${{Postgres.PGUSER}}` |
+| `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+| `SESSION_DRIVER` | `file` |
+| `CACHE_STORE` | `file` |
+| `QUEUE_CONNECTION` | `sync` |
+| `SESSION_SECURE_COOKIE` | `true` |
+| `LOG_CHANNEL` | `stderr` (los errores salen en los logs de Railway) |
+| `MAIL_MAILER` | `brevo` |
+| `BREVO_API_KEY` | clave de API de Brevo (empieza con `xkeysib-`) |
+| `MAIL_FROM_ADDRESS` | el remitente verificado en Brevo |
+| `MAIL_FROM_NAME` | `Clínica Vida Salud` |
+
+No hay que definir `PORT`: lo asigna Railway. Las claves y contraseñas viven solo en las variables de Railway; nunca se suben al repositorio.
+
+**Qué revisar tras el primer despliegue**
+
+- En **Deployments → View logs** deben verse las migraciones (`Running migrations`), el sembrado (`Seeding`) y la línea `Server running on [http://0.0.0.0:...]`. Si dice «Falta ADMIN_PASSWORD», falta esa variable.
+- Abrir el dominio: inicio público, «Iniciar sesión» y los estilos cargados (todo con `https`).
+- Iniciar sesión con `admin` y la contraseña de `ADMIN_PASSWORD`; con `SEMBRAR_DEMO=true` también con `recepcion`, `cmontano`, `mrojas`, etc. (`Demo1234*`).
+- Hacer 3 intentos fallidos con una cuenta: el cuarto intento debe mostrar el bloqueo de 60 segundos.
+- «¿Olvidaste tu contraseña?» con un correo real: el correo llega desde el remitente verificado (revisar spam) y el enlace abre con `https`.
+- Registrar una cita y reprogramarla.
+
+**Después de la presentación:** el repositorio es público y las contraseñas `Demo1234*` son conocidas. Poner `SEMBRAR_DEMO=false` no borra los usuarios ya creados: desactivarlos o cambiarles la contraseña desde «Usuarios y roles». El administrador se crea una sola vez; para cambiar su contraseña use «Usuarios y roles» (cambiar `ADMIN_PASSWORD` no la modifica).
+
 ## Cómo está organizado el código (para la defensa)
 
 El repositorio es un solo proyecto Laravel dividido en **backend** (lógica y datos) y **frontend** (pantallas). Cada **paquete** del documento es una carpeta con el mismo nombre en las dos partes, y cada **caso de uso** es una subcarpeta (`CUxx_NombreDelCaso`):
@@ -101,6 +154,7 @@ clinica-vida-salud/
 │   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/   ← pantalla de cada CU, misma ruta que en backend
 │   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita) y pantallas de error
 │   └── assets/                       ← css/vidasalud.css (común) y css/modulos/, js/, img/
+├── Dockerfile · .dockerignore        ← imagen para el despliegue en Railway (ver la sección anterior)
 └── docs/                             ← documento (PDF), trazabilidad, clases de análisis y lista de capturas de la sección 4.4
 ```
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // En producción (Railway) todo el sitio se sirve por https: enlaces, assets, formularios y el enlace del correo.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Fechas y nombres de meses en español (America/La_Paz ya está en config/app.php).
         Carbon::setLocale('es');
 

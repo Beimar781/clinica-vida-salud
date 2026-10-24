@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Las páginas internas sin sesión redirigen al inicio de sesión; con sesión, /login lleva al panel.
+        // Detrás del proxy de Railway (HTTPS termina en el proxy): se confía en sus cabeceras X-Forwarded-* para que
+        // los enlaces, los formularios y la cookie de sesión salgan con https y con el dominio público.
+        $middleware->trustProxies(at: '*');
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/panel');
         $middleware->alias(['rol' => VerificarRol::class]);

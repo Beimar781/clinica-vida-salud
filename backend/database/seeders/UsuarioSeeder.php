@@ -5,25 +5,20 @@ namespace Database\Seeders;
 use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Database\Seeder;
-use RuntimeException;
 
 /**
- * Usuarios de demostración. El administrador toma su contraseña de ADMIN_PASSWORD (.env);
- * las demás cuentas usan la contraseña de demostración de config/vidasalud.php (ver README).
+ * Usuarios de demostración (solo con SEMBRAR_DEMO=true): recepción, médicos y pacientes con la contraseña de
+ * demostración de config/vidasalud.php (ver README). El administrador lo crea AdministradorSeeder.
+ * Idempotente: si la cuenta ya existe no se toca.
  */
 class UsuarioSeeder extends Seeder
 {
     public function run(): void
     {
-        $claveAdmin = config('vidasalud.admin_password');
-        if (blank($claveAdmin)) {
-            throw new RuntimeException('Defina ADMIN_PASSWORD en el archivo .env antes de ejecutar los seeders.');
-        }
         $claveDemo = config('vidasalud.demo_password');
 
         // nombre_usuario => [correo, contraseña, roles]
         $usuarios = [
-            'admin' => ['admin@vidasalud.test', $claveAdmin, [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA]],
             'recepcion' => ['recepcion@vidasalud.test', $claveDemo, [Rol::RECEPCIONISTA]],
             'cmontano' => ['carla.montano@vidasalud.test', $claveDemo, [Rol::MEDICO]],
             'lsoliz' => ['luis.soliz@vidasalud.test', $claveDemo, [Rol::MEDICO]],

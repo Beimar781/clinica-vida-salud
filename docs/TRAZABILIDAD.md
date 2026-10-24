@@ -10,6 +10,7 @@ Una fila por caso de uso. «Prueba» es `backend/tests/Feature/CUxx_NombreTest.p
 | Usuario con `password_hash`, middleware `rol`, inicio público | `backend/app/Models/Usuario.php`, `backend/app/Http/Middleware/VerificarRol.php` | `backend/tests/Feature/BaseSeguridadTest.php` | Aprobado |
 | Normalización de texto | `backend/app/Support/Texto.php` | `backend/tests/Unit/TextoTest.php` | Aprobado |
 | Assets del frontend por la ruta `assets` (sin symlinks, anti path traversal, caché) | `backend/app/Http/Controllers/RecursoController.php`, `backend/app/Support/Recursos.php` | `backend/tests/Feature/RecursosTest.php` | Aprobado |
+| Preparación del despliegue en Railway: seeders idempotentes (`SEMBRAR_DEMO`, `ADMIN_PASSWORD`), proxy con https, `Dockerfile` | `Dockerfile`, `.dockerignore`, `backend/database/seeders/*`, `backend/bootstrap/app.php`, `backend/app/Providers/AppServiceProvider.php` | `backend/tests/Feature/DespliegueTest.php` | Aprobado |
 
 ## Ciclo I
 
@@ -31,7 +32,7 @@ Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISI
 
 ## Reporte de prueba del Ciclo I (insumo de la sección 8.2)
 
-Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **206 pruebas, 1122 aserciones, todas aprobadas**.
+Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **214 pruebas, 1139 aserciones, todas aprobadas**.
 
 | CU | Archivo de prueba | Pruebas | Filas del plan 8.1 | Resultado |
 |---|---|---|---|---|
@@ -47,4 +48,4 @@ Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrad
 | CU-10 | `CU10_ReprogramarCitaMedicaTest` | 17 | 4 | Aprobado |
 | CU-11 | `CU11_ReservarCitaEnLineaTest` | 16 | 4 | Aprobado |
 
-Las otras 24 pruebas (base de datos, seguridad, assets y normalización de texto) están en la tabla «Base técnica».
+Las otras 32 pruebas (base de datos, seguridad, assets, normalización de texto y preparación del despliegue) están en la tabla «Base técnica».

@@ -1,0 +1,11 @@
+.git
+.gitignore
+.gitattributes
+.editorconfig
+.claude
+**/vendor
+**/.env
+**/node_modules
+backend/storage/logs
+backend/tests
+docs
