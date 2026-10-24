@@ -13,3 +13,6 @@
 .bloque span { padding: .45rem .9rem; border: 1px solid var(--vs-sky-200); background: var(--vs-white); border-radius: 8px; color: var(--vs-blue-900); font-weight: 600; cursor: pointer; }
 .bloque input:checked + span { background: var(--vs-blue-600); color: #fff; border-color: var(--vs-blue-600); }
 .bloque input:focus-visible + span { outline: 3px solid var(--vs-sky-400); outline-offset: 2px; }
+
+/* Bloques de solo lectura (CU-08) */
+.bloque--fijo span { cursor: default; }

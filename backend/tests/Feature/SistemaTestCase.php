@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BloqueoAgenda;
 use App\Models\Cita;
 use App\Models\Especialidad;
 use App\Models\HorarioAtencion;
@@ -11,6 +12,7 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use App\Support\Texto;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -112,5 +114,20 @@ abstract class SistemaTestCase extends TestCase
             'especialidad_id' => $especialidad->id, 'fecha' => $fecha, 'hora_inicio' => $inicio, 'hora_fin' => $fin,
             'estado' => $estado,
         ]);
+    }
+
+    /**
+     * Próxima fecha (Y-m-d) con ese día de la semana (1 = lunes ... 7 = domingo), al menos $desdeDias días
+     * después de hoy, que no sea un día sin atención ya registrado (por ejemplo los feriados de demostración).
+     */
+    protected function proximaFecha(int $diaSemana, int $desdeDias = 7): string
+    {
+        $fecha = Carbon::today()->addDays($desdeDias);
+
+        while ($fecha->dayOfWeekIso !== $diaSemana || BloqueoAgenda::where('estado', true)->whereDate('fecha', $fecha->toDateString())->exists()) {
+            $fecha->addDay();
+        }
+
+        return $fecha->toDateString();
     }
 }

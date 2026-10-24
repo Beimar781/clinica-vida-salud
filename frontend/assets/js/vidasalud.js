@@ -53,6 +53,11 @@
         form.addEventListener('input', function (evento) { limpiarError(evento.target); });
     });
 
+    // Formularios con data-autoenviar: al elegir un valor en una lista se envían solos (el botón sigue disponible sin JavaScript).
+    document.querySelectorAll('form[data-autoenviar] select').forEach(function (lista) {
+        lista.addEventListener('change', function () { lista.form.submit(); });
+    });
+
     // Botones o formularios con data-confirmar: piden confirmación antes de continuar.
     document.querySelectorAll('[data-confirmar]').forEach(function (elemento) {
         var evento = elemento.tagName === 'FORM' ? 'submit' : 'click';

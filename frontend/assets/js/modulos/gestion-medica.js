@@ -46,11 +46,6 @@
         aplicar();
     });
 
-    // CU-06: al elegir un médico se muestran sus horarios sin pulsar el botón.
-    document.querySelectorAll('form[data-autoenviar] select').forEach(function (lista) {
-        lista.addEventListener('change', function () { lista.form.submit(); });
-    });
-
     // CU-06: valida el bloque en el navegador (la validación definitiva se repite en el servidor) y muestra
     // cuántas citas caben. La hora final debe ser posterior a la inicial y la duración debe dividir el bloque.
     document.querySelectorAll('form[data-horario]').forEach(function (form) {
