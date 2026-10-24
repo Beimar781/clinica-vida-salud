@@ -73,6 +73,7 @@ small, .texto-suave { color: var(--vs-muted); }
 .barra__menu a:hover, .barra__menu a[aria-current="page"] { background: var(--vs-sky-100); color: var(--vs-blue-900); }
 .barra__usuario { display: flex; align-items: center; gap: .75rem; margin-left: auto; font-size: .9rem; }
 .barra__usuario form { margin: 0; }
+.barra__toggle { display: none; }
 
 /* ---------- Contenedor y tarjetas ---------- */
 .contenedor { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
@@ -183,7 +184,26 @@ small, .texto-suave { color: var(--vs-muted); }
 /* ---------- Responsive (PC y tablet) ---------- */
 @media (max-width: 900px) {
     .barra { gap: .6rem; }
-    .barra__usuario { margin-left: 0; width: 100%; justify-content: space-between; }
+    .barra__usuario { margin-left: 0; width: 100%; justify-content: space-between; order: 3; }
+    .barra__logo { order: 0; }
+    /* En el celular el menú se pliega detrás de un botón para no ocupar media pantalla (solo con JavaScript). */
+    .barra--colapsable .barra__toggle {
+        display: inline-flex; align-items: center; gap: .45rem; order: 1; margin-left: auto;
+        padding: .45rem .8rem; border: 1px solid var(--vs-border); border-radius: 6px; background: var(--vs-white);
+        color: var(--vs-blue-700); font: inherit; font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+    }
+    .barra__toggle-rayas, .barra__toggle-rayas::before, .barra__toggle-rayas::after {
+        display: block; width: 16px; height: 2px; background: currentColor; border-radius: 1px; position: relative;
+    }
+    .barra__toggle-rayas::before, .barra__toggle-rayas::after { content: ""; position: absolute; left: 0; }
+    .barra__toggle-rayas::before { top: -5px; }
+    .barra__toggle-rayas::after { top: 5px; }
+    .barra--colapsable .barra__menu {
+        order: 2; width: 100%; flex: 0 0 100%; display: none;
+        grid-template-columns: 1fr 1fr; gap: .25rem; max-height: 55vh; overflow-y: auto;
+    }
+    .barra--colapsable .barra__menu.abierto { display: grid; }
+    .barra--colapsable .barra__menu a { display: block; padding: .6rem .7rem; }
     .contenedor { padding-top: 1rem; }
 }
 @media (max-width: 600px) {

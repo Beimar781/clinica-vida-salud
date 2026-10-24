@@ -19,7 +19,7 @@ Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISI
 | CU | RF | Paquete | CI (pantalla) | CC (controlador · servicio) | Rutas | CE (modelos) | Tablas | Prueba | Estado |
 |---|---|---|---|---|---|---|---|---|---|
 | CU-01 Iniciar sesión | RF01 | P1 SeguridadUsuarios | `CILogin` · `CU01_IniciarSesion/login`, `panel`, `olvido`, `restablecer` (A3) | `CCLogin` · LoginController, PanelController · LoginService (LoginRequest). Flujo alternativo A3 «Recuperar contraseña»: OlvidoClaveController, RestablecerClaveController · RecuperarClaveService (OlvidoClaveRequest, RestablecerClaveRequest); correo `BrevoTransport` | `GET/POST /login`, `GET /panel`; A3: `GET/POST /olvido-clave`, `GET /restablecer-clave/{token}`, `POST /restablecer-clave` | `CEUsuario` (Usuario, Rol) | usuarios, rol_usuario, bitacora; técnica: password_reset_tokens | `CU01_IniciarSesionTest` (39) | Aprobado |
-| CU-02 Cerrar sesión | RF02 | P1 SeguridadUsuarios | `CILogout` · botón del menú (`layouts/app`) | `CCLogout` · LogoutController · LogoutService | `POST /logout` | `CEUsuario` (Usuario) | usuarios | `CU02_CerrarSesionTest` (5) | Aprobado |
+| CU-02 Cerrar sesión | RF02 | P1 SeguridadUsuarios | `CILogout` · botón del menú (`layouts/app`) | `CCLogout` · LogoutController · LogoutService | `POST /logout` | `CEUsuario` (Usuario) | usuarios | `CU02_CerrarSesionTest` (6) | Aprobado |
 | CU-03 Gestionar usuarios y roles | RF03 | P1 SeguridadUsuarios | `CIUsuarios` · `CU03_GestionarUsuariosRoles/index`, `crear`, `editar`, `campos` | `CCUsuarios` · UsuariosController · UsuarioService (UsuarioRequest) | `/usuarios` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEUsuario` (Usuario), `CERol` (Rol) | usuarios, roles, rol_usuario | `CU03_GestionarUsuariosRolesTest` (18) | Aprobado |
 | CU-04 Gestionar especialidades médicas | RF04 | P2 GestionMedica | `CIEspecialidad` · `CU04_GestionarEspecialidadesMedicas/` | `CCEspecialidad` · EspecialidadController · EspecialidadService (EspecialidadRequest) | `/especialidades` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEEspecialidad` (Especialidad) | especialidades | `CU04_GestionarEspecialidadesMedicasTest` (8) | Aprobado |
 | CU-05 Gestionar médicos | RF05 | P2 GestionMedica | `CIMedicos` · `CU05_GestionarMedicos/` | `CCMedicos` · MedicosController · MedicoService (MedicoRequest) | `/medicos` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEMedico` (Medico), `CEEspecialidad` (Especialidad) | medicos, medico_especialidad | `CU05_GestionarMedicosTest` (16) | Aprobado |
@@ -40,12 +40,12 @@ El documento aún no trae la ficha de CU-19 (RF19: «Registra y permite consulta
 
 ## Reporte de prueba del Ciclo I (insumo de la sección 8.2)
 
-Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **249 pruebas, 1358 aserciones, todas aprobadas** (incluidas las 23 de CU-19, que se adelantó del Ciclo II).
+Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **250 pruebas, 1363 aserciones, todas aprobadas** (incluidas las 23 de CU-19, que se adelantó del Ciclo II).
 
 | CU | Archivo de prueba | Pruebas | Filas del plan 8.1 | Resultado |
 |---|---|---|---|---|
 | CU-01 | `CU01_IniciarSesionTest` | 39 | 4 (más recuperación de contraseña, bloqueo de 60 s y `BrevoTransport`) | Aprobado |
-| CU-02 | `CU02_CerrarSesionTest` | 5 | 2 | Aprobado |
+| CU-02 | `CU02_CerrarSesionTest` | 6 | 2 | Aprobado |
 | CU-03 | `CU03_GestionarUsuariosRolesTest` | 18 | 3 | Aprobado |
 | CU-04 | `CU04_GestionarEspecialidadesMedicasTest` | 8 | 2 | Aprobado |
 | CU-05 | `CU05_GestionarMedicosTest` | 16 | 4 | Aprobado |

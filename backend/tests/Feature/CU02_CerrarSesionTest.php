@@ -32,6 +32,18 @@ class CU02_CerrarSesionTest extends SistemaTestCase
         $this->get('/panel')->assertRedirect('/login');
     }
 
+    /** El menú se puede plegar en el celular: el botón controla la lista y el cierre de sesión sigue a la vista. */
+    public function test_el_menu_trae_el_boton_para_plegarlo_en_pantallas_pequenas(): void
+    {
+        $usuario = $this->crearUsuario('t-menu', [Rol::ADMINISTRADOR]);
+
+        $this->actingAs($usuario)->get('/panel')->assertOk()
+            ->assertSee('class="barra__toggle"', false)
+            ->assertSee('aria-controls="menu-principal"', false)
+            ->assertSee('id="menu-principal"', false)
+            ->assertSee('Cerrar sesión');
+    }
+
     public function test_cerrar_sesion_invalida_la_sesion_y_regenera_el_token(): void
     {
         $usuario = $this->crearUsuario('t-token', [Rol::PACIENTE]);

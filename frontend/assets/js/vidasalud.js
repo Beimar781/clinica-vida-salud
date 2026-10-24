@@ -83,4 +83,22 @@
             if (!window.confirm(elemento.getAttribute('data-confirmar'))) { e.preventDefault(); }
         });
     });
+
+    // Menú plegable en pantallas pequeñas: el botón abre y cierra la lista de funciones.
+    (function () {
+        var barra = document.getElementById('barra');
+        var boton = barra && barra.querySelector('.barra__toggle');
+        var menu = document.getElementById('menu-principal');
+        if (!boton || !menu) { return; }
+        barra.classList.add('barra--colapsable');
+        function fijar(abierto) {
+            menu.classList.toggle('abierto', abierto);
+            boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            boton.setAttribute('aria-label', abierto ? 'Cerrar el menú' : 'Abrir el menú');
+        }
+        boton.addEventListener('click', function () { fijar(!menu.classList.contains('abierto')); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && menu.classList.contains('abierto')) { fijar(false); boton.focus(); }
+        });
+    })();
 })();

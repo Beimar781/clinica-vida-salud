@@ -112,7 +112,7 @@ cd backend
 php artisan test
 ```
 
-La última corrida completa (24/10/2026) dio **214 pruebas y 1139 aserciones, todas aprobadas**. Hay una prueba por caso de uso (`CUxx_NombreTest.php`) y pruebas de la base de datos, la seguridad, los recursos del frontend y el despliegue. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
+La última corrida completa (24/10/2026) dio **250 pruebas y 1363 aserciones, todas aprobadas**. Hay una prueba por caso de uso (`CUxx_NombreTest.php`) y pruebas de la base de datos, la seguridad, los recursos del frontend y el despliegue. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
 
 ## Despliegue en Railway
 

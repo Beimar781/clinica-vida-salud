@@ -11,7 +11,7 @@
     @stack('estilos')
 </head>
 <body>
-    <header class="barra">
+    <header class="barra" id="barra">
         <a class="barra__logo" href="{{ auth()->check() ? url('/panel') : url('/') }}">
             <x-logo />
             <span class="barra__marca">Vida Salud<small>Clínica</small></span>
@@ -19,7 +19,10 @@
 
         @auth
             <nav class="barra__nav" aria-label="Principal">
-                <ul class="barra__menu">
+                <button type="button" class="barra__toggle" aria-expanded="false" aria-controls="menu-principal" aria-label="Abrir el menú">
+                    <span class="barra__toggle-rayas" aria-hidden="true"></span> <span>Menú</span>
+                </button>
+                <ul class="barra__menu" id="menu-principal">
                     <li><a href="{{ url('/panel') }}" @if (request()->is('panel')) aria-current="page" @endif>Panel</a></li>
                     @foreach ($menuFunciones ?? [] as $funcion)
                         <li><a href="{{ $funcion['url'] }}" @if (url()->current() === $funcion['url']) aria-current="page" @endif>{{ $funcion['nombre'] }}</a></li>

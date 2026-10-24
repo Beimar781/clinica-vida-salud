@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /*
- * Tabla técnica de Laravel (como «migrations»; no está en el modelo físico del documento):
+ * Tabla técnica de Laravel (como «migrations»):
  * guarda el token de un solo uso del enlace «¿Olvidaste tu contraseña?» (flujo alternativo de CU-01).
  * El broker de Laravel exige la columna «email»; allí se guarda el correo de la cuenta (usuarios.correo).
  */
