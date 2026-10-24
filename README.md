@@ -70,23 +70,44 @@ cd backend
 php artisan test
 ```
 
-## Estructura
+## Cómo está organizado el código (para la defensa)
+
+El repositorio es un solo proyecto Laravel dividido en **backend** (lógica y datos) y **frontend** (pantallas). Cada **paquete** del documento es una carpeta con el mismo nombre en las dos partes, y cada **caso de uso** es una subcarpeta (`CUxx_NombreDelCaso`):
 
 ```
-backend/    Laravel: app/Modules/<Paquete>/{Http/Controllers,Http/Requests,Services,Models,routes.php},
-            app/Support, config, database (migraciones, seeders y schema.sql), routes, tests
-frontend/   views/<paquete>/<caso-de-uso>/ (vistas Blade), views/layouts y views/components (comunes),
-            assets/css (vidasalud.css y modulos/<paquete>.css), assets/js, assets/img
-docs/       documento, trazabilidad y clases de análisis
+clinica-vida-salud/
+├── backend/                          ← proyecto Laravel (lógica, base de datos, rutas, pruebas)
+│   ├── app/Modules/
+│   │   ├── SeguridadUsuarios/        ← P1: Seguridad y Usuarios
+│   │   │   ├── routes.php            ← URLs del paquete, agrupadas por CU
+│   │   │   ├── CU01_IniciarSesion/   ← CU-01: LoginController, PanelController, LoginRequest, LoginService
+│   │   │   ├── CU02_CerrarSesion/    ← CU-02: LogoutController, LogoutService
+│   │   │   └── CU03_GestionarUsuariosRoles/  ← CU-03: UsuariosController, UsuarioRequest, UsuarioService
+│   │   ├── GestionMedica/            ← P2: CU04_..., CU05_..., CU06_...
+│   │   ├── GestionPacientes/         ← P3: CU07_...
+│   │   ├── GestionCitas/             ← P4: CU08_... a CU11_... y Compartido/ (disponibilidad)
+│   │   └── README.md                 ← tabla de paquetes y casos de uso
+│   ├── app/Models/                   ← una clase por tabla del modelo de datos (CE del análisis)
+│   ├── app/Services/                 ← BitacoraService (registro de operaciones)
+│   ├── app/Http/Middleware/          ← VerificarRol, VerificarCuentaActiva, SinCache
+│   ├── app/Support/                  ← utilidades: Codigos (CM-0001), Texto, PanelPrincipal, Recursos
+│   ├── database/                     ← migraciones, seeders y schema.sql (modelo físico)
+│   └── tests/Feature/                ← una prueba por caso de uso (CUxx_NombreTest.php)
+├── frontend/                         ← pantallas (Blade + CSS + JavaScript, sin Node ni CDN)
+│   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/   ← pantalla de cada CU, misma ruta que en backend
+│   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita) y pantallas de error
+│   └── assets/                       ← css/vidasalud.css (común) y css/modulos/, js/, img/
+└── docs/                             ← documento, trazabilidad y clases de análisis
 ```
 
-Paquetes del análisis, dentro de `backend/app/Modules`:
+Dentro de cada CU del backend hay siempre:
 
-| Paquete | Carpeta |
+| Archivo | Qué hace |
 |---|---|
-| Seguridad y Usuarios | `Seguridad` |
-| Gestión Médica | `GestionMedica` |
-| Gestión de Pacientes | `GestionPacientes` |
-| Gestión de Citas | `GestionCitas` |
+| `...Controller.php` | La clase de control (CC) del documento. Los comentarios del inicio repiten el flujo de la ficha y dicen qué método cumple cada paso |
+| `...Request.php` | Validaciones del formulario en el servidor (campos obligatorios, formatos, duplicados) |
+| `...Service.php` | Reglas de negocio del caso de uso (las que el controlador delgado delega) |
 
-El modelo físico de la base de datos está en `backend/database/schema.sql`.
+Los comentarios `@CU`, `@RF`, `@CI`, `@CC` y `@CE` en cada clase y pantalla enlazan el código con los nombres exactos de los diagramas de análisis (`docs/CLASES_ANALISIS.md`). La pantalla del mismo CU está en `frontend/<Paquete>/<CU>/*.blade.php`.
+
+**Cómo explicar un caso de uso en la defensa** (ejemplo CU-03, registrar un usuario): el administrador abre `/usuarios/crear` → la ruta está en `backend/app/Modules/SeguridadUsuarios/routes.php` (bloque «CU-03») → llama a `UsuariosController::crear()`, que muestra `frontend/SeguridadUsuarios/CU03_GestionarUsuariosRoles/crear.blade.php` → al enviar el formulario, `UsuariosController::guardar()` valida con `UsuarioRequest` (correo y usuario únicos, contraseña de 8 caracteres o más, al menos un rol) → `UsuarioService::guardar()` guarda con los modelos `Usuario` y `Rol` (contraseña con hash) y deja registro en la bitácora con `BitacoraService` → vuelve al listado `index.blade.php` con el aviso verde de confirmación.

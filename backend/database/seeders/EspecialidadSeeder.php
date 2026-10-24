@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Modules\GestionMedica\Models\Especialidad;
+use App\Models\Especialidad;
 use App\Support\Texto;
 use Illuminate\Database\Seeder;
 

@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\RecursoController;
-use App\Support\Middleware\SinCache;
-use App\Support\Middleware\VerificarCuentaActiva;
-use App\Support\Middleware\VerificarRol;
+use App\Http\Middleware\SinCache;
+use App\Http\Middleware\VerificarCuentaActiva;
+use App\Http\Middleware\VerificarRol;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

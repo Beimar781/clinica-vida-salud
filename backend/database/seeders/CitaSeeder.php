@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Modules\GestionCitas\Models\Cita;
-use App\Modules\GestionMedica\Models\BloqueoAgenda;
-use App\Modules\GestionMedica\Models\HorarioAtencion;
-use App\Modules\GestionMedica\Models\Medico;
-use App\Modules\GestionPacientes\Models\Paciente;
-use App\Modules\Seguridad\Models\Usuario;
+use App\Models\BloqueoAgenda;
+use App\Models\Cita;
+use App\Models\HorarioAtencion;
+use App\Models\Medico;
+use App\Models\Paciente;
+use App\Models\Usuario;
 use App\Support\Codigos;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;

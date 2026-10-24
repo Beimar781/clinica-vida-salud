@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Modules\GestionMedica\Models\BloqueoAgenda;
-use App\Modules\GestionMedica\Models\Especialidad;
-use App\Modules\GestionMedica\Models\HorarioAtencion;
-use App\Modules\GestionMedica\Models\Medico;
-use App\Modules\Seguridad\Models\Usuario;
+use App\Models\BloqueoAgenda;
+use App\Models\Especialidad;
+use App\Models\HorarioAtencion;
+use App\Models\Medico;
+use App\Models\Usuario;
 use App\Support\Codigos;
 use App\Support\Texto;
 use Illuminate\Database\Seeder;

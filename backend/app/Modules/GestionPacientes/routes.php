@@ -1,11 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-/*
- * Rutas del paquete P3 · Gestión de Pacientes.
- * Cada caso de uso agrega aquí las suyas, dentro del grupo «web» (sesión, CSRF).
- */
-Route::middleware('web')->group(function () {
-    //
-});
+// Paquete P3 - Gestión de Pacientes (CU-07).
+// Este archivo se carga solo (ver AppServiceProvider::cargarModulos) dentro del grupo «web».
+// Cada caso de uso agrega aquí sus rutas, agrupadas con un comentario «// CU-xx: nombre».

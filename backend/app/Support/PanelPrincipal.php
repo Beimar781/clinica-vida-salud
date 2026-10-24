@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Modules\Seguridad\Models\Rol;
-use App\Modules\Seguridad\Models\Usuario;
+use App\Models\Rol;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Route;
 
 /**

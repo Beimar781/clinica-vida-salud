@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Modules\Seguridad\Models\Rol;
-use App\Modules\Seguridad\Models\Usuario;
+use App\Models\Rol;
+use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Modules\GestionPacientes\Models\AntecedenteExterno;
-use App\Modules\GestionPacientes\Models\HistoriaClinica;
-use App\Modules\GestionPacientes\Models\Paciente;
-use App\Modules\Seguridad\Models\Usuario;
+use App\Models\AntecedenteExterno;
+use App\Models\HistoriaClinica;
+use App\Models\Paciente;
+use App\Models\Usuario;
 use App\Support\Codigos;
 use Illuminate\Database\Seeder;
 

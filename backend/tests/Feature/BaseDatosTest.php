@@ -3,19 +3,15 @@
 namespace Tests\Feature;
 
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 
 /**
  * Prueba de humo de la base de datos: las restricciones EXCLUDE de PostgreSQL (última barrera contra
  * citas y horarios superpuestos), la bitácora de solo agregar y los CHECK. Corre sobre la misma BD
  * del sistema; cada prueba se revierte al terminar (DatabaseTransactions) y usa códigos «T-».
  */
-class BaseDatosTest extends TestCase
+class BaseDatosTest extends SistemaTestCase
 {
-    use DatabaseTransactions;
-
     private int $especialidadId;
 
     private int $medicoId;

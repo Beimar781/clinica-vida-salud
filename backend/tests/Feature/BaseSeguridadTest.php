@@ -2,21 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Modules\Seguridad\Models\Rol;
-use App\Modules\Seguridad\Models\Usuario;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Models\Rol;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Tests\TestCase;
 
 /**
  * Base de seguridad: el modelo Usuario (password_hash, varios roles), el middleware «rol» y la
  * página de inicio pública. Los casos de uso de P1 tienen sus propias pruebas (CU01Test, ...).
  */
-class BaseSeguridadTest extends TestCase
+class BaseSeguridadTest extends SistemaTestCase
 {
-    use DatabaseTransactions;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -69,18 +65,5 @@ class BaseSeguridadTest extends TestCase
         $this->assertTrue($medicoPaciente->tieneRol(Rol::MEDICO));
         $this->assertTrue($medicoPaciente->tieneRol(Rol::ADMINISTRADOR, Rol::PACIENTE));
         $this->assertFalse($medicoPaciente->tieneRol(Rol::ADMINISTRADOR));
-    }
-
-    /** @param list<string> $roles */
-    private function crearUsuario(string $nombre, array $roles, string $clave = 'Prueba1234'): Usuario
-    {
-        $usuario = Usuario::create([
-            'nombre_usuario' => $nombre,
-            'correo' => $nombre.'@prueba.test',
-            'password_hash' => $clave,
-        ]);
-        $usuario->roles()->attach(Rol::whereIn('nombre', $roles)->pluck('id'));
-
-        return $usuario;
     }
 }
