@@ -217,6 +217,14 @@ class CU05_GestionarMedicosTest extends SistemaTestCase
         $this->get(route('medicos.index', ['q' => 'T-RM-400']))->assertOk()->assertSee('Tbusca');
     }
 
+    public function test_la_busqueda_de_medicos_ignora_tildes_y_mayusculas(): void
+    {
+        $this->crearMedico(['nombres' => 'Inés', 'apellidos' => 'Tgarcía', 'nro_registro' => 'T-RM-500'], [$this->general]);
+
+        $this->actingAs($this->admin)->get(route('medicos.index', ['q' => 'TGARCIA']))->assertOk()->assertSee('Inés Tgarcía');
+        $this->get(route('medicos.index', ['q' => 'ines tgarcia']))->assertOk()->assertSee('Inés Tgarcía');
+    }
+
     public function test_solo_el_administrador_gestiona_medicos(): void
     {
         $this->get(route('medicos.index'))->assertRedirect('/login');

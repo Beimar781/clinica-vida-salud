@@ -38,18 +38,18 @@ class MedicoService
      */
     public function listar(?string $buscar = null): LengthAwarePaginator
     {
-        $texto = mb_strtolower(trim((string) $buscar));
-        $patron = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $texto).'%';
-        $patronEspecialidad = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], Texto::normalizar($texto)).'%';
+        $texto = Texto::normalizar((string) $buscar);
+        $patron = Texto::patronLike($texto);
+        $sinTildes = fn (string $columna) => Texto::sqlSinTildes($columna);
 
         return Medico::with(['especialidades', 'usuario'])
             ->when($texto !== '', fn ($consulta) => $consulta->where(fn ($q) => $q
-                ->whereRaw('lower(nombres) like ?', [$patron])
-                ->orWhereRaw('lower(apellidos) like ?', [$patron])
-                ->orWhereRaw("lower(nombres || ' ' || apellidos) like ?", [$patron])
-                ->orWhereRaw('lower(codigo) like ?', [$patron])
-                ->orWhereRaw('lower(nro_registro) like ?', [$patron])
-                ->orWhereHas('especialidades', fn ($e) => $e->where('nombre_normalizado', 'like', $patronEspecialidad))))
+                ->whereRaw($sinTildes('nombres').' like ?', [$patron])
+                ->orWhereRaw($sinTildes('apellidos').' like ?', [$patron])
+                ->orWhereRaw($sinTildes("nombres || ' ' || apellidos").' like ?', [$patron])
+                ->orWhereRaw($sinTildes('codigo').' like ?', [$patron])
+                ->orWhereRaw($sinTildes('nro_registro').' like ?', [$patron])
+                ->orWhereHas('especialidades', fn ($e) => $e->where('nombre_normalizado', 'like', $patron))))
             ->orderBy('apellidos')->orderBy('nombres')
             ->paginate(self::POR_PAGINA)
             ->withQueryString();

@@ -1,1 +1,9 @@
 /* P3 Gestión de Pacientes · estilos propios del paquete (usan las variables de vidasalud.css) */
+
+/* CU-07: formulario de pacientes por grupos */
+.grupo-datos { margin: 0 0 1.25rem; padding: 1rem; border: 1px solid var(--vs-border); border-radius: 8px; min-width: 0; }
+.grupo-datos legend { padding: 0 .4rem; }
+.grupo-datos .campo--check { margin-bottom: .4rem; }
+.grupo-antecedente { border-style: dashed; border-color: var(--vs-sky-200); background: #FAFDFF; }
+.grupo-antecedente .tabla-responsive { margin-bottom: 1rem; }
+.grupo-antecedente .formulario { margin-top: .9rem; }
