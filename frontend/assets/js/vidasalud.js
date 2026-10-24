@@ -58,6 +58,11 @@
         lista.addEventListener('change', function () { lista.form.submit(); });
     });
 
+    // Botones con data-imprimir: abren el cuadro de impresión del navegador (comprobantes).
+    document.querySelectorAll('[data-imprimir]').forEach(function (boton) {
+        boton.addEventListener('click', function () { window.print(); });
+    });
+
     // Botones o formularios con data-confirmar: piden confirmación antes de continuar.
     document.querySelectorAll('[data-confirmar]').forEach(function (elemento) {
         var evento = elemento.tagName === 'FORM' ? 'submit' : 'click';

@@ -16,3 +16,13 @@
 
 /* Bloques de solo lectura (CU-08) */
 .bloque--fijo span { cursor: default; }
+
+/* Selector de horarios y comprobante */
+.grupo-horarios { border: 0; padding: 0; margin: 0; min-width: 0; }
+.grupo-horarios legend { padding: 0; margin-bottom: .5rem; }
+.comprobante { display: grid; gap: .1rem; margin: 0 0 1.25rem; }
+.comprobante > div { display: grid; grid-template-columns: 11rem 1fr; gap: .75rem; padding: .55rem .25rem; border-bottom: 1px solid var(--vs-border); }
+.comprobante dt { color: var(--vs-muted); font-weight: 600; }
+.comprobante dd { margin: 0; }
+.comprobante__codigo { font-size: 1.4rem; font-weight: 700; color: var(--vs-blue-900); letter-spacing: .04em; }
+@media (max-width: 600px) { .comprobante > div { grid-template-columns: 1fr; gap: .1rem; } }

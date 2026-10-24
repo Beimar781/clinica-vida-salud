@@ -42,6 +42,17 @@ class Cita extends Model
         return $this->estado !== self::CANCELADA;
     }
 
+    /** «HH:MM» de la hora de inicio (la columna time llega como HH:MM:SS). */
+    public function getHoraInicioCortaAttribute(): string
+    {
+        return substr($this->hora_inicio, 0, 5);
+    }
+
+    public function getHoraFinCortaAttribute(): string
+    {
+        return substr($this->hora_fin, 0, 5);
+    }
+
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class, 'paciente_id');
