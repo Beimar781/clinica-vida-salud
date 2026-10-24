@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 /**
  * Se puede ejecutar en cada arranque sin duplicar nada (todos los seeders son idempotentes).
  *
- *  - Siempre: roles, especialidades base y el administrador (contraseña de ADMIN_PASSWORD).
+ *  - Siempre: roles, especialidades base y el administrador (contraseña de ADMIN_PASSWORD si está definida; si no, Demo1234*).
  *  - Con SEMBRAR_DEMO=true (por defecto en local): además los usuarios de demostración, médicos con horarios,
  *    días sin atención, pacientes con su historia clínica y algunas citas.
  */

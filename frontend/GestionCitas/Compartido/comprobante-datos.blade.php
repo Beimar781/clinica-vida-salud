@@ -10,5 +10,5 @@
     <div><dt>Horario</dt><dd>{{ $cita->hora_inicio_corta }} – {{ $cita->hora_fin_corta }}</dd></div>
     <div><dt>Modalidad</dt><dd>{{ $cita->modalidad === 'VIRTUAL' ? 'Virtual' : 'Presencial' }}</dd></div>
     <div><dt>Motivo</dt><dd>{{ $cita->motivo ?: 'No indicado' }}</dd></div>
-    <div><dt>Registrada el</dt><dd>{{ $cita->created_at->format('d/m/Y H:i') }}@if ($cita->creador) <small class="texto-suave">· por {{ $cita->creador->nombre_usuario }}</small>@endif</dd></div>
+    <div><dt>Registrada el</dt><dd>{{ $cita->created_at->format('d/m/Y H:i') }}@if ($cita->creador) <small class="texto-suave">· por {{ $cita->creador->nombre_mostrado }}</small>@endif</dd></div>
 </dl>

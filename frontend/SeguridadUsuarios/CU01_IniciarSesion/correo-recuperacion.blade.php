@@ -15,7 +15,7 @@
         </tr>
         <tr>
             <td style="padding:24px;font-size:15px;line-height:1.55;">
-                <p style="margin:0 0 12px;color:#0B3D75;font-size:18px;font-weight:700;">Hola, {{ $usuario->nombre_usuario }}</p>
+                <p style="margin:0 0 12px;color:#0B3D75;font-size:18px;font-weight:700;">Hola, {{ $usuario->nombre_mostrado }}</p>
                 <p style="margin:0 0 12px;">Recibimos una solicitud para restablecer la contraseña de tu cuenta. Pulsa el botón para elegir una nueva.</p>
                 <p style="margin:20px 0;text-align:center;">
                     <a href="{{ $url }}" style="display:inline-block;background:#0A7BC4;color:#FFFFFF;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:8px;">Restablecer contraseña</a>

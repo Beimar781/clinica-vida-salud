@@ -33,7 +33,7 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->assertNotNull($usuario->fresh()->ultimo_acceso);
         $this->assertDatabaseHas('bitacora', ['accion' => 'LOGIN', 'usuario_id' => $usuario->id]);
 
-        $this->get('/panel')->assertOk()->assertSee('Bienvenido, t-recepcion')->assertSee('Recepcionista');
+        $this->get('/panel')->assertOk()->assertSee('Bienvenido, T-recepcion')->assertSee('Recepcionista');
     }
 
     /** Caso 2: contraseña incorrecta → mensaje genérico y no ingresa. */
@@ -271,6 +271,18 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->assertSame(2, substr_count($html, 'data-mostrar-clave'));
         $this->assertStringContainsString('aria-controls="campo-password"', $html);
         $this->assertStringContainsString('aria-controls="campo-password_confirmation"', $html);
+    }
+
+    public function test_el_nombre_de_usuario_se_muestra_con_mayuscula_inicial_sin_cambiar_el_valor_guardado(): void
+    {
+        $usuario = $this->crearUsuario('t-minuscula', [Rol::RECEPCIONISTA], 'Clave1234');
+
+        $this->post('/login', ['identificador' => 'T-MINUSCULA', 'password' => 'Clave1234'])->assertRedirect('/panel');
+        $this->assertAuthenticatedAs($usuario);
+
+        $this->get('/panel')->assertSee('Bienvenido, T-minuscula')->assertSee('<span><svg', false);
+        $this->assertSame('t-minuscula', $usuario->fresh()->nombre_usuario);
+        $this->assertSame('T-minuscula', $usuario->fresh()->nombre_mostrado);
     }
 
     public function test_solicitar_el_enlace_con_una_cuenta_activa_envia_el_correo(): void

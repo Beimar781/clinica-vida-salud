@@ -28,7 +28,7 @@ copy .env.example .env        # en Linux o macOS: cp .env.example .env
 php artisan key:generate
 ```
 
-Crear la base de datos `clinica_vida_salud` en PostgreSQL, completar `DB_PASSWORD` y `ADMIN_PASSWORD` en `backend/.env` y ejecutar:
+Crear la base de datos `clinica_vida_salud` en PostgreSQL, completar `DB_PASSWORD` en `backend/.env` (`ADMIN_PASSWORD` es opcional, ver «Usuarios de demostración») y ejecutar:
 
 ```bash
 php artisan migrate --seed
@@ -39,11 +39,11 @@ El sistema queda disponible en http://localhost:8000. No necesita Node ni conexi
 
 ## Usuarios de demostración
 
-`php artisan migrate --seed` crea un usuario por rol. El administrador usa la contraseña que se defina en `ADMIN_PASSWORD` (archivo `.env`); las demás cuentas usan `Demo1234*`.
+`php artisan migrate --seed` crea un usuario por rol. Todas las cuentas de demostración, incluida la del administrador, usan la contraseña `Demo1234*`. Si se define `ADMIN_PASSWORD` (en `backend/.env` o en las variables del servicio), el administrador usa esa contraseña en lugar de `Demo1234*`.
 
 | Usuario | Correo | Roles | Contraseña |
 |---|---|---|---|
-| admin | admin@vidasalud.test | Administrador y Recepcionista | `ADMIN_PASSWORD` |
+| admin | admin@vidasalud.test | Administrador y Recepcionista | `Demo1234*` (o `ADMIN_PASSWORD` si está definida) |
 | recepcion | recepcion@vidasalud.test | Recepcionista | `Demo1234*` |
 | cmontano | carla.montano@vidasalud.test | Médico | `Demo1234*` |
 | lsoliz | luis.soliz@vidasalud.test | Médico | `Demo1234*` |
@@ -95,7 +95,7 @@ El repositorio trae un `Dockerfile` en la raíz (PHP 8.3 con `pdo_pgsql`, `pgsql
 | `APP_KEY` | resultado de `php artisan key:generate --show` (empieza con `base64:`) |
 | `APP_URL` | `https://<dominio>.up.railway.app` (con `https://`) |
 | `APP_LOCALE` | `es` |
-| `ADMIN_PASSWORD` | contraseña del administrador (obligatoria: sin ella el arranque falla con un mensaje claro) |
+| `ADMIN_PASSWORD` | contraseña del administrador (recomendada: si falta, el administrador usa `Demo1234*`, que es pública) |
 | `ADMIN_CORREO` | opcional; correo real del administrador (por defecto `admin@vidasalud.test`) |
 | `SEMBRAR_DEMO` | `true` para cargar los datos de demostración; `false` (o sin definir) para dejar solo roles, especialidades base y administrador |
 | `DB_CONNECTION` | `pgsql` |
@@ -118,14 +118,14 @@ No hay que definir `PORT`: lo asigna Railway. Las claves y contraseñas viven so
 
 **Qué revisar tras el primer despliegue**
 
-- En **Deployments → View logs** deben verse las migraciones (`Running migrations`), el sembrado (`Seeding`) y la línea `Server running on [http://0.0.0.0:...]`. Si dice «Falta ADMIN_PASSWORD», falta esa variable.
+- En **Deployments → View logs** deben verse las migraciones (`Running migrations`), el sembrado (`Seeding`) y la línea `Server running on [http://0.0.0.0:...]`.
 - Abrir el dominio: inicio público, «Iniciar sesión» y los estilos cargados (todo con `https`).
-- Iniciar sesión con `admin` y la contraseña de `ADMIN_PASSWORD`; con `SEMBRAR_DEMO=true` también con `recepcion`, `cmontano`, `mrojas`, etc. (`Demo1234*`).
+- Iniciar sesión con `admin` (contraseña de `ADMIN_PASSWORD`, o `Demo1234*` si no se definió); con `SEMBRAR_DEMO=true` también con `recepcion`, `cmontano`, `mrojas`, etc. (`Demo1234*`).
 - Hacer 3 intentos fallidos con una cuenta: el cuarto intento debe mostrar el bloqueo de 60 segundos.
 - «¿Olvidaste tu contraseña?» con un correo real: el correo llega desde el remitente verificado (revisar spam) y el enlace abre con `https`.
 - Registrar una cita y reprogramarla.
 
-**Después de la presentación:** el repositorio es público y las contraseñas `Demo1234*` son conocidas. Poner `SEMBRAR_DEMO=false` no borra los usuarios ya creados: desactivarlos o cambiarles la contraseña desde «Usuarios y roles». El administrador se crea una sola vez; para cambiar su contraseña use «Usuarios y roles» (cambiar `ADMIN_PASSWORD` no la modifica).
+**Después de la presentación:** el repositorio es público y las contraseñas `Demo1234*` son conocidas. Poner `SEMBRAR_DEMO=false` no borra los usuarios ya creados: desactivarlos o cambiarles la contraseña desde «Usuarios y roles». El administrador se crea una sola vez; para cambiar su contraseña use «Usuarios y roles» (cambiar `ADMIN_PASSWORD` después no la modifica).
 
 ## Cómo está organizado el código (para la defensa)
 

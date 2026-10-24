@@ -8,7 +8,8 @@ return [
     'frontend' => dirname(base_path()).DIRECTORY_SEPARATOR.'frontend',
 
     /*
-    | Contraseña del administrador inicial (la usa el seeder). Se toma de .env (ADMIN_PASSWORD).
+    | Contraseña del administrador inicial (opcional). Si ADMIN_PASSWORD está definida en .env o en las variables
+    | del servicio, el administrador la usa; si no, usa la contraseña de demostración (demo_password).
     */
     'admin_password' => env('ADMIN_PASSWORD'),
 
@@ -27,7 +28,7 @@ return [
     'sembrar_demo' => env('SEMBRAR_DEMO', in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)),
 
     /*
-    | Contraseña de las cuentas de demostración (recepcionista, médicos y pacientes).
+    | Contraseña de las cuentas de demostración (administrador, recepcionista, médicos y pacientes).
     | Está documentada en el README; cámbiela en cualquier instalación real.
     */
     'demo_password' => 'Demo1234*',

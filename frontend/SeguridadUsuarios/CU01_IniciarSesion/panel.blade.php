@@ -10,7 +10,7 @@
 @section('contenido')
     <div class="encabezado-pagina">
         <div>
-            <h1>Bienvenido, {{ $usuario->nombre_usuario }}</h1>
+            <h1>Bienvenido, {{ $usuario->nombre_mostrado }}</h1>
             <p class="texto-suave sin-margen">Estas son las funciones que puede usar con sus roles:
                 @foreach ($roles as $rol)<span class="chip">{{ $rol }}</span>@endforeach
             </p>

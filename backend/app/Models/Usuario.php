@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * @CU CU-01, CU-02, CU-03 @RF RF01, RF02, RF03 @CE CEUsuario (tabla usuarios; en los diagramas el atributo se llama «password»). Los permisos son la unión de los roles asignados (rol_usuario).
@@ -30,6 +32,15 @@ class Usuario extends Authenticatable
             'estado' => 'boolean',
             'ultimo_acceso' => 'datetime',
         ];
+    }
+
+    /**
+     * Nombre de usuario para mostrarlo en pantalla con la primera letra en mayúscula (Admin). Solo cambia la
+     * presentación: el valor guardado y el inicio de sesión (que ignora mayúsculas) no se tocan.
+     */
+    protected function nombreMostrado(): Attribute
+    {
+        return Attribute::get(fn () => Str::ucfirst((string) $this->nombre_usuario));
     }
 
     /** La contraseña vive en la columna password_hash (no en «password»). */

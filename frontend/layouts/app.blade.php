@@ -27,7 +27,7 @@
                 </ul>
             </nav>
             <div class="barra__usuario">
-                <span><x-icono nombre="usuario" /> {{ auth()->user()->nombre_usuario }}</span>
+                <span><x-icono nombre="usuario" /> {{ auth()->user()->nombre_mostrado }}</span>
                 <form method="POST" action="{{ url('/logout') }}">
                     @csrf
                     <button type="submit" class="btn btn-secundario btn-sm"><x-icono nombre="salir" /> Cerrar sesión</button>

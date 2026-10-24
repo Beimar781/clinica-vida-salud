@@ -4,7 +4,7 @@ Una captura por pantalla importante de cada caso de uso, en el orden del documen
 
 1. Desde `backend/`: `php artisan migrate:fresh --seed` y `php artisan serve` (http://localhost:8000). Las fechas de las citas de demostración se calculan desde el día en que se siembra, así que conviene sembrar el mismo día de las capturas y no mezclar días.
 2. Navegador a 1280 px de ancho (PC), zoom 100 %. Una captura final a 768 px (tablet, RNF04).
-3. Usuarios (clave `Demo1234*`, salvo `admin`, que usa `ADMIN_PASSWORD` del `.env`): `admin` (Administrador y Recepcionista), `recepcion` (Recepcionista), `cmontano` (Médico), `pvargas` (Médico y Paciente), `mrojas` (Paciente).
+3. Usuarios (todos con la clave `Demo1234*`; en el panel el nombre aparece con mayúscula inicial, por ejemplo «Admin»; deje `ADMIN_PASSWORD` sin definir en `.env`): `admin` (Administrador y Recepcionista), `recepcion` (Recepcionista), `cmontano` (Médico), `pvargas` (Médico y Paciente), `mrojas` (Paciente).
 4. Nombre sugerido del archivo: `fig-4.4-NN-CUxx-descripcion.png`. Mostrar la barra de direcciones o poner la URL como pie de figura.
 5. Datos de la clínica: médicos MED-0001 Carla Montaño Rojas, MED-0002 Luis Fernando Soliz Peña, MED-0003 Patricia Vargas Egüez, MED-0004 Marcelo Antelo Paz, MED-0005 Jorge Rivero Salvatierra; pacientes con CI 6543210 (María Elena Rojas Suárez), 7123456 (Juan Carlos Pérez Mamani), 9012345 (Sofía Camacho Justiniano), 10234567 (Lucía Fernández Roca), 5987654 (Carlos Alberto Mamani Quispe); citas CM-0001 (atendida), CM-0004 (cancelada), CM-0005 (confirmada) y CM-0006 (programada); feriados 02/11, 25/12 y 01/01.
 

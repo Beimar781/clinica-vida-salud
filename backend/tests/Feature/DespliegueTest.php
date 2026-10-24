@@ -8,7 +8,6 @@ use Database\Seeders\AdministradorSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use RuntimeException;
 
 /**
  * Preparación del despliegue en Railway: los seeders pueden correr en cada arranque sin duplicar nada,
@@ -38,14 +37,36 @@ class DespliegueTest extends SistemaTestCase
         $this->assertSame($antes, $this->conteos());
     }
 
-    public function test_sin_admin_password_el_seeder_falla_con_un_mensaje_claro(): void
+    public function test_sin_admin_password_el_administrador_usa_la_contrasena_de_demostracion(): void
     {
+        Usuario::where('nombre_usuario', 'admin')->update(['nombre_usuario' => 't-admin-viejo', 'correo' => 't-admin-viejo@prueba.test']);
         config(['vidasalud.admin_password' => null]);
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Falta ADMIN_PASSWORD');
+        $this->seed(AdministradorSeeder::class);
+
+        $admin = Usuario::where('nombre_usuario', 'admin')->firstOrFail();
+        $this->assertTrue(Hash::check('Demo1234*', $admin->password_hash));
+        $this->assertTrue($admin->tieneRol('Administrador', 'Recepcionista'));
+    }
+
+    public function test_con_admin_password_vacia_tambien_usa_la_contrasena_de_demostracion(): void
+    {
+        Usuario::where('nombre_usuario', 'admin')->update(['nombre_usuario' => 't-admin-viejo', 'correo' => 't-admin-viejo@prueba.test']);
+        config(['vidasalud.admin_password' => '']);
 
         $this->seed(AdministradorSeeder::class);
+
+        $this->assertTrue(Hash::check('Demo1234*', Usuario::where('nombre_usuario', 'admin')->firstOrFail()->password_hash));
+    }
+
+    public function test_las_cuentas_de_demostracion_usan_la_contrasena_de_demostracion(): void
+    {
+        $cuentas = ['recepcion', 'cmontano', 'lsoliz', 'pvargas', 'mrojas', 'jperez'];
+
+        foreach (Usuario::whereIn('nombre_usuario', $cuentas)->get() as $usuario) {
+            $this->assertTrue(Hash::check('Demo1234*', $usuario->password_hash), "{$usuario->nombre_usuario} debe usar Demo1234*");
+        }
+        $this->assertSame(count($cuentas), Usuario::whereIn('nombre_usuario', $cuentas)->count());
     }
 
     public function test_el_seeder_no_pisa_la_contrasena_del_administrador_existente(): void
