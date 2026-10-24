@@ -1,7 +1,5 @@
-# Archivos de trabajo locales (las reglas de Laravel están en backend/.gitignore)
-/CLAUDE.md
-/.claude/
-/EMPEZAR_AQUI.md
-/docs/PROMPTS.md
-/docs/DEFENSA.md
-/docs/INCONSISTENCIAS.md
+# Archivos del sistema operativo y de editores (las reglas de Laravel están en backend/.gitignore)
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

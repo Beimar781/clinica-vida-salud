@@ -232,6 +232,16 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
             ->assertSee('Nueva contraseña (restablecer)');
     }
 
+    public function test_el_error_de_la_contrasena_sale_junto_al_campo_con_su_boton(): void
+    {
+        $this->actingAs($this->admin)->from(route('usuarios.crear'))
+            ->followingRedirects()
+            ->post(route('usuarios.guardar'), $this->datos(['password' => 'corta']))
+            ->assertSee('La contraseña debe tener al menos 8 caracteres.')
+            ->assertSee('aria-describedby="campo-password-error"', false)
+            ->assertSee('data-mostrar-clave', false);
+    }
+
     public function test_el_administrador_ve_el_listado_con_sus_roles_y_estado(): void
     {
         $this->actingAs($this->admin)->get(route('usuarios.index'))

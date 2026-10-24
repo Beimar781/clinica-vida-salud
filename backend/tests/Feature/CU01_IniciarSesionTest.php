@@ -172,7 +172,7 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->actingAs($usuario)->get('/login')->assertRedirect('/panel');
     }
 
-    // ---------- Bloqueo de 60 segundos tras 3 intentos fallidos (CLAUDE.md, sección 5) ----------
+    // ---------- Bloqueo de 60 segundos tras 3 intentos fallidos (regla de CU-01: la cuenta queda bloqueada 60 segundos) ----------
 
     private function fallar(string $identificador, int $veces): void
     {

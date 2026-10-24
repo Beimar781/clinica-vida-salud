@@ -8,7 +8,7 @@ use Illuminate\View\View;
 
 /**
  * CU-01: Iniciar sesión · flujo alternativo A3 «Recuperar contraseña» (parte 1: pedir el enlace).
- * No es un CU nuevo: se agrega a la ficha de CU-01 (texto sugerido para el PDF en docs/INCONSISTENCIAS.md).
+ * No es un CU nuevo: se agrega a la ficha de CU-01 (texto sugerido en docs/TRAZABILIDAD.md, sección «Flujo alternativo A3»).
  *
  * Flujo alternativo:
  *  A3.1 En el paso 2 el usuario elige «¿Olvidaste tu contraseña?».       -> enlace de login.blade.php

@@ -2,7 +2,6 @@
 .gitignore
 .gitattributes
 .editorconfig
-.claude
 **/vendor
 **/.env
 **/node_modules

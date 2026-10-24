@@ -49,3 +49,14 @@ Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrad
 | CU-11 | `CU11_ReservarCitaEnLineaTest` | 16 | 4 | Aprobado |
 
 Las otras 32 pruebas (base de datos, seguridad, assets, normalización de texto y preparación del despliegue) están en la tabla «Base técnica».
+
+## Flujo alternativo A3 de CU-01 · Recuperar contraseña (texto sugerido para la ficha del documento)
+
+No es un caso de uso nuevo: se agrega a la ficha de CU-01 (sección 4.3) y a su plan de pruebas (8.1). Controladores `OlvidoClaveController` y `RestablecerClaveController`, servicio `RecuperarClaveService`, tabla técnica `password_reset_tokens`.
+
+**Flujo alternativo A3.** En el paso 2, el usuario elige «¿Olvidaste tu contraseña?». (A3.1) El sistema solicita el correo de la cuenta. (A3.2) El usuario lo ingresa. (A3.3) Si la cuenta existe y está activa, el sistema envía a ese correo un enlace con un token de un solo uso que vence a los 60 minutos; en todos los casos responde «Si el correo está registrado, te enviamos un enlace de recuperación». (A3.4) El usuario abre el enlace. (A3.5) El sistema solicita la contraseña nueva (mínimo 8 caracteres) y su confirmación. (A3.6) El usuario las ingresa. (A3.7) El sistema guarda la contraseña con hash bcrypt, invalida el token, desbloquea la cuenta si estaba bloqueada por intentos fallidos, registra la operación en la bitácora y muestra el inicio de sesión con «Contraseña actualizada. Ya puedes iniciar sesión.».
+
+**Excepciones de A3.** Correo no registrado o cuenta inactiva: el sistema responde igual y no envía nada. Enlace vencido, ya usado o alterado: «El enlace de recuperación venció o ya fue usado. Solicita uno nuevo.» y se ofrece pedir otro. Contraseña de menos de 8 caracteres o confirmación distinta: el sistema indica el error junto al campo. Falla del servicio de correo: «No pudimos enviar el correo en este momento. Inténtalo de nuevo en unos minutos.». Más de 5 solicitudes por minuto desde un mismo equipo: el sistema las rechaza.
+
+**Casos de prueba nuevos (8.1).** Solicitud con cuenta activa (se envía el enlace); con correo inexistente (misma respuesta, no se envía); con cuenta inactiva (no se envía); restablecer con token válido (entra con la clave nueva, no con la anterior); token inválido, vencido o reutilizado; contraseña corta o sin confirmación; el restablecimiento limpia el bloqueo.
+
