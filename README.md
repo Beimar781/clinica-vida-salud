@@ -6,13 +6,13 @@ Autores: Juan Simeón García Cervantes y Beimar Ríos Benavides.
 
 ## Tecnologías
 
-- PHP 8.3 y Laravel 13
+- PHP 8.3 y Laravel 13 (versión instalada: 13.38)
 - PostgreSQL 16 o superior (extensión `btree_gist`)
 - Blade, HTML5, CSS3 y JavaScript
 
 ## Requisitos para ejecutarlo
 
-- PHP 8.3 o superior con las extensiones `pdo_pgsql`, `pgsql`, `mbstring`, `intl`, `zip` y `fileinfo`
+- PHP 8.3 o superior con las extensiones `pdo_pgsql`, `pgsql`, `mbstring`, `zip` y `fileinfo` (`intl` es opcional)
 - Composer
 - PostgreSQL 16 o superior, con la extensión `btree_gist` disponible
 

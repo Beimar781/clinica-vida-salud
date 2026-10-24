@@ -112,7 +112,7 @@ class PacienteService
                 $paciente = Paciente::create($this->campos($datos) + ['codigo' => Codigos::paciente(), 'estado' => true]);
 
                 // Una sola historia clínica por paciente (paciente_id es UNIQUE en la tabla).
-                $historia = HistoriaClinica::create(['paciente_id' => $paciente->id]);
+                $historia = HistoriaClinica::crearParaPaciente($paciente);
                 $antecedente = $this->guardarAntecedente($historia, $datos, $actor);
 
                 BitacoraService::registrar(
@@ -146,7 +146,7 @@ class PacienteService
                 $paciente->update($this->campos($datos));
 
                 // La historia clínica se crea al registrar; si por algún motivo faltara, se completa aquí.
-                $historia = $paciente->historiaClinica ?? HistoriaClinica::create(['paciente_id' => $paciente->id]);
+                $historia = $paciente->historiaClinica ?? HistoriaClinica::crearParaPaciente($paciente);
                 $antecedente = $this->guardarAntecedente($historia, $datos, $actor);
 
                 BitacoraService::registrar(

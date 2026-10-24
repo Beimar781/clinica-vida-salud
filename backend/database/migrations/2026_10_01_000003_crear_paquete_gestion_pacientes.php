@@ -62,6 +62,8 @@ CREATE TABLE antecedentes_externos (
    created_at          TIMESTAMP NOT NULL DEFAULT now()
 );
 
+CREATE INDEX idx_antecedentes_historia ON antecedentes_externos (historia_clinica_id);
+
 DROP SEQUENCE IF EXISTS pacientes_codigo_seq;
 CREATE SEQUENCE pacientes_codigo_seq START 1;
 SQL);

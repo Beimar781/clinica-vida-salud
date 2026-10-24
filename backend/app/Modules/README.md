@@ -6,7 +6,7 @@ Las pantallas (`.blade.php`) del mismo CU están en la carpeta hermana `frontend
 
 | Paquete | Contenido |
 |---|---|
-| `SeguridadUsuarios/` | P1: CU-01 Iniciar sesión · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles |
+| `SeguridadUsuarios/` | P1: CU-01 Iniciar sesión (con el flujo alternativo «¿Olvidaste tu contraseña?») · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles |
 | `GestionMedica/` | P2: CU-04 Gestionar especialidades médicas · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención |
 | `GestionPacientes/` | P3: CU-07 Gestionar pacientes (en el Ciclo II: CU-15 historial de citas del paciente, CU-20 registrarse como paciente y CU-21 gestionar mi perfil) |
 | `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). Ciclo II: CU-12, CU-13, CU-14 y CU-22 |

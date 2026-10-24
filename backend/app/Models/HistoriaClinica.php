@@ -23,6 +23,16 @@ class HistoriaClinica extends Model
         return ['fecha_apertura' => 'date'];
     }
 
+    /**
+     * Crea la historia clínica del paciente (una sola por paciente: paciente_id es UNIQUE).
+     *
+     * @CE CEHistoriaClinica (crearParaPaciente)
+     */
+    public static function crearParaPaciente(Paciente $paciente): self
+    {
+        return static::create(['paciente_id' => $paciente->id]);
+    }
+
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class, 'paciente_id');

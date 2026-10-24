@@ -142,6 +142,16 @@ class BaseDatosTest extends SistemaTestCase
         }
     }
 
+    /** Los índices de database/schema.sql que usan las consultas del Ciclo I existen en la base migrada. */
+    public function test_los_indices_del_esquema_existen(): void
+    {
+        $existentes = collect(DB::select("SELECT indexname FROM pg_indexes WHERE schemaname = 'public'"))->pluck('indexname');
+
+        foreach (['idx_citas_medico_fecha', 'idx_citas_paciente', 'idx_antecedentes_historia', 'idx_bitacora_fecha'] as $indice) {
+            $this->assertContains($indice, $existentes, "Falta el índice {$indice}");
+        }
+    }
+
     /** La operación debe fallar con SQLSTATE 23P01 (exclusion_violation). */
     private function assertViolaExclusion(callable $operacion): void
     {

@@ -64,7 +64,7 @@ class MedicoService
      */
     public function especialidadesActivas(): Collection
     {
-        return Especialidad::where('estado', true)->orderBy('nombre_normalizado')->get();
+        return Especialidad::listarActivas();
     }
 
     /**

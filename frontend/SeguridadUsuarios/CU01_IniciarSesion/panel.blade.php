@@ -38,6 +38,6 @@
         </section>
         @if ($loop->last)</div>@endif
     @empty
-        <div class="aviso aviso-info"><x-icono nombre="info" /> <span>Por ahora no hay funciones disponibles para sus roles.</span></div>
+        <div class="aviso aviso-info"><x-icono nombre="info" /> <span>Por ahora no hay funciones disponibles para sus roles. Las funciones de atención médica (agenda e historia clínica) se habilitarán en la próxima entrega del sistema.</span></div>
     @endforelse
 @endsection
