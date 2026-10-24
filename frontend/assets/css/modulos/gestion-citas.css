@@ -1,0 +1,15 @@
+/* P4 Gestión de Citas · estilos propios del paquete (usan las variables de vidasalud.css) */
+
+/* ---------- Buscador de médicos ("Encuentre su especialidad") ---------- */
+.buscador { background: var(--vs-sky-100); border: 1px solid var(--vs-sky-200); border-radius: var(--vs-radius); padding: 1.25rem; }
+.buscador h2 { margin-bottom: 1rem; }
+.buscador__campos { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); align-items: end; }
+
+
+/* ---------- Horarios libres ---------- */
+.bloques { display: flex; flex-wrap: wrap; gap: .5rem; }
+.bloque { display: inline-flex; }
+.bloque input { position: absolute; opacity: 0; }
+.bloque span { padding: .45rem .9rem; border: 1px solid var(--vs-sky-200); background: var(--vs-white); border-radius: 8px; color: var(--vs-blue-900); font-weight: 600; cursor: pointer; }
+.bloque input:checked + span { background: var(--vs-blue-600); color: #fff; border-color: var(--vs-blue-600); }
+.bloque input:focus-visible + span { outline: 3px solid var(--vs-sky-400); outline-offset: 2px; }

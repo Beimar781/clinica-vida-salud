@@ -1,0 +1,168 @@
+/* Clínica Vida Salud · estilos comunes (sin CDN: fuente del sistema e iconos SVG inline).
+   Los estilos propios de cada paquete están en css/modulos/<paquete>.css */
+
+:root {
+    --vs-white: #FFFFFF;
+    --vs-sky-50: #F1F8FD;   /* fondo de página */
+    --vs-sky-100: #DCEFFB;  /* superficies, filas, encabezados de tarjeta */
+    --vs-sky-200: #BFE0F5;
+    --vs-sky-400: #3FB1E8;  /* acento, íconos */
+    --vs-blue-600: #0A7BC4; /* primario: botones, enlaces */
+    --vs-blue-700: #0F5FA8; /* hover, navegación */
+    --vs-blue-900: #0B3D75; /* títulos, texto fuerte */
+    --vs-text: #1F3347;
+    --vs-muted: #5B7287;
+    --vs-border: #D5E5F2;
+    --vs-ok: #1E9E6A;
+    --vs-warn: #E39A1B;
+    --vs-danger: #D64545;
+    --vs-radius: 10px;
+    --vs-shadow: 0 2px 10px rgba(11, 61, 117, .10);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--vs-text);
+    background: var(--vs-sky-50);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4 { color: var(--vs-blue-900); line-height: 1.25; margin: 0 0 .5rem; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0 0 1rem; }
+a { color: var(--vs-blue-600); }
+a:hover { color: var(--vs-blue-700); }
+small, .texto-suave { color: var(--vs-muted); }
+
+:focus-visible { outline: 3px solid var(--vs-sky-400); outline-offset: 2px; }
+
+.sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.icono { width: 1.25em; height: 1.25em; flex: none; vertical-align: -0.2em; }
+
+/* ---------- Barra superior flotante ---------- */
+.barra {
+    position: sticky; top: .75rem; z-index: 20;
+    display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+    max-width: 1200px; margin: .75rem auto 0; padding: .6rem 1.1rem;
+    background: var(--vs-white); border-radius: var(--vs-radius); box-shadow: var(--vs-shadow);
+}
+.barra__logo { display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--vs-blue-900); }
+.barra__logo svg { width: 38px; height: 38px; }
+.barra__marca { font-weight: 700; font-size: 1.1rem; letter-spacing: .01em; line-height: 1.1; }
+.barra__marca small { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--vs-sky-400); }
+.barra__nav { display: contents; }
+.barra__menu { display: flex; gap: .25rem; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; flex: 1; }
+.barra__menu a {
+    display: inline-block; padding: .45rem .7rem; border-radius: 6px; text-decoration: none;
+    color: var(--vs-blue-700); font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+}
+.barra__menu a:hover, .barra__menu a[aria-current="page"] { background: var(--vs-sky-100); color: var(--vs-blue-900); }
+.barra__usuario { display: flex; align-items: center; gap: .75rem; margin-left: auto; font-size: .9rem; }
+.barra__usuario form { margin: 0; }
+
+/* ---------- Contenedor y tarjetas ---------- */
+.contenedor { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+.encabezado-pagina { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.encabezado-pagina h1 { margin: 0; }
+
+.tarjeta { background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: var(--vs-radius); box-shadow: var(--vs-shadow); margin-bottom: 1.25rem; overflow: hidden; }
+.tarjeta__encabezado { background: var(--vs-sky-100); padding: .75rem 1.1rem; border-bottom: 1px solid var(--vs-border); display: flex; align-items: center; gap: .6rem; }
+.tarjeta__encabezado h2, .tarjeta__encabezado h3 { margin: 0; }
+.tarjeta__cuerpo { padding: 1.1rem; }
+
+/* ---------- Botones ---------- */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+    padding: .55rem 1.1rem; border: 1px solid transparent; border-radius: 8px;
+    font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; line-height: 1.2;
+}
+.btn-primario { background: var(--vs-blue-600); color: #fff; }
+.btn-primario:hover { background: var(--vs-blue-700); color: #fff; }
+.btn-secundario { background: var(--vs-sky-100); color: var(--vs-blue-900); border-color: var(--vs-sky-200); }
+.btn-secundario:hover { background: var(--vs-sky-200); color: var(--vs-blue-900); }
+.btn-peligro { background: var(--vs-danger); color: #fff; }
+.btn-peligro:hover { background: #b93636; color: #fff; }
+.btn-sm { padding: .3rem .65rem; font-size: .85rem; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+/* ---------- Formularios ---------- */
+.formulario { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.campo { display: flex; flex-direction: column; gap: .3rem; }
+.campo--ancho { grid-column: 1 / -1; }
+.campo label, .etiqueta { font-weight: 600; font-size: .9rem; color: var(--vs-blue-900); }
+.campo input, .campo select, .campo textarea {
+    width: 100%; padding: .55rem .7rem; font: inherit; color: var(--vs-text);
+    background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 8px;
+}
+.campo textarea { min-height: 5rem; resize: vertical; }
+.campo input:focus, .campo select:focus, .campo textarea:focus { border-color: var(--vs-blue-600); outline: 3px solid var(--vs-sky-200); }
+.campo--error input, .campo--error select, .campo--error textarea { border-color: var(--vs-danger); }
+.campo__error { color: var(--vs-danger); font-size: .85rem; font-weight: 600; }
+.campo__ayuda { color: var(--vs-muted); font-size: .82rem; }
+.campo--check { flex-direction: row; align-items: center; gap: .55rem; }
+.campo--check input { width: auto; }
+.acciones { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+
+/* ---------- Avisos ---------- */
+.aviso { display: flex; gap: .6rem; align-items: flex-start; padding: .8rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid; }
+.aviso-ok { background: #E7F6EF; border-color: #A9DEC6; color: #136B47; }
+.aviso-error { background: #FBEAEA; border-color: #EFB4B4; color: #8E2A2A; }
+.aviso-info { background: var(--vs-sky-100); border-color: var(--vs-sky-200); color: var(--vs-blue-900); }
+.aviso-alerta { background: #FDF3DE; border-color: #F0D49A; color: #7A5000; }
+
+/* ---------- Tablas ---------- */
+.tabla-responsive { overflow-x: auto; }
+.tabla { width: 100%; border-collapse: collapse; font-size: .93rem; }
+.tabla th { background: var(--vs-sky-100); color: var(--vs-blue-900); text-align: left; padding: .65rem .8rem; font-weight: 700; white-space: nowrap; }
+.tabla td { padding: .6rem .8rem; border-top: 1px solid var(--vs-border); vertical-align: middle; }
+.tabla tbody tr:nth-child(even) { background: #F8FBFE; }
+.tabla tbody tr:hover { background: var(--vs-sky-50); }
+.tabla__acciones { display: flex; gap: .4rem; flex-wrap: wrap; }
+.vacio { text-align: center; padding: 2rem 1rem; color: var(--vs-muted); }
+
+/* ---------- Etiquetas de estado ---------- */
+.etiqueta-estado { display: inline-block; padding: .15rem .65rem; border-radius: 999px; font-size: .78rem; font-weight: 700; letter-spacing: .02em; border: 1px solid transparent; }
+.estado-programada { background: var(--vs-sky-100); color: var(--vs-blue-700); border-color: var(--vs-sky-200); }
+.estado-confirmada { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }
+.estado-atendida { background: var(--vs-blue-900); color: #fff; }
+.estado-cancelada { background: #FBE3E3; color: #9C2B2B; border-color: #EFB4B4; }
+.estado-inasistencia { background: #FDEFD0; color: #7A5000; border-color: #F0D49A; }
+.estado-activo { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }
+.estado-inactivo { background: #ECEFF2; color: #4C5B69; border-color: #D3D9DF; }
+
+/* ---------- Inicio público ---------- */
+.portada { min-height: calc(100vh - 9rem); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem 1rem; }
+.portada__caja { max-width: 560px; background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 16px; box-shadow: var(--vs-shadow); padding: 2.5rem 2rem; }
+.portada__caja > svg { width: 84px; height: 84px; }
+.portada__caja h1 { font-size: 2rem; margin: 1rem 0 .25rem; }
+.portada__caja p { color: var(--vs-muted); margin-bottom: 1.5rem; }
+.portada__acciones { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+/* ---------- Paginación ---------- */
+.paginacion { display: flex; gap: .3rem; flex-wrap: wrap; justify-content: center; padding: 1rem; }
+.paginacion a, .paginacion span { padding: .3rem .7rem; border: 1px solid var(--vs-border); border-radius: 6px; text-decoration: none; background: var(--vs-white); }
+.paginacion .actual { background: var(--vs-blue-600); border-color: var(--vs-blue-600); color: #fff; }
+
+/* ---------- Responsive (PC y tablet) ---------- */
+@media (max-width: 900px) {
+    .barra { gap: .6rem; }
+    .barra__usuario { margin-left: 0; width: 100%; justify-content: space-between; }
+    .contenedor { padding-top: 1rem; }
+}
+@media (max-width: 600px) {
+    h1 { font-size: 1.35rem; }
+    .portada__caja { padding: 1.75rem 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
