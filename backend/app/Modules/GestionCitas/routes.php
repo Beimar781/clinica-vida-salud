@@ -2,6 +2,7 @@
 
 use App\Modules\GestionCitas\CU08_ConsultarDisponibilidadHorarios\DisponibilidadController;
 use App\Modules\GestionCitas\CU09_RegistrarCitaMedica\RegistrarCitaController;
+use App\Modules\GestionCitas\CU10_ReprogramarCitaMedica\ReprogramarCitaController;
 use Illuminate\Support\Facades\Route;
 
 // Paquete P4 - Gestión de Citas (CU-08, CU-09, CU-10 y CU-11).
@@ -17,5 +18,11 @@ Route::middleware(['auth', 'rol:Recepcionista'])->prefix('citas')->name('citas.'
     Route::get('/registrar', [RegistrarCitaController::class, 'index'])->name('registrar');
     Route::post('/', [RegistrarCitaController::class, 'guardar'])->name('guardar');
     Route::get('/{cita}/comprobante', [RegistrarCitaController::class, 'comprobante'])->whereNumber('cita')->name('comprobante');
+
+    // CU-10: Reprogramar cita médica (el listado «Citas» es también la búsqueda de la cita)
+    Route::get('/', [ReprogramarCitaController::class, 'index'])->name('index');
+    Route::get('/{cita}/reprogramar', [ReprogramarCitaController::class, 'reprogramar'])->whereNumber('cita')->name('reprogramar');
+    Route::put('/{cita}/reprogramar', [ReprogramarCitaController::class, 'actualizar'])->whereNumber('cita')->name('actualizar');
+    Route::get('/{cita}/reprogramada', [ReprogramarCitaController::class, 'comprobante'])->whereNumber('cita')->name('reprogramada');
 
 });
