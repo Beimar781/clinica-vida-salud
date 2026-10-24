@@ -53,7 +53,13 @@ El sistema queda disponible en http://localhost:8000. No necesita Node ni conexi
 
 También se cargan 5 especialidades, 5 médicos con horarios, 8 pacientes, 3 días sin atención y 12 citas en distintos estados. Para ingresar se puede usar el correo o el nombre de usuario.
 
-Para volver a empezar con datos limpios: `php artisan migrate:rollback` y luego `php artisan migrate --seed`.
+Para reiniciar los datos de demostración (por ejemplo antes de una presentación), desde `backend/`:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Borra todas las tablas y las vuelve a crear con los datos de demostración (tarda unos 2 segundos; los códigos CM-0001, PAC-0001 y MED-0001 vuelven a empezar). Si se prefiere deshacer paso a paso: `php artisan migrate:rollback` y luego `php artisan migrate --seed`. Ambos caminos funcionan aunque pgAdmin tenga la base abierta.
 
 ## Pruebas
 
