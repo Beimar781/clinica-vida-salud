@@ -24,9 +24,9 @@
 
             <p class="texto-suave">
                 @if ($cita->paciente->recibe_recordatorios)
-                    Recibirá un recordatorio de su cita por correo.
+                    Su preferencia de recordatorios por correo está activada.
                 @else
-                    Usted tiene desactivados los recordatorios por correo.
+                    Su preferencia de recordatorios por correo está desactivada.
                 @endif
             </p>
 

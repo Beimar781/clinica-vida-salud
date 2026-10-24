@@ -16,7 +16,7 @@ use Symfony\Component\Mime\MessageConverter;
  * (ver config/mail.php, config/services.php y AppServiceProvider). Si Brevo falla lanza
  * TransportException; quien envía decide qué mostrar al usuario.
  *
- * @CU CU-01 (flujo alternativo: recuperar contraseña) @CU CU-22 (recordatorios, Ciclo II)
+ * @CU CU-01 (flujo alternativo: recuperar contraseña)
  */
 class BrevoTransport extends AbstractTransport
 {

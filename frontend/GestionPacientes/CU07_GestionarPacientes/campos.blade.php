@@ -32,7 +32,7 @@
         <x-campo nombre="telefono" etiqueta="Teléfono" tipo="tel" :valor="$paciente->telefono ?? null" required maxlength="20"
                  pattern="[0-9+\s\-]{7,20}" data-mensaje="El teléfono solo puede tener números (de 7 a 20 dígitos)." autocomplete="off" />
         <x-campo nombre="correo" etiqueta="Correo (opcional)" tipo="email" :valor="$paciente->correo ?? null" maxlength="120" autocomplete="off"
-                 ayuda="Aquí se envían los recordatorios de citas." />
+                 ayuda="Correo de contacto del paciente." />
         <div class="campo--ancho">
             <x-campo nombre="direccion" etiqueta="Dirección (opcional)" :valor="$paciente->direccion ?? null" maxlength="200" autocomplete="off" />
         </div>

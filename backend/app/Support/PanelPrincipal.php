@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Route;
 /**
  * Catálogo de paquetes y funciones del sistema, y qué ve cada usuario según la unión de sus roles.
  * Alimenta el panel principal (tarjetas por paquete) y el menú superior. Una función solo aparece
- * cuando su ruta existe, de modo que los paquetes y casos de uso del Ciclo II no se muestran hasta
- * que se implementen.
+ * cuando su ruta existe: el panel solo ofrece lo que está construido.
  *
  * @CU CU-01 @RF RF01 @CI CILogin (mostrarPanel) @CC CCLogin @CE CEUsuario
  */

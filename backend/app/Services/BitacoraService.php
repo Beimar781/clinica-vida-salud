@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 /**
  * Registro de la bitácora (solo agregar: la tabla no admite UPDATE ni DELETE).
  *
- * @CU CU-19 (transversal desde el Ciclo I) @RF RF19 (los diagramas del Ciclo II aún no fijan sus clases)
+ * @CU CU-01 a CU-11 (transversal: toda operación importante deja su registro)
  */
 class BitacoraService
 {

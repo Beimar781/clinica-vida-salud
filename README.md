@@ -101,10 +101,10 @@ clinica-vida-salud/
 │   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/   ← pantalla de cada CU, misma ruta que en backend
 │   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita) y pantallas de error
 │   └── assets/                       ← css/vidasalud.css (común) y css/modulos/, js/, img/
-└── docs/                             ← documento, trazabilidad y clases de análisis
+└── docs/                             ← documento (PDF), trazabilidad, clases de análisis y lista de capturas de la sección 4.4
 ```
 
-Dentro de cada CU del backend hay siempre:
+Dentro de cada CU del backend hay, según corresponda:
 
 | Archivo | Qué hace |
 |---|---|

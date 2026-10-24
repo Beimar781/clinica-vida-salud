@@ -8,10 +8,8 @@ Las pantallas (`.blade.php`) del mismo CU están en la carpeta hermana `frontend
 |---|---|
 | `SeguridadUsuarios/` | P1: CU-01 Iniciar sesión (con el flujo alternativo «¿Olvidaste tu contraseña?») · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles |
 | `GestionMedica/` | P2: CU-04 Gestionar especialidades médicas · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención |
-| `GestionPacientes/` | P3: CU-07 Gestionar pacientes (en el Ciclo II: CU-15 historial de citas del paciente, CU-20 registrarse como paciente y CU-21 gestionar mi perfil) |
-| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). Ciclo II: CU-12, CU-13, CU-14 y CU-22 |
-| `AtencionClinica/` | P5: Atención clínica, CU-16 y CU-17 (Ciclo II, todavía no existe) |
-| `ReportesBitacora/` | P6: Reportes y bitácora, CU-18 y CU-19 (Ciclo II, todavía no existe) |
+| `GestionPacientes/` | P3: CU-07 Gestionar pacientes |
+| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). |
 
 Dentro de cada CU hay, según corresponda: `...Controller.php` (el CC del documento; sus comentarios repiten el flujo de la ficha),
 `...Request.php` (validación en el servidor) y `...Service.php` (reglas de negocio). Los modelos están en `app/Models`,
