@@ -21,7 +21,9 @@
             <nav class="barra__nav" aria-label="Principal">
                 <ul class="barra__menu">
                     <li><a href="{{ url('/panel') }}" @if (request()->is('panel')) aria-current="page" @endif>Panel</a></li>
-                    @yield('menu')
+                    @foreach ($menuFunciones ?? [] as $funcion)
+                        <li><a href="{{ $funcion['url'] }}" @if (url()->current() === $funcion['url']) aria-current="page" @endif>{{ $funcion['nombre'] }}</a></li>
+                    @endforeach
                 </ul>
             </nav>
             <div class="barra__usuario">

@@ -43,6 +43,30 @@ class Usuario extends Authenticatable
         return '';
     }
 
+    /**
+     * Busca la cuenta por correo o por nombre de usuario, sin distinguir mayúsculas.
+     *
+     * @CU CU-01 @CI CILogin @CC CCLogin @CE CEUsuario (buscarPorCorreo)
+     */
+    public static function buscarPorIdentificador(string $identificador): ?self
+    {
+        $identificador = mb_strtolower(trim($identificador));
+
+        return static::whereRaw('lower(correo) = ?', [$identificador])->first()
+            ?? static::whereRaw('lower(nombre_usuario) = ?', [$identificador])->first();
+    }
+
+    /**
+     * Guarda la fecha y hora del último ingreso (no modifica updated_at).
+     *
+     * @CU CU-01, CU-02 @CE CEUsuario (registrarAcceso)
+     */
+    public function registrarAcceso(): void
+    {
+        static::whereKey($this->getKey())->update(['ultimo_acceso' => now()]);
+        $this->ultimo_acceso = now();
+    }
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Rol::class, 'rol_usuario', 'usuario_id', 'rol_id');

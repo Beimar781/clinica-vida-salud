@@ -14,3 +14,5 @@
 .paquete__funciones a { display: flex; align-items: center; gap: .6rem; padding: .55rem .65rem; border-radius: 6px; text-decoration: none; color: var(--vs-blue-900); font-weight: 500; }
 .paquete__funciones a:hover { background: var(--vs-sky-100); }
 .paquete__funciones .icono { color: var(--vs-sky-400); }
+
+.paquete__cu { margin-left: auto; font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--vs-muted); background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 6px; padding: 0 .4rem; }

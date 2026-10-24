@@ -19,12 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Las páginas internas sin sesión redirigen al inicio de sesión.
+        // Las páginas internas sin sesión redirigen al inicio de sesión; con sesión, /login lleva al panel.
         $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/panel');
         $middleware->alias(['rol' => VerificarRol::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
     })->create();

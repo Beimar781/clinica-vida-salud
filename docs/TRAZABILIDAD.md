@@ -18,7 +18,7 @@ Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISI
 
 | CU | RF | Paquete | CI (vista) | CC (controlador · servicio) | CE (modelos) | Tablas | Prueba | Estado |
 |---|---|---|---|---|---|---|---|---|
-| CU-01 Iniciar sesión | RF01 | P1 Seguridad y Usuarios | `CILogin` · `seguridad/cu01-iniciar-sesion/login` | `CCLogin` · AutenticacionController, LoginService | `CEUsuario` (Usuario) | usuarios, rol_usuario | Seguridad/CU01Test | Pendiente |
+| CU-01 Iniciar sesión | RF01 | P1 Seguridad y Usuarios | `CILogin` · `seguridad/cu01-iniciar-sesion/login` | `CCLogin` · AutenticacionController, LoginService | `CEUsuario` (Usuario) | usuarios, rol_usuario | Seguridad/CU01Test | Aprobado |
 | CU-02 Cerrar sesión | RF02 | P1 Seguridad y Usuarios | `CILogout` · botón del layout (`layouts/app`) | `CCLogout` · AutenticacionController, LogoutService | `CEUsuario` (Usuario) | usuarios | Seguridad/CU02Test | Pendiente |
 | CU-03 Gestionar usuarios y roles | RF03 | P1 Seguridad y Usuarios | `CIUsuarios` · `seguridad/cu03-gestionar-usuarios/index` | `CCUsuarios` · UsuarioController, UsuarioService | `CEUsuario` (Usuario), `CERol` (Rol) | usuarios, roles, rol_usuario | Seguridad/CU03Test | Pendiente |
 | CU-04 Gestionar especialidades médicas | RF04 | P2 Gestión Médica | `CIEspecialidad` · `gestion-medica/cu04-gestionar-especialidades/index` | `CCEspecialidad` · EspecialidadController, EspecialidadService | `CEEspecialidad` (Especialidad) | especialidades | GestionMedica/CU04Test | Pendiente |

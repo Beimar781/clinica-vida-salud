@@ -115,6 +115,14 @@ small, .texto-suave { color: var(--vs-muted); }
 .campo--check input { width: auto; }
 .acciones { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
 
+/* ---------- Utilidades ---------- */
+.formulario--columna { grid-template-columns: 1fr; }
+.sin-margen { margin: 0; }
+.chip { display: inline-block; margin: 0 .25rem; padding: .1rem .6rem; border-radius: 999px; background: var(--vs-sky-100); border: 1px solid var(--vs-sky-200); color: var(--vs-blue-900); font-size: .8rem; font-weight: 600; }
+.herramientas { display: flex; gap: .6rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
+.herramientas .campo { flex: 1 1 260px; }
+.herramientas form { display: contents; }
+
 /* ---------- Avisos ---------- */
 .aviso { display: flex; gap: .6rem; align-items: flex-start; padding: .8rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid; }
 .aviso-ok { background: #E7F6EF; border-color: #A9DEC6; color: #136B47; }
