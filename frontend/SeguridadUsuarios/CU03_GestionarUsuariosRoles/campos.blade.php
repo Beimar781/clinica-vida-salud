@@ -25,5 +25,5 @@
         @endforeach
     </div>
     <span class="campo__ayuda">Un usuario puede tener varios roles; sus permisos son la suma de todos.</span>
-    <span class="campo__error" id="error-roles" role="alert">{{ $errors->first('roles') ?: $errors->first('roles.*') }}</span>
+    <span class="campo__error" id="error-roles" data-fijo role="alert">{{ $errors->first('roles') ?: $errors->first('roles.*') }}</span>
 </fieldset>

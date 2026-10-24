@@ -32,7 +32,7 @@
         @endforeach
     </div>
     <span class="campo__ayuda">Un médico puede ejercer una o más especialidades.</span>
-    <span class="campo__error" id="error-especialidades" role="alert">{{ $errors->first('especialidades') ?: $errors->first('especialidades.*') }}</span>
+    <span class="campo__error" id="error-especialidades" data-fijo role="alert">{{ $errors->first('especialidades') ?: $errors->first('especialidades.*') }}</span>
 </fieldset>
 
 <div class="campo campo--check bloque-permiso">

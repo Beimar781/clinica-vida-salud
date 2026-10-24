@@ -24,6 +24,9 @@
 
 html { font-size: 16px; }
 
+/* El atributo hidden debe ganar a cualquier display de los componentes (avisos, paneles) */
+[hidden] { display: none !important; }
+
 body {
     margin: 0;
     font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;

@@ -22,7 +22,7 @@
         if (!contenedor) { return; }
         contenedor.classList.remove('campo--error');
         // Quita el mensaje del cliente y también el que llegó del servidor al corregir el campo.
-        contenedor.querySelectorAll('.campo__error:not(#error-roles)').forEach(function (aviso) { aviso.remove(); });
+        contenedor.querySelectorAll('.campo__error:not([data-fijo])').forEach(function (aviso) { aviso.remove(); });
     }
 
     function mensajeDe(campo) {

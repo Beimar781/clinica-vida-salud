@@ -15,3 +15,10 @@
 .grupo-cuenta legend { padding: 0 .4rem; }
 .grupo-cuenta .formulario { margin-top: .9rem; }
 .grupo-cuenta [hidden] { display: none; }
+
+/* CU-06: agenda semanal de horarios */
+.agenda-semana th[scope="row"] { width: 8rem; background: var(--vs-sky-50); color: var(--vs-blue-900); }
+.bloque-atencion { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .45rem .7rem; margin: .25rem 0; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; }
+.bloque-atencion--inactivo { opacity: .65; background: #F5F7F9; }
+.bloque-atencion--edicion { border-color: var(--vs-blue-600); box-shadow: 0 0 0 2px var(--vs-sky-200); }
+.bloque-atencion .tabla__acciones { margin-left: auto; }
