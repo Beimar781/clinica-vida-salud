@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Support\PanelPrincipal;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,48 @@ class BaseSeguridadTest extends SistemaTestCase
         Route::middleware(['web', 'auth', 'rol:Administrador'])->get('/_prueba/admin', fn () => 'ok');
         Route::middleware(['web', 'auth', 'rol:Administrador,Recepcionista'])->get('/_prueba/personal', fn () => 'ok');
         Route::middleware(['web', 'auth', 'rol:Paciente'])->get('/_prueba/paciente', fn () => 'ok');
+    }
+
+    public function test_el_administrador_hereda_las_funciones_de_recepcion_pero_no_las_de_medico_ni_paciente(): void
+    {
+        $admin = $this->crearUsuario('t-solo-admin', [Rol::ADMINISTRADOR]);
+
+        $this->assertSame(['Administrador'], $admin->nombresRoles()->all());
+        $this->assertTrue($admin->tieneRol(Rol::RECEPCIONISTA));
+        $this->assertTrue($admin->tieneRol(Rol::PACIENTE, Rol::RECEPCIONISTA));
+        $this->assertFalse($admin->tieneRol(Rol::PACIENTE));
+        $this->assertFalse($admin->tieneRol(Rol::MEDICO));
+        $this->assertFalse($admin->tieneRol(Rol::MEDICO, Rol::PACIENTE));
+
+        // Quien solo es Recepcionista no hereda las funciones del Administrador.
+        $recepcion = $this->crearUsuario('t-solo-recepcion', [Rol::RECEPCIONISTA]);
+        $this->assertFalse($recepcion->tieneRol(Rol::ADMINISTRADOR));
+    }
+
+    public function test_el_administrador_entra_a_las_pantallas_de_recepcion_y_no_a_la_reserva_en_linea(): void
+    {
+        $admin = $this->crearUsuario('t-admin-rutas', [Rol::ADMINISTRADOR]);
+
+        $this->actingAs($admin)->get('/citas/registrar')->assertOk();
+        $this->actingAs($admin)->get('/citas')->assertOk();
+        $this->actingAs($admin)->get('/disponibilidad')->assertOk();
+        $this->actingAs($admin)->get('/pacientes')->assertOk();
+        $this->actingAs($admin)->get('/reservas/crear')->assertForbidden();
+    }
+
+    public function test_el_panel_y_el_menu_del_administrador_incluyen_las_funciones_de_recepcion(): void
+    {
+        $admin = $this->crearUsuario('t-admin-panel', [Rol::ADMINISTRADOR]);
+
+        $nombres = collect(PanelPrincipal::paquetes($admin, soloImplementadas: false))->flatMap(fn ($p) => collect($p['funciones'])->pluck('nombre'))->all();
+        foreach (['Consultar disponibilidad', 'Registrar cita', 'Citas y reprogramación', 'Pacientes', 'Usuarios y roles'] as $funcion) {
+            $this->assertContains($funcion, $nombres);
+        }
+        $this->assertNotContains('Reservar cita', $nombres);
+
+        $this->actingAs($admin)->get('/panel')->assertOk()
+            ->assertSee('Registrar cita')->assertSee('Citas y reprogramación')->assertSee('Consultar disponibilidad')
+            ->assertDontSee('Reservar cita');
     }
 
     public function test_la_pagina_de_inicio_es_publica(): void

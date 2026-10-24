@@ -9,11 +9,12 @@ use Illuminate\Database\Seeder;
 /**
  * Administrador inicial. Su contraseña sale de ADMIN_PASSWORD (variable de entorno o .env) si está definida;
  * si no, usa la contraseña de demostración (Demo1234*), igual que las demás cuentas de demostración. Su correo
- * sale de ADMIN_CORREO (por defecto admin@vidasalud.test). Tiene los roles Administrador y Recepcionista: la
- * recepción de la clínica (CU-09 y CU-10) solo la ejerce ese rol.
+ * sale de ADMIN_CORREO (por defecto admin@vidasalud.test). Tiene únicamente el rol Administrador: ese rol
+ * hereda las funciones de recepción (ver Usuario::tieneRol), así que no necesita el rol Recepcionista.
  *
  * Es idempotente: si ya existe la cuenta «admin» no la toca (así un cambio de contraseña hecho desde el
- * sistema no se pierde en el siguiente arranque) y solo se asegura de que conserve sus roles.
+ * sistema no se pierde en el siguiente arranque) y solo deja sus roles en uno solo, Administrador (corrige
+ * las cuentas que se sembraron antes con los roles Administrador y Recepcionista).
  */
 class AdministradorSeeder extends Seeder
 {
@@ -33,7 +34,6 @@ class AdministradorSeeder extends Seeder
                 'estado' => true,
             ]);
 
-        $ids = Rol::whereIn('nombre', [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA])->pluck('id')->all();
-        $admin->roles()->syncWithoutDetaching($ids);
+        $admin->roles()->sync([Rol::where('nombre', Rol::ADMINISTRADOR)->value('id')]);
     }
 }

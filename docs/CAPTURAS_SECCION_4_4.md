@@ -4,7 +4,7 @@ Una captura por pantalla importante de cada caso de uso, en el orden del documen
 
 1. Desde `backend/`: `php artisan migrate:fresh --seed` y `php artisan serve` (http://localhost:8000). Las fechas de las citas de demostración se calculan desde el día en que se siembra, así que conviene sembrar el mismo día de las capturas y no mezclar días.
 2. Navegador a 1280 px de ancho (PC), zoom 100 %. Una captura final a 768 px (tablet, RNF04).
-3. Usuarios (todos con la clave `Demo1234*`; en el panel el nombre aparece con mayúscula inicial, por ejemplo «Admin»; deje `ADMIN_PASSWORD` sin definir en `.env`): `admin` (Administrador y Recepcionista), `recepcion` (Recepcionista), `cmontano` (Médico), `pvargas` (Médico y Paciente), `mrojas` (Paciente).
+3. Usuarios (todos con la clave `Demo1234*`; en el panel el nombre aparece con mayúscula inicial, por ejemplo «Admin»; deje `ADMIN_PASSWORD` sin definir en `.env`): `admin` (Administrador; hereda las funciones de recepción), `recepcion` (Recepcionista), `cmontano` (Médico), `pvargas` (Médico y Paciente), `mrojas` (Paciente).
 4. Nombre sugerido del archivo: `fig-4.4-NN-CUxx-descripcion.png`. Mostrar la barra de direcciones o poner la URL como pie de figura.
 5. Datos de la clínica: médicos MED-0001 Carla Montaño Rojas, MED-0002 Luis Fernando Soliz Peña, MED-0003 Patricia Vargas Egüez, MED-0004 Marcelo Antelo Paz, MED-0005 Jorge Rivero Salvatierra; pacientes con CI 6543210 (María Elena Rojas Suárez), 7123456 (Juan Carlos Pérez Mamani), 9012345 (Sofía Camacho Justiniano), 10234567 (Lucía Fernández Roca), 5987654 (Carlos Alberto Mamani Quispe); citas CM-0001 (atendida), CM-0004 (cancelada), CM-0005 (confirmada) y CM-0006 (programada); feriados 02/11, 25/12 y 01/01.
 
@@ -19,7 +19,7 @@ Las URL son relativas a `http://localhost:8000`.
 | 03 | Error genérico | `/login` | `recepcion` con contraseña `incorrecta1` | Aviso rojo «Credenciales incorrectas.» |
 | 04 | Bloqueo temporal | `/login` | `recepcion`: 3 intentos con contraseña errónea y un 4.º con la correcta | «Demasiados intentos fallidos. Espere N segundos e intente nuevamente.» (esperar 60 s antes de seguir) |
 | 05 | Cuenta inactiva | `/login` | Antes, con `admin`, desactivar a `jperez` en CU-03; ingresar con `jperez` / `Demo1234*`; volver a activarlo | «El acceso no está habilitado.» |
-| 06 | Panel del administrador | `/panel` | `admin` | Cuatro tarjetas (Seguridad y Usuarios, Gestión Médica, Gestión de Pacientes, Gestión de Citas) con sus funciones y etiquetas CU; roles «Administrador» y «Recepcionista»; botón «Cerrar sesión» en la barra |
+| 06 | Panel del administrador | `/panel` | `admin` | Cuatro tarjetas (Seguridad y Usuarios, Gestión Médica, Gestión de Pacientes, Gestión de Citas) con sus funciones y etiquetas CU; rol «Administrador» (incluye Consultar disponibilidad, Registrar cita y Citas y reprogramación; no «Reservar cita»); botón «Cerrar sesión» en la barra |
 | 07 | Panel de la recepcionista | `/panel` | `recepcion` | Solo Pacientes y Gestión de Citas |
 | 08 | Panel del paciente | `/panel` | `mrojas` | Solo «Consultar disponibilidad» y «Reservar cita» |
 | 09 | Panel del médico | `/panel` | `cmontano` | Rol «Médico» y aviso de que sus funciones llegan en la próxima entrega |

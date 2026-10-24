@@ -120,9 +120,18 @@ class Usuario extends Authenticatable
         return $this->roles->pluck('nombre');
     }
 
-    /** True si el usuario tiene al menos uno de los roles indicados. */
+    /**
+     * True si el usuario tiene al menos uno de los roles indicados. El Administrador hereda las funciones de
+     * recepción (Recepcionista): no se extiende a Médico ni a Paciente, que necesitan su propia ficha.
+     */
     public function tieneRol(string ...$roles): bool
     {
-        return $this->nombresRoles()->intersect($roles)->isNotEmpty();
+        $propios = $this->nombresRoles();
+
+        if ($propios->contains(Rol::ADMINISTRADOR) && in_array(Rol::RECEPCIONISTA, $roles, true)) {
+            return true;
+        }
+
+        return $propios->intersect($roles)->isNotEmpty();
     }
 }

@@ -293,7 +293,11 @@ class CU09_RegistrarCitaMedicaTest extends SistemaTestCase
     {
         $this->get(route('citas.registrar'))->assertRedirect('/login');
 
-        foreach ([Rol::ADMINISTRADOR, Rol::MEDICO, Rol::PACIENTE] as $rol) {
+        // El Administrador hereda las funciones de recepción y también puede abrir la pantalla.
+        $admin = $this->crearUsuario('t-admin-cita', [Rol::ADMINISTRADOR]);
+        $this->actingAs($admin)->get(route('citas.registrar'))->assertOk();
+
+        foreach ([Rol::MEDICO, Rol::PACIENTE] as $rol) {
             $usuario = $this->crearUsuario('t-sin-permiso-cita-'.strtolower(substr($rol, 0, 3)), [$rol]);
             $this->actingAs($usuario)->get(route('citas.registrar'))->assertForbidden();
             $this->actingAs($usuario)->post(route('citas.guardar'), $this->datos())->assertForbidden();

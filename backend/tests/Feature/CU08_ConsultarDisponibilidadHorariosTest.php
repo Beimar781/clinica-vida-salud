@@ -206,10 +206,12 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         $paciente = $this->crearUsuario('t-pac-disp', [Rol::PACIENTE]);
         $this->actingAs($paciente)->get($this->url($this->lunes))->assertOk()->assertSee('Horarios libres');
 
-        foreach ([Rol::MEDICO, Rol::ADMINISTRADOR] as $rol) {
-            $usuario = $this->crearUsuario('t-sin-permiso-disp-'.strtolower(substr($rol, 0, 3)), [$rol]);
-            $this->actingAs($usuario)->get(route('disponibilidad.index'))->assertForbidden();
-        }
+        // El Administrador hereda las funciones de recepción; el médico no tiene esta función.
+        $admin = $this->crearUsuario('t-admin-disp', [Rol::ADMINISTRADOR]);
+        $this->actingAs($admin)->get($this->url($this->lunes))->assertOk()->assertSee('Horarios libres');
+
+        $medico = $this->crearUsuario('t-sin-permiso-disp-med', [Rol::MEDICO]);
+        $this->actingAs($medico)->get(route('disponibilidad.index'))->assertForbidden();
     }
 
     private function servicio(): DisponibilidadService

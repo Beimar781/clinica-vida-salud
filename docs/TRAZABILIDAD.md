@@ -7,7 +7,7 @@ Una fila por caso de uso. «Prueba» es `backend/tests/Feature/CUxx_NombreTest.p
 | Elemento | Archivo | Prueba | Estado |
 |---|---|---|---|
 | Modelo físico del Ciclo I (13 tablas + las técnicas `migrations` y `password_reset_tokens`), EXCLUDE, secuencias, trigger de bitácora | `backend/database/migrations/*` (desde `backend/database/schema.sql`) | `backend/tests/Feature/BaseDatosTest.php` | Aprobado |
-| Usuario con `password_hash`, middleware `rol`, inicio público | `backend/app/Models/Usuario.php`, `backend/app/Http/Middleware/VerificarRol.php` | `backend/tests/Feature/BaseSeguridadTest.php` | Aprobado |
+| Usuario con `password_hash`, middleware `rol` (el Administrador hereda las funciones de recepción en `Usuario::tieneRol`; no las de médico ni paciente), inicio público | `backend/app/Models/Usuario.php`, `backend/app/Http/Middleware/VerificarRol.php` | `backend/tests/Feature/BaseSeguridadTest.php` | Aprobado |
 | Normalización de texto | `backend/app/Support/Texto.php` | `backend/tests/Unit/TextoTest.php` | Aprobado |
 | Assets del frontend por la ruta `assets` (sin symlinks, anti path traversal, caché) | `backend/app/Http/Controllers/RecursoController.php`, `backend/app/Support/Recursos.php` | `backend/tests/Feature/RecursosTest.php` | Aprobado |
 | Preparación del despliegue en Railway: seeders idempotentes (`SEMBRAR_DEMO`, `ADMIN_PASSWORD`), proxy con https, `Dockerfile` | `Dockerfile`, `.dockerignore`, `backend/database/seeders/*`, `backend/bootstrap/app.php`, `backend/app/Providers/AppServiceProvider.php` | `backend/tests/Feature/DespliegueTest.php` | Aprobado |

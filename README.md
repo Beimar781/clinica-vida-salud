@@ -22,9 +22,9 @@ Además de los casos de uso del Ciclo I, el sistema incluye la recuperación de 
 | Seguridad y usuarios | CU-01 Iniciar sesión · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles | Todos los usuarios; la gestión de usuarios, el administrador |
 | Gestión médica | CU-04 Gestionar especialidades médicas · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención | Administrador |
 | Gestión de pacientes | CU-07 Gestionar pacientes | Administrador y recepcionista |
-| Gestión de citas | CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea | Recepcionista, médico y paciente (la reserva en línea la hace el propio paciente) |
+| Gestión de citas | CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea | Recepcionista y administrador (consultar, registrar y reprogramar citas) y paciente (consultar y reservar en línea; la reserva la hace el propio paciente) |
 
-Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma cuenta puede tener más de un rol.
+Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma cuenta puede tener más de un rol. El Administrador hereda las funciones de recepción (pacientes, disponibilidad, registro y reprogramación de citas), por eso la cuenta `admin` tiene solo el rol Administrador; no hereda las del médico ni las del paciente (necesitan su propia ficha), así que no usa «Reservar cita».
 
 **Reglas de negocio y seguridad que implementamos**
 
@@ -77,7 +77,7 @@ El sistema queda disponible en http://localhost:8000. No necesita Node ni conexi
 
 | Usuario | Correo | Roles | Contraseña |
 |---|---|---|---|
-| admin | admin@vidasalud.test | Administrador y Recepcionista | `Demo1234*` (o `ADMIN_PASSWORD` si está definida) |
+| admin | admin@vidasalud.test | Administrador | `Demo1234*` (o `ADMIN_PASSWORD` si está definida) |
 | recepcion | recepcion@vidasalud.test | Recepcionista | `Demo1234*` |
 | cmontano | carla.montano@vidasalud.test | Médico | `Demo1234*` |
 | lsoliz | luis.soliz@vidasalud.test | Médico | `Demo1234*` |

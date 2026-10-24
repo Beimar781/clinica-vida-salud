@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Cita;
+use App\Models\Rol;
 use App\Models\Usuario;
 use Database\Seeders\AdministradorSeeder;
 use Database\Seeders\DatabaseSeeder;
@@ -46,7 +47,7 @@ class DespliegueTest extends SistemaTestCase
 
         $admin = Usuario::where('nombre_usuario', 'admin')->firstOrFail();
         $this->assertTrue(Hash::check('Demo1234*', $admin->password_hash));
-        $this->assertTrue($admin->tieneRol('Administrador', 'Recepcionista'));
+        $this->assertSame(['Administrador'], $admin->nombresRoles()->all());
     }
 
     public function test_con_admin_password_vacia_tambien_usa_la_contrasena_de_demostracion(): void
@@ -69,6 +70,19 @@ class DespliegueTest extends SistemaTestCase
         $this->assertSame(count($cuentas), Usuario::whereIn('nombre_usuario', $cuentas)->count());
     }
 
+    public function test_el_seeder_deja_a_admin_con_un_solo_rol_aunque_antes_tuviera_dos(): void
+    {
+        $admin = Usuario::where('nombre_usuario', 'admin')->firstOrFail();
+        $admin->roles()->sync(Rol::whereIn('nombre', [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA])->pluck('id')->all());
+        $this->assertCount(2, $admin->fresh()->roles);
+
+        $this->seed(AdministradorSeeder::class);
+        $this->seed(AdministradorSeeder::class);
+
+        $this->assertSame(['Administrador'], $admin->fresh()->nombresRoles()->all());
+        $this->assertTrue($admin->fresh()->tieneRol(Rol::RECEPCIONISTA));
+    }
+
     public function test_el_seeder_no_pisa_la_contrasena_del_administrador_existente(): void
     {
         $admin = Usuario::where('nombre_usuario', 'admin')->firstOrFail();
@@ -79,7 +93,7 @@ class DespliegueTest extends SistemaTestCase
 
         $admin->refresh();
         $this->assertTrue(Hash::check('ClaveCambiada1', $admin->password_hash));
-        $this->assertTrue($admin->tieneRol('Administrador', 'Recepcionista'));
+        $this->assertSame(['Administrador'], $admin->nombresRoles()->all());
         $this->assertSame(1, Usuario::where('nombre_usuario', 'admin')->count());
     }
 
@@ -95,7 +109,7 @@ class DespliegueTest extends SistemaTestCase
         $this->assertSame('directora@clinica.test', $admin->correo);
         $this->assertTrue(Hash::check('ClaveInicial123', $admin->password_hash));
         $this->assertTrue($admin->estado);
-        $this->assertTrue($admin->tieneRol('Administrador', 'Recepcionista'));
+        $this->assertSame(['Administrador'], $admin->nombresRoles()->all());
     }
 
     public function test_sin_sembrar_demo_no_se_cargan_los_datos_de_demostracion(): void

@@ -255,7 +255,12 @@ class CU10_ReprogramarCitaMedicaTest extends SistemaTestCase
         $cita = $this->crearCita($this->medico, $this->paciente, $this->especialidad, $this->lunes, '09:00', '09:30');
         $this->get(route('citas.index'))->assertRedirect('/login');
 
-        foreach ([Rol::ADMINISTRADOR, Rol::MEDICO, Rol::PACIENTE] as $rol) {
+        // El Administrador hereda las funciones de recepción y también puede abrir estas pantallas.
+        $admin = $this->crearUsuario('t-admin-rep', [Rol::ADMINISTRADOR]);
+        $this->actingAs($admin)->get(route('citas.index'))->assertOk();
+        $this->actingAs($admin)->get(route('citas.reprogramar', $cita))->assertOk();
+
+        foreach ([Rol::MEDICO, Rol::PACIENTE] as $rol) {
             $usuario = $this->crearUsuario('t-sin-permiso-rep-'.strtolower(substr($rol, 0, 3)), [$rol]);
             $this->actingAs($usuario)->get(route('citas.index'))->assertForbidden();
             $this->actingAs($usuario)->get(route('citas.reprogramar', $cita))->assertForbidden();
