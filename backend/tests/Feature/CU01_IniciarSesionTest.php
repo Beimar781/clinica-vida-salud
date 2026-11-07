@@ -161,8 +161,11 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->assertNotContains('Usuarios y roles', $nombres($recepcion));
         $this->assertNotContains('Registrar cita', $nombres($paciente));
         $this->assertContains('Reservar cita', $nombres($paciente));
-        // La unión de roles: el médico que también es paciente ve las opciones del paciente.
-        $this->assertSame($nombres($paciente), $nombres($medicoPaciente));
+        // La unión de roles: el médico que también es paciente ve las opciones del paciente y además las del médico.
+        $this->assertSame([], array_diff($nombres($paciente), $nombres($medicoPaciente)), 'Ve todo lo del paciente.');
+        $this->assertContains('Control de citas', $nombres($medicoPaciente), 'Y lo propio del médico.');
+        $this->assertNotContains('Control de citas', $nombres($paciente));
+        $this->assertNotContains('Registrar cita', $nombres($medicoPaciente), 'Pero no lo de la recepción.');
     }
 
     public function test_un_usuario_con_sesion_que_abre_el_login_va_al_panel(): void
