@@ -11,7 +11,7 @@ Las pantallas (`.blade.php`) del mismo CU están en la carpeta hermana `frontend
 | `GestionPacientes/` | P3: CU-07 Gestionar pacientes |
 | `ReportesBitacora/` | P6: CU-18 Generar reportes con IA (Administrador y Recepcionista; ocho reportes, resumen opcional con Gemini, impresión, CSV y PDF) · CU-19 Consultar bitácora (solo el administrador y solo lectura) |
 | `AtencionClinica/` | P5: CU-16 Registrar consulta y tratamiento · CU-17 Consultar historia clínica (solo el rol Médico; la historia es de solo lectura) |
-| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). |
+| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea · CU-22 Enviar recordatorios de citas (comando `citas:enviar-recordatorios`, sin pantallas) (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). |
 
 Dentro de cada CU hay, según corresponda: `...Controller.php` (el CC del documento; sus comentarios repiten el flujo de la ficha),
 `...Request.php` (validación en el servidor) y `...Service.php` (reglas de negocio). Los modelos están en `app/Models`,

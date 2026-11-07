@@ -97,6 +97,17 @@ IA_MODELO=gemini-3.5-flash-lite   # rápido y económico; Google retira modelos 
 
 A la IA solo se le envían el tipo de reporte, el período y los totales (cantidades e ingresos, y el total de cada médico y de cada especialidad): nunca nombres, CI, correos, teléfonos ni datos clínicos de los pacientes. El PDF se genera con dompdf, sin recursos externos. «Reportes» incluye además un asistente de voz opcional (dictar o escribir una frase y escuchar los totales) que usa las voces del navegador; el dictado funciona en Chrome o Edge. En Windows, la llamada a la IA necesita los mismos certificados raíz de PHP que el pago con tarjeta (ver arriba).
 
+### Recordatorios de citas (CU-22)
+
+Una vez al día el sistema avisa por correo de las citas Programadas o Confirmadas del día siguiente (un correo por paciente, solo si tiene correo y los recordatorios activados en «Mi perfil»). Para probarlo en local, con `MAIL_MAILER=log` en `backend/.env`, ejecute dentro de `backend/`:
+
+```
+php artisan citas:enviar-recordatorios                    # las citas de mañana
+php artisan citas:enviar-recordatorios --fecha=2026-11-10 # las de un día concreto (AAAA-MM-DD)
+```
+
+El comando muestra cuántos avisos se enviaron, cuántas citas se omitieron y cuántos fallaron, y el correo queda escrito en `backend/storage/logs/laravel.log` (busque «Recordatorio de tu cita»). Cada cita avisada queda marcada: volver a ejecutarlo no repite el aviso; si un envío falla, esa cita se reintenta en la siguiente ejecución. El comando está programado a las 18:00 (hora de La Paz) en `routes/console.php`, pero la programación solo corre si algo ejecuta `php artisan schedule:run` cada minuto (en local: `php artisan schedule:work`). En Railway hace falta un **servicio cron aparte**, con el mismo Dockerfile y las mismas variables, que ejecute `php artisan citas:enviar-recordatorios` una vez al día; en producción el correo sale por Brevo (`MAIL_MAILER=brevo`).
+
 ## Usuarios de demostración
 
 `php artisan migrate --seed` crea un usuario por rol. Todas las cuentas de demostración, incluida la del administrador, usan la contraseña `Demo1234*`. Si se define `ADMIN_PASSWORD` (en `backend/.env` o en las variables del servicio), el administrador usa esa contraseña en lugar de `Demo1234*`.

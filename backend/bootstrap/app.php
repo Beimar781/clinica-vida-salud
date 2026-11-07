@@ -4,6 +4,7 @@ use App\Http\Controllers\RecursoController;
 use App\Http\Middleware\SinCache;
 use App\Http\Middleware\VerificarCuentaActiva;
 use App\Http\Middleware\VerificarRol;
+use App\Modules\GestionCitas\CU22_EnviarRecordatoriosCitas\EnviarRecordatoriosCommand;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::get('assets/{ruta}', RecursoController::class)->where('ruta', '.+')->name('assets');
         },
     )
+    // CU-22: el comando citas:enviar-recordatorios vive en su carpeta de CU (no en app/Console/Commands).
+    ->withCommands([EnviarRecordatoriosCommand::class])
     ->withMiddleware(function (Middleware $middleware): void {
         // Las páginas internas sin sesión redirigen al inicio de sesión; con sesión, /login lleva al panel.
         // Detrás del proxy de Railway (HTTPS termina en el proxy): se confía en sus cabeceras X-Forwarded-* para que
