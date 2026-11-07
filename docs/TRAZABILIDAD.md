@@ -10,15 +10,15 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 |---|---|---|---|---|---|---|---|---|
 | CU-01 | Iniciar sesión | I | RF01 | — | Hecho (C-I) | `SeguridadUsuarios/CU01_IniciarSesion` | 4 | 39 aprobadas (incluye recuperación) |
 | CU-02 | Cerrar sesión | I | RF02 | — | Hecho (C-I) | `SeguridadUsuarios/CU02_CerrarSesion` | 2 | 6 aprobadas |
-| CU-03 | Gestionar usuarios y roles | I | RF03 | 3 (aviso paciente sin ficha) | Hecho (C-I) | `SeguridadUsuarios/CU03_GestionarUsuariosRoles` | 3 | 18 aprobadas |
+| CU-03 | Gestionar usuarios y roles | I | RF03 | 3 (aviso paciente sin ficha) | Hecho (C-I; aviso en el panel, 07/11) | `SeguridadUsuarios/CU03_GestionarUsuariosRoles` | 3 | 18 aprobadas |
 | CU-04 | Gestionar especialidades y servicios | I | RF04 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU04_GestionarEspecialidadesServicios` | 3 | 18 aprobadas (3 filas del 8.1 + 15 de reglas internas) |
 | CU-05 | Gestionar médicos | I | RF05 | — | Hecho (C-I) | `GestionMedica/CU05_GestionarMedicos` | 4 | 16 aprobadas |
 | CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 25 aprobadas (5 filas del 8.1 + 20 de reglas internas) |
 | CU-07 | Gestionar pacientes | I | RF07 | — | Hecho (C-I) | `GestionPacientes/CU07_GestionarPacientes` | 5 | 19 aprobadas |
 | CU-08 | Consultar disponibilidad de horarios | I | RF08 | — | Hecho (C-I) | `GestionCitas/CU08_ConsultarDisponibilidadHorarios` | 5 | 14 aprobadas |
 | CU-09 | Registrar cita médica | I | RF09 | 2 | Hecho (v30, 07/11) | `GestionCitas/CU09_RegistrarCitaMedica` | 8 | 41 aprobadas (8 filas del 8.1 + 32 de reglas internas y pago + 1 concurrencia) |
-| CU-10 | Reprogramar cita médica | I | RF10 | 3 | Por ajustar | `GestionCitas/CU10_ReprogramarCitaMedica` | 6 | 17 (previas, ampliar) |
-| CU-11 | Reservar cita en línea | I | RF11 | 2 | Hecho (v30, 07/11) | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 33 aprobadas (7 filas del 8.1 + 26 de reglas internas y pago) |
+| CU-10 | Reprogramar cita médica | I | RF10 | 3 | Hecho (v30, 07/11) | `GestionCitas/CU10_ReprogramarCitaMedica` | 6 | 26 aprobadas (6 filas del 8.1 + 20 de reglas internas) |
+| CU-11 | Reservar cita en línea | I | RF11 | 2, 3 | Hecho (v30, 07/11) | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 36 aprobadas (7 filas del 8.1 + 29 de reglas internas, pago y cuenta sin ficha) |
 | CU-12 | Cancelar cita médica | II | RF12 | 4 | Pendiente | `GestionCitas/CU12_CancelarCitaMedica` | 4 | — |
 | CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Pendiente | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | — |
 | CU-14 | Consultar agenda médica | II | RF14 | 4 | Pendiente | `GestionCitas/CU14_ConsultarAgendaMedica` | 4 | — |

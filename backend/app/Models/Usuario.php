@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -108,6 +109,18 @@ class Usuario extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Rol::class, 'rol_usuario', 'usuario_id', 'rol_id');
+    }
+
+    /** Ficha de paciente de la cuenta (pacientes.usuario_id); null si todavía no tiene. */
+    public function paciente(): HasOne
+    {
+        return $this->hasOne(Paciente::class, 'usuario_id');
+    }
+
+    /** ¿Tiene el rol Paciente pero ninguna ficha de paciente? Debe ver un aviso claro, nunca un error. */
+    public function esPacienteSinFicha(): bool
+    {
+        return $this->nombresRoles()->contains(Rol::PACIENTE) && ! $this->paciente()->exists();
     }
 
     /** @return Collection<int, string> */

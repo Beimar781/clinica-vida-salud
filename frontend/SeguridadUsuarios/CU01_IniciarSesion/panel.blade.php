@@ -17,6 +17,8 @@
         </div>
     </div>
 
+    <x-aviso-sin-ficha />
+
     @forelse ($paquetes as $paquete)
         @if ($loop->first)<div class="paquetes">@endif
         <section class="paquete" aria-labelledby="paquete-{{ $paquete['clave'] }}">

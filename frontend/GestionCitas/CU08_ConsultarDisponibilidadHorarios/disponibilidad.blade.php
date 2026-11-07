@@ -13,6 +13,8 @@
         <h1>Consultar disponibilidad de horarios</h1>
     </div>
 
+    <x-aviso-sin-ficha />
+
     <div class="buscador">
         <h2>Elija el médico y la fecha</h2>
         @if ($medicos->isEmpty())

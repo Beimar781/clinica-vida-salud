@@ -27,7 +27,7 @@ use Illuminate\Support\Collection;
  */
 class ReservarCitaService
 {
-    public const MENSAJE_SIN_FICHA = 'Su cuenta todavía no tiene una ficha de paciente. Comuníquese con la recepción de la clínica para registrarla.';
+    public const MENSAJE_SIN_FICHA = Paciente::MENSAJE_SIN_FICHA;
 
     public const MENSAJE_FICHA_INACTIVA = 'Su ficha de paciente está inactiva y no puede reservar citas. Comuníquese con la recepción de la clínica.';
 

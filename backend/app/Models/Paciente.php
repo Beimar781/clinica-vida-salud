@@ -12,6 +12,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Paciente extends Model
 {
+    /**
+     * Aviso para una cuenta con rol Paciente que todavía no tiene ficha en `pacientes` (por ejemplo, la creó el administrador
+     * en CU-03). El v30 resuelve el caso con CU-20 (vincula la ficha por CI y fecha de nacimiento).
+     */
+    public const MENSAJE_SIN_FICHA = 'Tu cuenta aún no tiene ficha de paciente. Pide en recepción que la registre o usa «Crear cuenta» con tu CI.';
+
     protected $table = 'pacientes';
 
     public $timestamps = false;

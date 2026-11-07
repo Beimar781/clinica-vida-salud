@@ -553,6 +553,69 @@ class CU11_ReservarCitaEnLineaTest extends SistemaTestCase
             ->assertSee('Monto')->assertSee('Bs 120,00')->assertSee('Tarjeta (Stripe)')->assertSee('Pagado')->assertSee('pi_ejemplo_1');
     }
 
+    // ------------------------------------------------------------------ Cuenta con rol Paciente sin ficha (hallazgo del equipo)
+
+    #[Test]
+    public function una_cuenta_de_paciente_sin_ficha_ve_el_aviso_claro_en_el_panel_en_disponibilidad_y_en_la_reserva_y_nunca_un_error(): void
+    {
+        $sinFicha = $this->crearUsuario('t-pac-sin-ficha-aviso', [Rol::PACIENTE]);
+        $aviso = 'Tu cuenta aún no tiene ficha de paciente. Pide en recepción que la registre o usa «Crear cuenta» con tu CI.';
+        $this->assertSame($aviso, Paciente::MENSAJE_SIN_FICHA);
+        $this->assertSame($aviso, ReservarCitaService::MENSAJE_SIN_FICHA);
+
+        $this->actingAs($sinFicha);
+        foreach ([
+            route('panel'),
+            route('disponibilidad.index'),
+            route('disponibilidad.index', ['medico' => $this->medico->id, 'fecha' => $this->lunes]),
+            route('reservas.crear'),
+            route('reservas.crear', ['especialidad' => $this->especialidad->id]),
+            $this->urlReservar(),
+        ] as $url) {
+            $this->get($url)->assertOk()->assertSee($aviso);
+        }
+
+        // La cuenta sin ficha tampoco puede reservar ni pagar: avisa y no se registra nada (sin error 500).
+        $this->post(route('reservas.guardar'), $this->datos())->assertSessionHas('error', $aviso);
+        $this->assertSame(0, Cita::where('medico_id', $this->medico->id)->count());
+    }
+
+    #[Test]
+    public function el_aviso_de_cuenta_sin_ficha_solo_lo_ve_quien_es_paciente_y_no_tiene_ficha(): void
+    {
+        $aviso = Paciente::MENSAJE_SIN_FICHA;
+
+        // Paciente con su ficha (la de la prueba): no ve el aviso.
+        $this->actingAs($this->usuario)->get(route('panel'))->assertOk()->assertDontSee($aviso);
+        $this->get(route('disponibilidad.index'))->assertOk()->assertDontSee($aviso);
+
+        // Quien no es Paciente (aunque no tenga ficha): tampoco.
+        foreach ([Rol::RECEPCIONISTA, Rol::MEDICO, Rol::ADMINISTRADOR] as $rol) {
+            $otro = $this->crearUsuario('t-sin-aviso-'.strtolower(substr($rol, 0, 3)), [$rol]);
+            $this->actingAs($otro)->get(route('panel'))->assertOk()->assertDontSee($aviso);
+        }
+
+        // Un médico que además tiene el rol Paciente pero no ficha de paciente sí lo ve.
+        $doble = $this->crearUsuario('t-medico-paciente-sin-ficha', [Rol::MEDICO, Rol::PACIENTE]);
+        $this->actingAs($doble)->get(route('panel'))->assertOk()->assertSee($aviso);
+
+        // En cuanto tiene su ficha (por ejemplo, la registra la recepción), el aviso desaparece.
+        $this->crearPaciente(['usuario_id' => $doble->id]);
+        $this->get(route('panel'))->assertOk()->assertDontSee($aviso);
+    }
+
+    #[Test]
+    public function el_usuario_sabe_si_es_paciente_sin_ficha(): void
+    {
+        $sinFicha = $this->crearUsuario('t-esp-sin-ficha', [Rol::PACIENTE]);
+        $this->assertTrue($sinFicha->esPacienteSinFicha());
+        $this->assertNull($sinFicha->paciente);
+
+        $this->assertFalse($this->usuario->esPacienteSinFicha());
+        $this->assertSame($this->paciente->id, $this->usuario->paciente->id);
+        $this->assertFalse($this->crearUsuario('t-esp-recep', [Rol::RECEPCIONISTA])->esPacienteSinFicha());
+    }
+
     private function detalleEsperado(Cita $cita, string $pago): string
     {
         return "Cita {$cita->codigo} reservada en línea por {$this->paciente->nombre_completo} con {$this->medico->nombre_completo} el "
