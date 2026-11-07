@@ -8,6 +8,7 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use Database\Seeders\AdministradorSeeder;
 use Database\Seeders\CitaSeeder;
+use Database\Seeders\ConsultaSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\EspecialidadSeeder;
 use Illuminate\Support\Carbon;
@@ -23,7 +24,7 @@ class DespliegueTest extends SistemaTestCase
 {
     private const TABLAS = [
         'roles', 'usuarios', 'rol_usuario', 'especialidades', 'medicos', 'medico_especialidad', 'horarios_atencion',
-        'bloqueos_agenda', 'pacientes', 'historias_clinicas', 'antecedentes_externos', 'citas',
+        'bloqueos_agenda', 'pacientes', 'historias_clinicas', 'antecedentes_externos', 'citas', 'consultas',
     ];
 
     /** @return array<string, int> */
@@ -119,6 +120,36 @@ class DespliegueTest extends SistemaTestCase
         $this->assertGreaterThan(0, DB::table('bloqueos_agenda')->join('usuarios', 'usuarios.id', '=', 'bloqueos_agenda.registrado_por')->count());
     }
 
+    public function test_la_demostracion_trae_consultas_para_las_citas_atendidas_y_antecedentes_de_otros_hospitales(): void
+    {
+        // Cada cita Atendida de la demostración tiene su consulta, en la historia clínica de su paciente y con su médico.
+        $atendidas = DB::table('citas')->where('codigo', 'not like', 'T-%')->where('estado', 'ATENDIDA')->pluck('id');
+        $this->assertNotEmpty($atendidas);
+        foreach ($atendidas as $citaId) {
+            $consulta = DB::table('consultas')->where('cita_id', $citaId)->first();
+            $this->assertNotNull($consulta, 'Falta la consulta de la cita atendida '.$citaId);
+            $cita = DB::table('citas')->find($citaId);
+            $this->assertSame($cita->medico_id, $consulta->medico_id);
+            $this->assertSame($cita->paciente_id, DB::table('historias_clinicas')->where('id', $consulta->historia_clinica_id)->value('paciente_id'));
+            $this->assertNotSame('', trim($consulta->diagnostico));
+        }
+
+        // Antecedentes de otros hospitales de más de un paciente.
+        $this->assertGreaterThanOrEqual(2, DB::table('antecedentes_externos')->distinct('historia_clinica_id')->count('historia_clinica_id'));
+    }
+
+    public function test_las_consultas_de_la_demostracion_no_se_duplican_al_sembrar_otra_vez(): void
+    {
+        $consultas = DB::table('consultas')->count();
+        $antecedentes = DB::table('antecedentes_externos')->count();
+
+        $this->seed(ConsultaSeeder::class);
+        $this->seed(ConsultaSeeder::class);
+
+        $this->assertSame($consultas, DB::table('consultas')->count());
+        $this->assertSame($antecedentes, DB::table('antecedentes_externos')->count());
+    }
+
     public function test_la_cita_de_manana_de_la_demostracion_es_para_una_paciente_que_recibe_recordatorios(): void
     {
         // Se vuelve a sembrar esa cita para que su fecha sea «mañana» sin importar cuándo se sembró la base.
@@ -211,6 +242,7 @@ class DespliegueTest extends SistemaTestCase
 
     public function test_sin_sembrar_demo_no_se_cargan_los_datos_de_demostracion(): void
     {
+        DB::table('consultas')->delete(); // las consultas dependen de las citas (llave foránea)
         Cita::query()->delete();
         config(['vidasalud.sembrar_demo' => false]);
 

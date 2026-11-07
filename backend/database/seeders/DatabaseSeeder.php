@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
  *
  *  - Siempre: roles, especialidades base y el administrador (contraseña de ADMIN_PASSWORD si está definida; si no, Demo1234*).
  *  - Con SEMBRAR_DEMO=true (por defecto en local): además los usuarios de demostración, médicos con horarios,
- *    días sin atención, pacientes con su historia clínica y algunas citas.
+ *    días sin atención, pacientes con su historia clínica, citas y la atención clínica (consultas y antecedentes).
  */
 class DatabaseSeeder extends Seeder
 {
@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
                 MedicoSeeder::class,
                 PacienteSeeder::class,
                 CitaSeeder::class,
+                ConsultaSeeder::class,
             ]);
         }
     }
