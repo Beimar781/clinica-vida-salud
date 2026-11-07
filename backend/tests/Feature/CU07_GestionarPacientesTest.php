@@ -12,6 +12,7 @@ use App\Modules\GestionPacientes\CU07_GestionarPacientes\PacienteService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\Test;
 
 /** CU-07: Gestionar pacientes. */
 class CU07_GestionarPacientesTest extends SistemaTestCase
@@ -24,8 +25,9 @@ class CU07_GestionarPacientesTest extends SistemaTestCase
         $this->recepcion = $this->crearUsuario('t-recep-pac', [Rol::RECEPCIONISTA]);
     }
 
-    /** Caso 1: registrar un paciente nuevo (datos completos y CI nuevo) → queda guardado con su código y se crea su historia clínica. */
-    public function test_registrar_un_paciente_nuevo(): void
+    /** Paso 1: registrar un paciente nuevo (datos completos y CI nuevo) → queda guardado con su código y se crea su historia clínica. */
+    #[Test]
+    public function paso_1_registrar_un_paciente_nuevo(): void
     {
         $this->actingAs($this->recepcion)->post(route('pacientes.guardar'), $this->datos())
             ->assertRedirect(route('pacientes.index'))
@@ -44,8 +46,9 @@ class CU07_GestionarPacientesTest extends SistemaTestCase
         $this->assertDatabaseHas('bitacora', ['accion' => 'PACIENTE_CREADO', 'usuario_id' => $this->recepcion->id]);
     }
 
-    /** Caso 2: registrar un paciente con CI duplicado (CI ya registrado) → rechaza el registro y muestra al paciente existente. */
-    public function test_registrar_un_paciente_con_ci_duplicado(): void
+    /** Paso 2: registrar un paciente con CI duplicado (CI ya registrado) → rechaza el registro y muestra al paciente existente. */
+    #[Test]
+    public function paso_2_registrar_un_paciente_con_ci_duplicado(): void
     {
         $existente = $this->crearPaciente(['ci' => 'T-1001', 'nombres' => 'Ya', 'apellidos' => 'Registrado']);
 
@@ -60,8 +63,9 @@ class CU07_GestionarPacientesTest extends SistemaTestCase
             ->assertSee('Ese CI ya pertenece al paciente')->assertSee($existente->codigo)->assertSee('Ya Registrado');
     }
 
-    /** Caso 3: buscar un paciente (CI parcial, nombre o apellido) → se listan los pacientes que coinciden. */
-    public function test_buscar_paciente(): void
+    /** Paso 3: buscar un paciente (CI parcial, nombre o apellido) → se listan los pacientes que coinciden. */
+    #[Test]
+    public function paso_3_buscar_paciente(): void
     {
         $this->crearPaciente(['ci' => 'T-77881', 'nombres' => 'Zulema', 'apellidos' => 'Tbuscada']);
         $this->crearPaciente(['ci' => 'T-99002', 'nombres' => 'Otro', 'apellidos' => 'Tdistinto']);
@@ -73,8 +77,9 @@ class CU07_GestionarPacientesTest extends SistemaTestCase
         $this->get(route('pacientes.index', ['q' => 'inexistente-xyz']))->assertOk()->assertSee('No se encontraron pacientes');
     }
 
-    /** Caso 4: registrar un paciente con antecedentes de otro hospital → los antecedentes quedan guardados como antecedentes externos de su historia clínica. */
-    public function test_registrar_paciente_con_antecedentes_de_otro_hospital(): void
+    /** Paso 4: registrar un paciente con antecedentes de otro hospital → los antecedentes quedan guardados como antecedentes externos de su historia clínica. */
+    #[Test]
+    public function paso_4_registrar_paciente_con_antecedentes_de_otro_hospital(): void
     {
         $this->actingAs($this->recepcion)->post(route('pacientes.guardar'), $this->datos([
             'con_antecedente' => '1', 'ant_hospital_origen' => 'Hospital de Clínicas', 'ant_fecha_atencion' => '2025-03-10',
@@ -91,8 +96,9 @@ class CU07_GestionarPacientesTest extends SistemaTestCase
         $this->assertSame($this->recepcion->id, $antecedente->registrado_por);
     }
 
-    /** Caso 5: comprobar que cada paciente tiene una sola historia clínica (registrar un paciente y revisar sus datos) → existe exactamente una historia clínica asociada. */
-    public function test_cada_paciente_tiene_una_sola_historia_clinica(): void
+    /** Paso 5: comprobar que cada paciente tiene una sola historia clínica (registrar un paciente y revisar sus datos) → existe exactamente una historia clínica asociada. */
+    #[Test]
+    public function paso_5_cada_paciente_tiene_una_sola_historia_clinica(): void
     {
         $this->actingAs($this->recepcion)->post(route('pacientes.guardar'), $this->datos());
         $paciente = Paciente::where('ci', 'T-1001')->firstOrFail();

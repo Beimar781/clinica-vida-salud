@@ -11,6 +11,7 @@ use App\Modules\GestionCitas\Compartido\Disponibilidad;
 use App\Modules\GestionCitas\Compartido\DisponibilidadService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Test;
 
 /** CU-08: Consultar disponibilidad de horarios. */
 class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
@@ -39,8 +40,9 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         parent::tearDown();
     }
 
-    /** Caso 1: consultar horarios en un día sin atención (médico con horario ese día de la semana) → el sistema no ofrece horarios para esa fecha. */
-    public function test_consultar_horarios_en_un_dia_sin_atencion(): void
+    /** Paso 1: consultar horarios en un día sin atención (médico con horario ese día de la semana) → el sistema no ofrece horarios para esa fecha. */
+    #[Test]
+    public function paso_1_consultar_horarios_en_un_dia_sin_atencion(): void
     {
         $this->crearBloqueo(['fecha' => $this->lunes, 'motivo' => 'T-Feriado de prueba', 'estado' => true]);
 
@@ -54,8 +56,9 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         $this->assertSame(Disponibilidad::DIA_SIN_ATENCION, $resultado->motivo);
     }
 
-    /** Caso 2: consultar los horarios libres de un médico (horario 08:00 a 12:00 y una cita a las 09:00) → se muestran los bloques libres y no aparece el de las 09:00. */
-    public function test_consultar_los_horarios_libres_de_un_medico(): void
+    /** Paso 2: consultar los horarios libres de un médico (horario 08:00 a 12:00 y una cita a las 09:00) → se muestran los bloques libres y no aparece el de las 09:00. */
+    #[Test]
+    public function paso_2_consultar_los_horarios_libres_de_un_medico(): void
     {
         $this->crearCita($this->medico, $this->crearPaciente(), $this->especialidad, $this->lunes, '09:00', '09:30');
 
@@ -69,8 +72,9 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         $this->assertSame(['08:00', '08:30', '09:30', '10:00', '10:30', '11:00', '11:30'], $inicios);
     }
 
-    /** Caso 3: consultar un día en que el médico no atiende (fecha de un día sin horario del médico) → el sistema indica que el médico no atiende en esa fecha. */
-    public function test_consultar_un_dia_en_que_el_medico_no_atiende(): void
+    /** Paso 3: consultar un día en que el médico no atiende (fecha de un día sin horario del médico) → el sistema indica que el médico no atiende en esa fecha. */
+    #[Test]
+    public function paso_3_consultar_un_dia_en_que_el_medico_no_atiende(): void
     {
         $martes = $this->proximaFecha(2);
 
@@ -80,8 +84,9 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         $this->assertSame(Disponibilidad::NO_ATIENDE, $this->servicio()->calcularLibres($this->medico, $martes)->motivo);
     }
 
-    /** Caso 4: consultar horarios en una fecha pasada (fecha anterior a hoy) → el sistema no muestra horarios. */
-    public function test_consultar_horarios_en_una_fecha_pasada(): void
+    /** Paso 4: consultar horarios en una fecha pasada (fecha anterior a hoy) → el sistema no muestra horarios. */
+    #[Test]
+    public function paso_4_consultar_horarios_en_una_fecha_pasada(): void
     {
         $ayer = Carbon::yesterday()->toDateString();
 
@@ -91,8 +96,9 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
         $this->assertSame(Disponibilidad::FECHA_PASADA, $this->servicio()->calcularLibres($this->medico, $ayer)->motivo);
     }
 
-    /** Caso 5: un horario cancelado vuelve a estar libre (médico con una cita cancelada) → el bloque de la cita cancelada aparece libre. */
-    public function test_un_horario_cancelado_vuelve_a_estar_libre(): void
+    /** Paso 5: un horario cancelado vuelve a estar libre (médico con una cita cancelada) → el bloque de la cita cancelada aparece libre. */
+    #[Test]
+    public function paso_5_un_horario_cancelado_vuelve_a_estar_libre(): void
     {
         $paciente = $this->crearPaciente();
         $cita = $this->crearCita($this->medico, $paciente, $this->especialidad, $this->lunes, '09:00', '09:30');

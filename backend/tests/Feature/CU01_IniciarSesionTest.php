@@ -16,13 +16,15 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Mailer\Exception\TransportException;
 
 /** CU-01: Iniciar sesión. */
 class CU01_IniciarSesionTest extends SistemaTestCase
 {
-    /** Caso 1: credenciales válidas → ingresa al panel y ve el menú de su rol. */
-    public function test_iniciar_sesion_con_credenciales_validas(): void
+    /** Paso 1: credenciales válidas → ingresa al panel y ve el menú de su rol. */
+    #[Test]
+    public function paso_1_iniciar_sesion_con_credenciales_validas(): void
     {
         $usuario = $this->crearUsuario('t-recepcion', [Rol::RECEPCIONISTA], 'Clave1234');
 
@@ -36,8 +38,9 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->get('/panel')->assertOk()->assertSee('Bienvenido, T-recepcion')->assertSee('Recepcionista');
     }
 
-    /** Caso 2: contraseña incorrecta → mensaje genérico y no ingresa. */
-    public function test_iniciar_sesion_con_contrasena_incorrecta(): void
+    /** Paso 2: contraseña incorrecta → mensaje genérico y no ingresa. */
+    #[Test]
+    public function paso_2_iniciar_sesion_con_contrasena_incorrecta(): void
     {
         $usuario = $this->crearUsuario('t-clave-mala', [Rol::PACIENTE], 'Clave1234');
 
@@ -49,8 +52,9 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->assertDatabaseHas('bitacora', ['accion' => 'LOGIN_FALLIDO', 'usuario_id' => $usuario->id]);
     }
 
-    /** Caso 3: 4 intentos fallidos en un minuto con el mismo correo → bloqueo temporal de ese correo. */
-    public function test_superar_el_limite_de_intentos(): void
+    /** Paso 3: 4 intentos fallidos en un minuto con el mismo correo → bloqueo temporal de ese correo. */
+    #[Test]
+    public function paso_3_superar_el_limite_de_intentos(): void
     {
         $usuario = $this->crearUsuario('t-bloqueo', [Rol::PACIENTE], 'Clave1234');
 
@@ -67,8 +71,9 @@ class CU01_IniciarSesionTest extends SistemaTestCase
         $this->assertDatabaseHas('bitacora', ['accion' => 'LOGIN_BLOQUEADO', 'usuario_id' => $usuario->id]);
     }
 
-    /** Caso 4: abrir una página interna sin sesión → redirige al inicio de sesión. */
-    public function test_ingresar_a_una_pagina_interna_sin_sesion(): void
+    /** Paso 4: abrir una página interna sin sesión → redirige al inicio de sesión. */
+    #[Test]
+    public function paso_4_ingresar_a_una_pagina_interna_sin_sesion(): void
     {
         $this->get('/panel')->assertRedirect('/login');
     }

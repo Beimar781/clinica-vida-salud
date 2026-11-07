@@ -8,6 +8,7 @@ use App\Models\Medico;
 use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 
 /** CU-05: Gestionar médicos. */
 class CU05_GestionarMedicosTest extends SistemaTestCase
@@ -26,8 +27,9 @@ class CU05_GestionarMedicosTest extends SistemaTestCase
         $this->pediatria = $this->crearEspecialidad('T-Pediatría');
     }
 
-    /** Caso 1: registrar un médico con sus especialidades (datos completos y 2 especialidades) → queda guardado con su código y especialidades. */
-    public function test_registrar_medico_con_sus_especialidades(): void
+    /** Paso 1: registrar un médico con sus especialidades (datos completos y 2 especialidades) → queda guardado con su código y especialidades. */
+    #[Test]
+    public function paso_1_registrar_medico_con_sus_especialidades(): void
     {
         $this->actingAs($this->admin)->post(route('medicos.guardar'), $this->datos([
             'especialidades' => [$this->general->id, $this->pediatria->id],
@@ -41,8 +43,9 @@ class CU05_GestionarMedicosTest extends SistemaTestCase
         $this->assertDatabaseHas('bitacora', ['accion' => 'MEDICO_CREADO', 'usuario_id' => $this->admin->id]);
     }
 
-    /** Caso 2: registrar un médico con registro profesional repetido (número de registro existente) → rechaza el registro. */
-    public function test_registrar_medico_con_registro_profesional_repetido(): void
+    /** Paso 2: registrar un médico con registro profesional repetido (número de registro existente) → rechaza el registro. */
+    #[Test]
+    public function paso_2_registrar_medico_con_registro_profesional_repetido(): void
     {
         $this->crearMedico(['nro_registro' => 'T-RM-100'], [$this->general]);
 
@@ -54,8 +57,9 @@ class CU05_GestionarMedicosTest extends SistemaTestCase
         $this->assertSame(1, Medico::where('nro_registro', 'T-RM-100')->count());
     }
 
-    /** Caso 3: desactivar un médico activo con citas históricas → queda inactivo, no aparece para nuevas citas y su historial se conserva. */
-    public function test_desactivar_un_medico_con_citas_historicas(): void
+    /** Paso 3: desactivar un médico activo con citas históricas → queda inactivo, no aparece para nuevas citas y su historial se conserva. */
+    #[Test]
+    public function paso_3_desactivar_un_medico_con_citas_historicas(): void
     {
         $medico = $this->crearMedico([], [$this->general]);
         $cita = $this->crearCita($medico, $this->crearPaciente(), $this->general, '2020-01-06', '08:00', '08:30', Cita::ATENDIDA);
@@ -72,8 +76,9 @@ class CU05_GestionarMedicosTest extends SistemaTestCase
         $this->assertTrue($medico->fresh()->estado);
     }
 
-    /** Caso 4: asignar ubicación y permiso (médico con consultorio y permiso de marcar citas como atendidas) → los datos quedan guardados. */
-    public function test_asignar_ubicacion_y_permiso_a_un_medico(): void
+    /** Paso 4: asignar ubicación y permiso (médico con consultorio y permiso de marcar citas como atendidas) → los datos quedan guardados. */
+    #[Test]
+    public function paso_4_asignar_ubicacion_y_permiso_a_un_medico(): void
     {
         $this->actingAs($this->admin)->post(route('medicos.guardar'), $this->datos([
             'ubicacion' => 'T-Sede Norte · Consultorio 7', 'puede_marcar_atendida' => '1',

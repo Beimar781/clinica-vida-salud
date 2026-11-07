@@ -6,6 +6,7 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use App\Support\PanelPrincipal;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\Test;
 
 /** CU-03: Gestionar usuarios y roles. */
 class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
@@ -18,8 +19,9 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
         $this->admin = $this->crearUsuario('t-admin', [Rol::ADMINISTRADOR]);
     }
 
-    /** Caso 1: registrar un usuario con correo repetido → rechaza el duplicado e indica el campo. */
-    public function test_registrar_usuario_con_correo_repetido(): void
+    /** Paso 1: registrar un usuario con correo repetido → rechaza el duplicado e indica el campo. */
+    #[Test]
+    public function paso_1_registrar_usuario_con_correo_repetido(): void
     {
         $existente = $this->crearUsuario('t-existente', [Rol::PACIENTE]);
 
@@ -31,8 +33,9 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
         $this->assertSame(0, Usuario::where('nombre_usuario', 't-nuevo')->count());
     }
 
-    /** Caso 2: asignar un rol y comprobar permisos → solo ve las opciones de Recepcionista; las de Administrador están denegadas. */
-    public function test_asignar_rol_y_comprobar_permisos(): void
+    /** Paso 2: asignar un rol y comprobar permisos → solo ve las opciones de Recepcionista; las de Administrador están denegadas. */
+    #[Test]
+    public function paso_2_asignar_rol_y_comprobar_permisos(): void
     {
         $this->actingAs($this->admin)
             ->post(route('usuarios.guardar'), $this->datos(['nombre_usuario' => 't-recep', 'correo' => 't-recep@prueba.test', 'roles' => [$this->idRol(Rol::RECEPCIONISTA)]]))
@@ -55,8 +58,9 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
         $this->assertNotContains('Especialidades', $nombres);
     }
 
-    /** Caso 3: asignar más de un rol → al ingresar ve las opciones de ambos roles. */
-    public function test_asignar_mas_de_un_rol_a_un_usuario(): void
+    /** Paso 3: asignar más de un rol → al ingresar ve las opciones de ambos roles. */
+    #[Test]
+    public function paso_3_asignar_mas_de_un_rol_a_un_usuario(): void
     {
         $this->actingAs($this->admin)
             ->post(route('usuarios.guardar'), $this->datos([

@@ -6,18 +6,21 @@ use App\Models\Rol;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
+use PHPUnit\Framework\Attributes\Test;
 
 /** CU-02: Cerrar sesión. */
 class CU02_CerrarSesionTest extends SistemaTestCase
 {
-    /** Caso 1: abrir una página interna sin sesión → redirige al inicio de sesión. */
-    public function test_ingresar_a_una_pagina_interna_sin_sesion(): void
+    /** Paso 1: abrir una página interna sin sesión → redirige al inicio de sesión. */
+    #[Test]
+    public function paso_1_ingresar_a_una_pagina_interna_sin_sesion(): void
     {
         $this->get('/panel')->assertRedirect('/login');
     }
 
-    /** Caso 2: cerrar sesión y volver atrás → la sesión termina y no se muestran páginas internas. */
-    public function test_cerrar_sesion_y_volver_atras_en_el_navegador(): void
+    /** Paso 2: cerrar sesión y volver atrás → la sesión termina y no se muestran páginas internas. */
+    #[Test]
+    public function paso_2_cerrar_sesion_y_volver_atras_en_el_navegador(): void
     {
         $usuario = $this->crearUsuario('t-salida', [Rol::RECEPCIONISTA]);
 
