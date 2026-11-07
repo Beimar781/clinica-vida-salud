@@ -186,7 +186,7 @@ class CU12_CancelarCitaMedicaTest extends SistemaTestCase
         Carbon::setTestNow(Carbon::parse($this->lunes.' 07:00:00'));
         $this->post(route('citas.cancelar.guardar', $cita), ['motivo' => 'Me surgió un viaje'])
             ->assertSessionHas('exito', "Cita {$cita->codigo} cancelada. El horario quedó libre.")
-            ->assertRedirect(); // vuelve a «Mis citas» (o al panel mientras esa pantalla no exista)
+            ->assertRedirect(route('historial.index')); // vuelve a «Mis citas» (CU-15)
 
         $cita->refresh();
         $this->assertSame(Cita::CANCELADA, $cita->estado);

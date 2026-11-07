@@ -39,6 +39,8 @@ class PanelPrincipal
             'clave' => 'gestion-pacientes', 'nombre' => 'Gestión de Pacientes', 'icono' => 'paciente',
             'funciones' => [
                 ['nombre' => 'Pacientes', 'ruta' => 'pacientes.index', 'icono' => 'paciente', 'cu' => 'CU-07', 'roles' => [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA]],
+                ['nombre' => 'Historial de citas', 'ruta' => 'historial.index', 'icono' => 'historial', 'cu' => 'CU-15', 'roles' => [Rol::RECEPCIONISTA]],
+                ['nombre' => 'Mis citas', 'ruta' => 'historial.index', 'icono' => 'historial', 'cu' => 'CU-15', 'roles' => [Rol::PACIENTE]],
             ],
         ],
         [
