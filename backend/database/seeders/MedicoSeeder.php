@@ -52,7 +52,7 @@ class MedicoSeeder extends Seeder
                 'horarios' => [[$lunAVie, '14:00', '19:00', 60]],
             ],
             [
-                // Sin permiso para marcar citas como atendidas (lo marca la recepción o el administrador).
+                // Sin permiso para marcar citas como atendidas: solo el administrador puede corregir el estado de sus citas (CU-13).
                 'nro_registro' => 'RM-1005', 'nombres' => 'Jorge', 'apellidos' => 'Rivero Salvatierra',
                 'usuario' => null, 'telefono' => '70011005', 'correo' => null,
                 'ubicacion' => 'Sede Central · Consultorio 201', 'puede_marcar_atendida' => false,

@@ -26,7 +26,7 @@
     }
 
     function mensajeDe(campo) {
-        if (campo.validity.valueMissing) { return 'Este campo es obligatorio.'; }
+        if (campo.validity.valueMissing) { return campo.getAttribute('data-mensaje-requerido') || 'Este campo es obligatorio.'; }
         if (campo.validity.typeMismatch) { return 'El formato no es válido.'; }
         if (campo.validity.badInput) { return 'Ingrese un número válido.'; }
         if (campo.validity.rangeUnderflow) { return 'El valor no puede ser menor que ' + campo.min + '.'; }

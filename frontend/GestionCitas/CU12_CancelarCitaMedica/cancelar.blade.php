@@ -68,7 +68,7 @@
                         <div @class(['campo', 'campo--check', 'campo--error' => $errors->has('confirmo_sin_devolucion')])>
                             <input type="hidden" name="confirmo_sin_devolucion" value="0">
                             <input type="checkbox" id="campo-confirmo_sin_devolucion" name="confirmo_sin_devolucion" value="1" required
-                                   data-mensaje="Marque la casilla para cancelar sin devolución del pago." @checked(old('confirmo_sin_devolucion') === '1')>
+                                   data-mensaje-requerido="Marque la casilla para cancelar sin devolución del pago." @checked(old('confirmo_sin_devolucion') === '1')>
                             <label for="campo-confirmo_sin_devolucion">Entiendo que el pago no se devuelve y confirmo la cancelación.</label>
                         </div>
                     @endif

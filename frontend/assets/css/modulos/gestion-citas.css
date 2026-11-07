@@ -54,7 +54,8 @@
 .corregir-estado summary::-webkit-details-marker { display: none; }
 .corregir-estado__form { display: grid; gap: .4rem; min-width: 250px; margin-top: .4rem; padding: .75rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; }
 .corregir-estado__form label { font-size: .8rem; font-weight: 700; color: var(--vs-blue-900); }
-.corregir-estado__form select, .corregir-estado__form textarea { width: 100%; }
+.corregir-estado__form select, .corregir-estado__form textarea { width: 100%; padding: .45rem .6rem; font: inherit; color: var(--vs-text); background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 6px; }
+.corregir-estado__form select:focus, .corregir-estado__form textarea:focus { outline: 3px solid var(--vs-sky-200); border-color: var(--vs-sky-400); }
 
 /* ---------- Agenda médica (CU-14) ---------- */
 .resumen-agenda { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }

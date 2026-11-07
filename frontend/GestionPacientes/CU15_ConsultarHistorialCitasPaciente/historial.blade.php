@@ -7,6 +7,7 @@
 
 @push('estilos')
     <link rel="stylesheet" href="@recurso('css/modulos/gestion-pacientes.css')">
+    <link rel="stylesheet" href="@recurso('css/modulos/gestion-citas.css')">{{-- filtros (.buscador) y tablas de citas --}}
 @endpush
 
 @section('contenido')
