@@ -59,6 +59,22 @@ class MedicoSeeder extends Seeder
                 'especialidades' => ['Cardiología', 'Medicina general'],
                 'horarios' => [[[2, 4], '08:00', '12:00', 30], [[5], '14:00', '17:00', 30]],
             ],
+            [
+                // v30: los servicios se agendan como una especialidad, con su profesional en medico_especialidad.
+                'nro_registro' => 'RM-1006', 'nombres' => 'Rosario', 'apellidos' => 'Vaca Heredia',
+                'usuario' => null, 'telefono' => '70011006', 'correo' => null,
+                'ubicacion' => 'Sede Central · Laboratorio', 'puede_marcar_atendida' => true,
+                'especialidades' => ['Laboratorio'],
+                'horarios' => [[[1, 2, 3, 4, 5, 6], '07:00', '11:00', 20]],
+            ],
+            [
+                // Enfermería atiende todos los días: así siempre hay una cita posible para «mañana» (recordatorios, CU-22).
+                'nro_registro' => 'RM-1007', 'nombres' => 'Daniel', 'apellidos' => 'Cuéllar Roca',
+                'usuario' => null, 'telefono' => '70011007', 'correo' => null,
+                'ubicacion' => 'Sede Central · Sala de enfermería', 'puede_marcar_atendida' => true,
+                'especialidades' => ['Enfermería'],
+                'horarios' => [[[1, 2, 3, 4, 5, 6, 7], '08:00', '12:00', 20]],
+            ],
         ];
 
         foreach ($medicos as $datos) {
@@ -111,13 +127,19 @@ class MedicoSeeder extends Seeder
             [1, 1, 'Año Nuevo'],
         ];
 
+        // v30: cada día sin atención guarda quién lo registró; los de demostración los registra el administrador.
+        $administradorId = Usuario::where('nombre_usuario', 'admin')->value('id');
+
         $hoy = Carbon::today();
         foreach ($feriados as [$mes, $dia, $motivo]) {
             $fecha = Carbon::create($hoy->year, $mes, $dia)->startOfDay();
             if ($fecha->lt($hoy)) {
                 $fecha = $fecha->addYear();
             }
-            BloqueoAgenda::firstOrCreate(['fecha' => $fecha->toDateString()], ['motivo' => $motivo, 'estado' => true]);
+            BloqueoAgenda::firstOrCreate(
+                ['fecha' => $fecha->toDateString()],
+                ['motivo' => $motivo, 'estado' => true, 'registrado_por' => $administradorId],
+            );
         }
     }
 }

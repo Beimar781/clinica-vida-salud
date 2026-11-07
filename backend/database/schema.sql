@@ -1,5 +1,5 @@
 -- Clínica Vida Salud - Sistema web de gestión de citas médicas
--- Modelo físico (PostgreSQL 16) · fuente: documento sección 6.3.3
+-- Modelo físico (PostgreSQL 16 o superior) · fuente: documento v30, sección 6.3.3
 -- Referencia para escribir las migraciones de Laravel (usar DB::unprepared para EXCLUDE,
 -- secuencias y triggers). Las tablas deben quedar idénticas a esta definición.
 
@@ -39,6 +39,9 @@ CREATE TABLE especialidades (
    nombre             VARCHAR(80) NOT NULL,
    nombre_normalizado VARCHAR(80) NOT NULL UNIQUE,   -- minúsculas, sin tildes, sin espacios sobrantes
    descripcion        VARCHAR(200),
+   tipo               VARCHAR(12)  NOT NULL DEFAULT 'CONSULTA'
+                      CHECK (tipo IN ('CONSULTA','LABORATORIO','ENFERMERIA')),  -- v30: especialidades y servicios
+   precio             NUMERIC(8,2) NOT NULL DEFAULT 0 CHECK (precio >= 0),       -- v30: precio en bolivianos
    estado             BOOLEAN     NOT NULL DEFAULT TRUE
 );
 
@@ -85,6 +88,7 @@ CREATE TABLE bloqueos_agenda (
    fecha      DATE         NOT NULL UNIQUE,
    motivo     VARCHAR(120) NOT NULL,
    estado     BOOLEAN      NOT NULL DEFAULT TRUE,
+   registrado_por BIGINT   NOT NULL REFERENCES usuarios(id),   -- v30: usuario que lo registró
    created_at TIMESTAMP    NOT NULL DEFAULT now()
 );
 
@@ -158,6 +162,13 @@ CREATE TABLE citas (
    estado               VARCHAR(15) NOT NULL DEFAULT 'PROGRAMADA'
                         CHECK (estado IN ('PROGRAMADA','CONFIRMADA','ATENDIDA','CANCELADA','INASISTENCIA')),
    motivo_cancelacion   VARCHAR(200),
+   monto                NUMERIC(8,2) NOT NULL DEFAULT 0,                 -- v30: precio de la especialidad o servicio al registrar
+   metodo_pago          VARCHAR(10)  NOT NULL DEFAULT 'EFECTIVO'
+                        CHECK (metodo_pago IN ('TARJETA','EFECTIVO')),
+   estado_pago          VARCHAR(10)  NOT NULL DEFAULT 'PENDIENTE'
+                        CHECK (estado_pago IN ('PENDIENTE','PAGADO')),
+   referencia_pago      VARCHAR(80),                                     -- v30: id del pago en Stripe (nunca datos de tarjeta)
+   fecha_pago           TIMESTAMP,
    recordatorio_enviado BOOLEAN NOT NULL DEFAULT FALSE,
    creado_por           BIGINT REFERENCES usuarios(id),
    created_at           TIMESTAMP NOT NULL DEFAULT now(),
@@ -221,9 +232,6 @@ CREATE SEQUENCE pacientes_codigo_seq START 1;
 CREATE SEQUENCE medicos_codigo_seq   START 1;
 -- Ejemplo: SELECT 'CM-' || lpad(nextval('citas_codigo_seq')::text, 4, '0');
 
--- Dirección IP desde la que se hizo la operación (opcional: los registros anteriores quedan sin IP).
-ALTER TABLE bitacora ADD COLUMN ip VARCHAR(45);
-
 -- La bitácora es de solo agregar: ningún UPDATE ni DELETE (RF19, trazabilidad)
 CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$
 BEGIN
@@ -237,3 +245,7 @@ CREATE TRIGGER trg_bitacora_inmutable
 
 -- Datos base obligatorios (los seeders de Laravel los insertan)
 -- roles: Administrador, Recepcionista, Médico, Paciente
+
+-- Adiciones técnicas posteriores (fuera del modelo del documento; ya están en migraciones):
+--   tabla password_reset_tokens (correo PK, token, created_at): recuperación de contraseña (flujo A3 de CU-01).
+--   columna bitacora.ip VARCHAR(45): dirección desde la que se hizo la operación.

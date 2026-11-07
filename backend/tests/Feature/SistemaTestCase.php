@@ -106,6 +106,19 @@ abstract class SistemaTestCase extends TestCase
         ]);
     }
 
+    /**
+     * Día sin atención de prueba. Desde el v30 la tabla exige registrado_por: si no se indica, lo registra el
+     * administrador de demostración.
+     *
+     * @param  array{fecha: string, motivo: string, estado?: bool, registrado_por?: int}  $datos
+     */
+    protected function crearBloqueo(array $datos): BloqueoAgenda
+    {
+        return BloqueoAgenda::create($datos + [
+            'registrado_por' => Usuario::where('nombre_usuario', 'admin')->value('id'),
+        ]);
+    }
+
     /** Cita de prueba (código «T-...»). */
     protected function crearCita(Medico $medico, Paciente $paciente, Especialidad $especialidad, string $fecha, string $inicio, string $fin, string $estado = Cita::PROGRAMADA): Cita
     {

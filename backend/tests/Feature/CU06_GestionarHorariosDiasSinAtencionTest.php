@@ -94,7 +94,7 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
     /** Caso 5: registrar un día sin atención repetido (fecha ya registrada) → el sistema rechaza el duplicado. */
     public function test_registrar_un_dia_sin_atencion_repetido(): void
     {
-        BloqueoAgenda::create(['fecha' => $this->fechaLejana, 'motivo' => 'T-Primero', 'estado' => true]);
+        $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-Primero', 'estado' => true]);
 
         $this->actingAs($this->admin)
             ->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => 'T-Segundo'])
@@ -225,7 +225,7 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
 
     public function test_desactivar_un_dia_sin_atencion_vuelve_a_dejar_disponible_la_fecha(): void
     {
-        $dia = BloqueoAgenda::create(['fecha' => $this->fechaLejana, 'motivo' => 'T-Temporal', 'estado' => true]);
+        $dia = $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-Temporal', 'estado' => true]);
 
         $this->actingAs($this->admin)->post(route('dias-sin-atencion.desactivar', $dia))
             ->assertSessionHas('exito', fn ($m) => str_contains($m, 'la fecha vuelve a estar disponible'));

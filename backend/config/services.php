@@ -27,6 +27,18 @@ return [
         'key' => env('BREVO_API_KEY'),
     ],
 
+    // Pago con tarjeta (CU-09 y CU-11): Stripe Checkout alojado por API REST, sin SDK. Sin STRIPE_SECRET el
+    // método tarjeta queda deshabilitado y el efectivo sigue funcionando. Moneda y tipo de cambio: config/vidasalud.php
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
+    // Resumen con IA de los reportes (CU-18, RNF09): Google Gemini; solo recibe totales agregados.
+    'ia' => [
+        'gemini_key' => env('GEMINI_API_KEY'),
+        'modelo' => env('IA_MODELO', 'gemini-2.5-flash'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

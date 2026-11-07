@@ -223,7 +223,7 @@ class CU09_RegistrarCitaMedicaTest extends SistemaTestCase
         $this->post(route('citas.guardar'), $this->datos(['especialidad_id' => $otraEspecialidad->id]))
             ->assertSessionHas('error', 'El médico no atiende la especialidad elegida.');
 
-        BloqueoAgenda::create(['fecha' => $this->lunes, 'motivo' => 'T-Feriado', 'estado' => true]);
+        $this->crearBloqueo(['fecha' => $this->lunes, 'motivo' => 'T-Feriado', 'estado' => true]);
         $this->post(route('citas.guardar'), $this->datos())->assertSessionHas('error', fn ($m) => str_contains($m, 'feriado o día sin atención'));
         BloqueoAgenda::whereDate('fecha', $this->lunes)->delete();
 

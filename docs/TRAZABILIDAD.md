@@ -39,13 +39,28 @@ Referencia del Ciclo I (24/10): 250 pruebas, 1363 aserciones, todas aprobadas. L
 
 | Tarea | Prompt | Estado |
 |---|---|---|
-| Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`) y `schema.sql` nuevo | 0 | Pendiente |
-| Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago) | 0 | Pendiente |
+| Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`) y `schema.sql` nuevo | 0 | Hecho (07/11) |
+| Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago) | 0 | Hecho (07/11) |
 | Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | 2 | Pendiente |
 | Proveedor de IA para el resumen de reportes | 7 | Pendiente |
 | Programador y comando `citas:enviar-recordatorios`; servicio cron en Railway | 8, 10 | Pendiente |
 | Auditoría documento ↔ código y prueba general | 9 | Pendiente |
 | Redespliegue en Railway con variables de Stripe, IA y Brevo | 10 | Pendiente |
+
+### Base técnica (Prompt 0, 07/11/2026)
+
+| Elemento | Archivo | Tabla / uso | Prueba |
+|---|---|---|---|
+| Migración: `especialidades.tipo` y `precio` | `database/migrations/2026_11_06_000001_agregar_tipo_y_precio_a_especialidades.php` | especialidades (CU-04, CU-09, CU-11) | `BaseDatosTest` |
+| Migración: `bloqueos_agenda.registrado_por` | `…_000002_agregar_registrado_por_a_bloqueos_agenda.php` | bloqueos_agenda (CU-06, CU-08) | `BaseDatosTest` |
+| Migración: pago de `citas` | `…_000003_agregar_pago_a_citas.php` | citas: monto, metodo_pago, estado_pago, referencia_pago, fecha_pago (CU-09 a CU-13, CU-18) | `BaseDatosTest` |
+| Migración: tabla `consultas` | `…_000004_crear_consultas.php` | consultas (CU-16, CU-17); no existía en el Ciclo I | `BaseDatosTest` |
+| Modelo físico v30 | `backend/database/schema.sql` | copia de `.trabajo/schema.sql` | comparado con `migrate --seed` en base vacía |
+| Modelos | `Especialidad` (tipo, precio), `BloqueoAgenda` (registradoPor), `Cita` (pago, scope `pagadas`) | CE | pruebas de CU-04 a CU-11 |
+| Dinero y configuración | `App\Support\Dinero`, `config/vidasalud.php`, `config/services.php`, `.env.example` | formato `Bs 100,00`, conversión a Stripe | se prueba en el Prompt 2 |
+| Seeders idempotentes | `EspecialidadSeeder`, `MedicoSeeder`, `PacienteSeeder`, `CitaSeeder` | datos base y demostración del v30 | `DespliegueTest` (17) |
+
+Resultado: `BaseDatosTest` 17 aprobadas (64 aserciones), `DespliegueTest` 17 aprobadas (76); CU-04 a CU-11 siguen en verde (125 pruebas, 767 aserciones).
 
 ## 3. Prueba general (la llena el Prompt 9)
 

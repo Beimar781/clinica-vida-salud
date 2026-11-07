@@ -82,7 +82,9 @@ class DiaSinAtencionService
     public function guardar(array $datos, Usuario $actor): BloqueoAgenda
     {
         try {
-            $dia = BloqueoAgenda::create(['fecha' => $datos['fecha'], 'motivo' => trim($datos['motivo']), 'estado' => true]);
+            $dia = BloqueoAgenda::create([
+                'fecha' => $datos['fecha'], 'motivo' => trim($datos['motivo']), 'estado' => true, 'registrado_por' => $actor->id,
+            ]);
         } catch (UniqueConstraintViolationException) {
             throw ValidationException::withMessages(['fecha' => self::MENSAJE_REPETIDA]);
         }

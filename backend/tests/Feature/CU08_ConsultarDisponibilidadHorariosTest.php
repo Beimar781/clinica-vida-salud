@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\BloqueoAgenda;
 use App\Models\Cita;
 use App\Models\Especialidad;
 use App\Models\Medico;
@@ -43,7 +42,7 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
     /** Caso 1: consultar horarios en un día sin atención (médico con horario ese día de la semana) → el sistema no ofrece horarios para esa fecha. */
     public function test_consultar_horarios_en_un_dia_sin_atencion(): void
     {
-        BloqueoAgenda::create(['fecha' => $this->lunes, 'motivo' => 'T-Feriado de prueba', 'estado' => true]);
+        $this->crearBloqueo(['fecha' => $this->lunes, 'motivo' => 'T-Feriado de prueba', 'estado' => true]);
 
         $this->actingAs($this->recepcion)->get($this->url($this->lunes))
             ->assertOk()
@@ -159,7 +158,7 @@ class CU08_ConsultarDisponibilidadHorariosTest extends SistemaTestCase
     public function test_un_bloque_desactivado_no_se_ofrece_y_un_dia_sin_atencion_desactivado_vuelve_a_estar_disponible(): void
     {
         $this->crearHorario($this->medico, 1, '14:00', '16:00', 60, activo: false);
-        BloqueoAgenda::create(['fecha' => $this->lunes, 'motivo' => 'T-Temporal', 'estado' => false]);
+        $this->crearBloqueo(['fecha' => $this->lunes, 'motivo' => 'T-Temporal', 'estado' => false]);
 
         $inicios = array_column($this->servicio()->calcularLibres($this->medico, $this->lunes)->libres, 'inicio');
 

@@ -41,6 +41,11 @@ class PacienteSeeder extends Seeder
             ['ci' => '4321876', 'nombres' => 'Roberto', 'apellidos' => 'Salvatierra Vaca', 'nacimiento' => '1958-12-05', 'sexo' => 'M',
                 'telefono' => '71234511', 'correo' => null, 'direccion' => 'Av. Mutualista 90', 'usuario' => null,
                 'emergencia' => null, 'sangre' => null],
+            // Ficha registrada por recepción SIN cuenta: sirve para probar CU-20 (la persona se registra con este CI
+            // y su fecha de nacimiento 15/06/1990, y la cuenta nueva se vincula a esta ficha con su historia).
+            ['ci' => '8123456', 'nombres' => 'Ana Lucía', 'apellidos' => 'Gutiérrez Parada', 'nacimiento' => '1990-06-15', 'sexo' => 'F',
+                'telefono' => '71234513', 'correo' => null, 'direccion' => 'Calle Sucre 455', 'usuario' => null,
+                'emergencia' => ['Jorge Gutiérrez', 'Padre', '71234514'], 'sangre' => 'B-', 'alergias' => 'Ninguna conocida'],
             ['ci' => '11345678', 'nombres' => 'Valeria', 'apellidos' => 'Ortiz Chávez', 'nacimiento' => '2001-04-27', 'sexo' => 'F',
                 'telefono' => '71234512', 'correo' => 'valeria.ortiz@correo.test', 'direccion' => null, 'usuario' => null,
                 'emergencia' => null, 'sangre' => null],

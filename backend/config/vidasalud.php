@@ -33,4 +33,14 @@ return [
     */
     'demo_password' => 'Demo1234*',
 
+    /*
+    | Dinero (v30). Los precios y los montos de las citas están en bolivianos. El pago con tarjeta usa Stripe
+    | Checkout en modo de prueba: STRIPE_MONEDA=bob y TIPO_CAMBIO=1 envían el monto en Bs tal cual. Si la cuenta de
+    | Stripe rechazara BOB basta con STRIPE_MONEDA=usd y TIPO_CAMBIO=6.96 (el código ya convierte). La clave
+    | (STRIPE_SECRET) está en config/services.php.
+    */
+    'moneda' => 'Bs',
+    'stripe_moneda' => env('STRIPE_MONEDA', 'bob'),
+    'tipo_cambio' => (float) env('TIPO_CAMBIO', 1),
+
 ];

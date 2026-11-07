@@ -153,7 +153,7 @@ class CU11_ReservarCitaEnLineaTest extends SistemaTestCase
         $this->post(route('reservas.guardar'), $this->datos(['fecha' => Carbon::yesterday()->toDateString()]))
             ->assertSessionHas('error', DisponibilidadService::MENSAJE_FECHA_PASADA);
 
-        BloqueoAgenda::create(['fecha' => $this->lunes, 'motivo' => 'T-Feriado', 'estado' => true]);
+        $this->crearBloqueo(['fecha' => $this->lunes, 'motivo' => 'T-Feriado', 'estado' => true]);
         $this->post(route('reservas.guardar'), $this->datos())->assertSessionHas('error', fn ($m) => str_contains($m, 'feriado o día sin atención'));
         BloqueoAgenda::whereDate('fecha', $this->lunes)->delete();
 

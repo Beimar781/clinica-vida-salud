@@ -137,7 +137,7 @@ class CU10_ReprogramarCitaMedicaTest extends SistemaTestCase
         $this->put(route('citas.actualizar', $cita), $this->datos(['fecha' => Carbon::yesterday()->toDateString()]))
             ->assertSessionHas('error', DisponibilidadService::MENSAJE_FECHA_PASADA);
 
-        BloqueoAgenda::create(['fecha' => $this->otroLunes, 'motivo' => 'T-Feriado', 'estado' => true]);
+        $this->crearBloqueo(['fecha' => $this->otroLunes, 'motivo' => 'T-Feriado', 'estado' => true]);
         $this->put(route('citas.actualizar', $cita), $this->datos())->assertSessionHas('error', fn ($m) => str_contains($m, 'feriado o día sin atención'));
         BloqueoAgenda::whereDate('fecha', $this->otroLunes)->delete();
 

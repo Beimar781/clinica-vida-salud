@@ -11,15 +11,35 @@ use Illuminate\Support\Collection;
  */
 class Especialidad extends Model
 {
+    /** Tipos del catálogo (v30): consulta médica, servicio de laboratorio o de enfermería. */
+    public const CONSULTA = 'CONSULTA';
+
+    public const LABORATORIO = 'LABORATORIO';
+
+    public const ENFERMERIA = 'ENFERMERIA';
+
+    /** Valor guardado => texto en pantalla. */
+    public const TIPOS = [
+        self::CONSULTA => 'Consulta médica',
+        self::LABORATORIO => 'Laboratorio',
+        self::ENFERMERIA => 'Enfermería',
+    ];
+
     protected $table = 'especialidades';
 
     public $timestamps = false;
 
-    protected $fillable = ['nombre', 'nombre_normalizado', 'descripcion', 'estado'];
+    protected $fillable = ['nombre', 'nombre_normalizado', 'descripcion', 'tipo', 'precio', 'estado'];
 
     protected function casts(): array
     {
-        return ['estado' => 'boolean'];
+        return ['estado' => 'boolean', 'precio' => 'decimal:2'];
+    }
+
+    /** Texto del tipo para la interfaz («Consulta médica», «Laboratorio», «Enfermería»). */
+    public function getTipoTextoAttribute(): string
+    {
+        return self::TIPOS[$this->tipo] ?? (string) $this->tipo;
     }
 
     /**

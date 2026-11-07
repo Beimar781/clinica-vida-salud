@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,16 +25,43 @@ class Cita extends Model
 
     public const VIRTUAL = 'VIRTUAL';
 
+    /** Método de pago (v30): TARJETA = Stripe, EFECTIVO = lo cobra la recepción. */
+    public const METODO_TARJETA = 'TARJETA';
+
+    public const METODO_EFECTIVO = 'EFECTIVO';
+
+    /** Estado del pago. */
+    public const PAGO_PENDIENTE = 'PENDIENTE';
+
+    public const PAGO_PAGADO = 'PAGADO';
+
     protected $table = 'citas';
 
     protected $fillable = [
         'codigo', 'paciente_id', 'medico_id', 'especialidad_id', 'fecha', 'hora_inicio', 'hora_fin',
-        'modalidad', 'motivo', 'estado', 'motivo_cancelacion', 'recordatorio_enviado', 'creado_por',
+        'modalidad', 'motivo', 'estado', 'motivo_cancelacion', 'monto', 'metodo_pago', 'estado_pago',
+        'referencia_pago', 'fecha_pago', 'recordatorio_enviado', 'creado_por',
     ];
 
     protected function casts(): array
     {
-        return ['fecha' => 'date', 'recordatorio_enviado' => 'boolean'];
+        return [
+            'fecha' => 'date',
+            'monto' => 'decimal:2',
+            'fecha_pago' => 'datetime',
+            'recordatorio_enviado' => 'boolean',
+        ];
+    }
+
+    /** Citas con el pago registrado (estado_pago = PAGADO). */
+    public function scopePagadas(Builder $consulta): Builder
+    {
+        return $consulta->where('estado_pago', self::PAGO_PAGADO);
+    }
+
+    public function estaPagada(): bool
+    {
+        return $this->estado_pago === self::PAGO_PAGADO;
     }
 
     /** Las citas canceladas no ocupan horario (WHERE estado <> 'CANCELADA' en las restricciones EXCLUDE). */
