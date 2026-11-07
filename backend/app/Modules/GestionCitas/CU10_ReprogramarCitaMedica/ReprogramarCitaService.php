@@ -9,6 +9,7 @@ use App\Modules\GestionCitas\Compartido\Disponibilidad;
 use App\Modules\GestionCitas\Compartido\DisponibilidadService;
 use App\Modules\GestionCitas\Compartido\HorarioOcupadoException;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
+use App\Modules\GestionCitas\Compartido\TransicionesCita;
 use App\Services\BitacoraService;
 use App\Support\Texto;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -69,6 +70,12 @@ class ReprogramarCitaService
     public function puedeReprogramarse(Cita $cita): bool
     {
         return AgendarCitaService::sePuedeReprogramar($cita);
+    }
+
+    /** ¿Se ofrece «Cancelar» (CU-12) en el listado? Solo si la cita está Programada o Confirmada. */
+    public function puedeCancelarse(Cita $cita): bool
+    {
+        return app(TransicionesCita::class)->puedeCancelarse($cita);
     }
 
     public function motivoNoReprogramable(Cita $cita): string

@@ -6,6 +6,7 @@ use App\Support\Dinero;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @CU CU-08 a CU-11 @RF RF08 a RF11 @CE CECita (tabla citas). El código CM-0001 sale de citas_codigo_seq.
@@ -52,6 +53,12 @@ class Cita extends Model
             'fecha_pago' => 'datetime',
             'recordatorio_enviado' => 'boolean',
         ];
+    }
+
+    /** Momento en que empieza la cita (fecha + hora de inicio, en la zona horaria del sistema). */
+    public function getInicioAttribute(): Carbon
+    {
+        return $this->fecha->copy()->setTimeFromTimeString($this->hora_inicio);
     }
 
     /** Citas con el pago registrado (estado_pago = PAGADO). */

@@ -5,9 +5,10 @@ use App\Modules\GestionCitas\CU08_ConsultarDisponibilidadHorarios\Disponibilidad
 use App\Modules\GestionCitas\CU09_RegistrarCitaMedica\RegistrarCitaController;
 use App\Modules\GestionCitas\CU10_ReprogramarCitaMedica\ReprogramarCitaController;
 use App\Modules\GestionCitas\CU11_ReservarCitaEnLinea\ReservarCitaController;
+use App\Modules\GestionCitas\CU12_CancelarCitaMedica\CancelarCitaController;
 use Illuminate\Support\Facades\Route;
 
-// Paquete P4 - Gestión de Citas (CU-08, CU-09, CU-10 y CU-11).
+// Paquete P4 - Gestión de Citas (CU-08 a CU-14 y CU-22).
 // Este archivo se carga solo (ver AppServiceProvider::cargarModulos) dentro del grupo «web» (sesión, CSRF).
 
 // CU-08: Consultar disponibilidad de horarios (Recepcionista y Paciente)
@@ -35,6 +36,13 @@ Route::middleware(['auth', 'rol:Paciente'])->prefix('reservas')->name('reservas.
     Route::get('/reservar', [ReservarCitaController::class, 'reservar'])->name('reservar');
     Route::post('/', [ReservarCitaController::class, 'guardar'])->name('guardar');
     Route::get('/{cita}/comprobante', [ReservarCitaController::class, 'comprobante'])->whereNumber('cita')->name('comprobante');
+});
+
+// CU-12: Cancelar cita médica (Recepcionista, Administrador y el Paciente dueño de la cita; la cita propia y las
+// 2 horas de anticipación del paciente las comprueba CancelarCitaService)
+Route::middleware(['auth', 'rol:Recepcionista,Paciente'])->prefix('citas')->group(function () {
+    Route::get('/{cita}/cancelar', [CancelarCitaController::class, 'mostrar'])->whereNumber('cita')->name('citas.cancelar');
+    Route::post('/{cita}/cancelar', [CancelarCitaController::class, 'guardar'])->whereNumber('cita')->name('citas.cancelar.guardar');
 });
 
 // Pago con tarjeta (Stripe Checkout alojado) de CU-09 y CU-11: regreso de la página de pago y pago cancelado.

@@ -57,11 +57,16 @@
                                 <td class="precio">{{ $cita->monto_texto }}</td>
                                 <td><x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->metodo_pago === 'TARJETA' ? 'Tarjeta' : 'Efectivo' }}</small></td>
                                 <td>
-                                    @if ($servicio->puedeReprogramarse($cita))
-                                        <a class="btn btn-primario btn-sm" href="{{ route('citas.reprogramar', $cita) }}"><x-icono nombre="calendario" /> Reprogramar</a>
-                                    @else
-                                        <a class="btn btn-secundario btn-sm" href="{{ route('citas.reprogramar', $cita) }}" title="Ver los datos de la cita">Ver</a>
-                                    @endif
+                                    <div class="tabla__acciones">
+                                        @if ($servicio->puedeReprogramarse($cita))
+                                            <a class="btn btn-primario btn-sm" href="{{ route('citas.reprogramar', $cita) }}"><x-icono nombre="calendario" /> Reprogramar</a>
+                                        @else
+                                            <a class="btn btn-secundario btn-sm" href="{{ route('citas.reprogramar', $cita) }}" title="Ver los datos de la cita">Ver</a>
+                                        @endif
+                                        @if ($servicio->puedeCancelarse($cita))
+                                            <a class="btn btn-peligro btn-sm" href="{{ route('citas.cancelar', $cita) }}"><x-icono nombre="bloquear" /> Cancelar</a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty

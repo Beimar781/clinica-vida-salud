@@ -61,6 +61,12 @@ class AccionesBitacora
         'CITA_REPROGRAMADA' => 'Cita reprogramada',
         'CITA_RESERVADA' => 'Cita reservada en línea',
         'PAGO_TARJETA_FALLIDO' => 'Pago con tarjeta no completado',
+        'CITA_CANCELADA' => 'Cita cancelada',
+        'CITA_CONFIRMADA' => 'Cita confirmada',
+        'CITA_ATENDIDA' => 'Cita atendida',
+        'COBRO_REGISTRADO' => 'Cobro en efectivo registrado',
+        'INASISTENCIA_REGISTRADA' => 'Inasistencia registrada',
+        'ESTADO_CORREGIDO' => 'Estado de la cita corregido',
     ];
 
     private const ROJAS = ['LOGIN_FALLIDO', 'LOGIN_BLOQUEADO', 'LOGIN_RECHAZADO', 'ACCESO_DENEGADO', 'PAGO_TARJETA_FALLIDO'];
