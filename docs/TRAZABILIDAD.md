@@ -26,7 +26,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-16 | Registrar consulta y tratamiento | II | RF16 | 5 | Hecho (07/11) | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | 3 | 18 aprobadas (3 filas del 8.1 + 15 de reglas internas) |
 | CU-17 | Consultar historia clínica | II | RF17 | 5 | Hecho (07/11) | `AtencionClinica/CU17_ConsultarHistoriaClinica` | 3 | 12 aprobadas (3 filas del 8.1 + 9 de reglas internas) |
 | CU-18 | Generar reportes (con IA) | II | RF18 | 7 | Pendiente | `ReportesBitacora/CU18_GenerarReportesConIA` | 7 | — |
-| CU-19 | Consultar bitácora | II | RF19 | 6 (ajuste) | Adelantado | `ReportesBitacora/CU19_ConsultarBitacora` | 2 | 23 aprobadas |
+| CU-19 | Consultar bitácora | II | RF19 | 6 (ajuste) | Completo | `ReportesBitacora/CU19_ConsultarBitacora` | 2 | 25 aprobadas |
 | CU-20 | Registrarse como paciente | II | RF20 | 6 | Pendiente | `GestionPacientes/CU20_RegistrarsePaciente` | 4 | — |
 | CU-21 | Gestionar mi perfil | II | RF21 | 6 | Pendiente | `GestionPacientes/CU21_GestionarMiPerfil` | 4 | — |
 | CU-22 | Enviar recordatorios de citas | II | RF22 | 8 | Pendiente | `GestionCitas/CU22_EnviarRecordatoriosCitas` | 2 | — |

@@ -82,7 +82,7 @@
                                 <td class="no-parte">{{ $registro->ip ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="vacio">No hay registros con esos filtros.</td></tr>
+                            <tr><td colspan="6" class="vacio">No hay registros</td></tr>
                         @endforelse
                     </tbody>
                 </table>

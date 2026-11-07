@@ -14,12 +14,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Test;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
  * CU-19: Consultar bitácora. Los registros de prueba llevan la entidad «T19-...» para filtrarlos sin tocar
- * los demás; cada prueba se revierte al terminar (DatabaseTransactions).
+ * los demás; cada prueba se revierte al terminar (DatabaseTransactions). Los métodos paso_N son las filas del plan de pruebas 8.1;
+ * las demás son reglas internas (formato, validación de filtros, paginación, IP, catálogo de acciones).
  */
 class CU19_ConsultarBitacoraTest extends SistemaTestCase
 {
@@ -47,6 +49,59 @@ class CU19_ConsultarBitacoraTest extends SistemaTestCase
     private function ver(array $filtros = [])
     {
         return $this->actingAs($this->admin)->get(route('bitacora.index', $filtros));
+    }
+
+    // ---------- Plan de pruebas 8.1 ----------
+
+    /** Paso 1: consultar la bitácora con filtros (usuario y rango de fechas) → se listan los eventos que cumplen los filtros, del más reciente al más antiguo. */
+    #[Test]
+    public function paso_1_consultar_la_bitacora_con_filtros(): void
+    {
+        $filtrado = $this->crearUsuario('t-usuario-filtrado', [Rol::RECEPCIONISTA]);
+        $otro = $this->crearUsuario('t-usuario-otro', [Rol::RECEPCIONISTA]);
+        $this->registro(['usuario_id' => $filtrado->id, 'detalle' => 'T19 antes del rango', 'fecha_hora' => '2030-05-01 10:00:00']);
+        $this->registro(['usuario_id' => $filtrado->id, 'detalle' => 'T19 primero del rango', 'fecha_hora' => '2030-05-10 08:00:00']);
+        $this->registro(['usuario_id' => $filtrado->id, 'detalle' => 'T19 ultimo del rango', 'fecha_hora' => '2030-05-12 18:30:00']);
+        $this->registro(['usuario_id' => $filtrado->id, 'detalle' => 'T19 despues del rango', 'fecha_hora' => '2030-05-20 10:00:00']);
+        $this->registro(['usuario_id' => $otro->id, 'detalle' => 'T19 de otro usuario en el rango', 'fecha_hora' => '2030-05-11 09:00:00']);
+
+        $pantalla = $this->ver(['usuario' => $filtrado->id, 'desde' => '2030-05-10', 'hasta' => '2030-05-12'])->assertOk()
+            ->assertSee('T19 primero del rango')->assertSee('T19 ultimo del rango')
+            ->assertDontSee('T19 antes del rango')->assertDontSee('T19 despues del rango')->assertDontSee('T19 de otro usuario en el rango')
+            ->assertSee('t-usuario-filtrado')->assertSee('2 registros');
+
+        $contenido = $pantalla->getContent();
+        $this->assertLessThan(strpos($contenido, 'T19 primero del rango'), strpos($contenido, 'T19 ultimo del rango'), 'Del más reciente al más antiguo.');
+    }
+
+    /** Paso 2: intentar modificar un registro de la bitácora (administrador en la bitácora) → el sistema no permite editar ni eliminar registros. */
+    #[Test]
+    public function paso_2_intentar_modificar_un_registro_de_la_bitacora(): void
+    {
+        $this->registro(['accion' => 'T19_PASO2', 'detalle' => 'T19 registro intocable']);
+        $id = DB::table('bitacora')->where('accion', 'T19_PASO2')->value('id');
+
+        // La pantalla no ofrece editar ni eliminar.
+        $pantalla = $this->ver(['entidad' => 'T19-Entidad'])->assertOk()->assertSee('T19 registro intocable');
+        foreach (['Editar', 'Eliminar', 'Borrar', 'name="_method"', '<textarea'] as $prohibido) {
+            $this->assertStringNotContainsString($prohibido, $pantalla->getContent(), "La bitácora no debe ofrecer «{$prohibido}».");
+        }
+
+        // No existen rutas para modificarla.
+        $this->actingAs($this->admin)->put("/bitacora/{$id}", ['detalle' => 'cambiado'])->assertStatus(404);
+        $this->patch("/bitacora/{$id}", ['detalle' => 'cambiado'])->assertStatus(404);
+        $this->delete("/bitacora/{$id}")->assertStatus(404);
+
+        // Y la base de datos rechaza el UPDATE y el DELETE (trigger).
+        foreach (['UPDATE bitacora SET detalle = ? WHERE id = ?' => ['cambiado', $id], 'DELETE FROM bitacora WHERE id = ?' => [$id]] as $sql => $parametros) {
+            try {
+                DB::transaction(fn () => DB::statement($sql, $parametros));
+                $this->fail('La bitácora aceptó una modificación: '.$sql);
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('La bitácora no admite modificaciones ni eliminaciones', $e->getMessage());
+            }
+        }
+        $this->assertSame('T19 registro intocable', DB::table('bitacora')->where('id', $id)->value('detalle'));
     }
 
     // ---------- Acceso ----------
@@ -149,7 +204,7 @@ class CU19_ConsultarBitacoraTest extends SistemaTestCase
 
         $this->ver(['entidad' => 'T19-A'])->assertSee('T19 cita A')->assertDontSee('T19 salida B');
         $this->ver(['entidad' => 'T19-B', 'accion' => 'LOGOUT'])->assertSee('T19 salida B')->assertDontSee('T19 cita A');
-        $this->ver(['entidad' => 'T19-A', 'accion' => 'LOGOUT'])->assertSee('No hay registros con esos filtros.');
+        $this->ver(['entidad' => 'T19-A', 'accion' => 'LOGOUT'])->assertSee('No hay registros');
     }
 
     public function test_filtra_por_rango_de_fechas_y_el_hasta_incluye_todo_el_dia(): void
@@ -179,13 +234,13 @@ class CU19_ConsultarBitacoraTest extends SistemaTestCase
             ->assertSee('Reprogramación de la CITA')->assertDontSee('Otro movimiento');
         $this->ver(['entidad' => 'T19-Entidad', 'q' => '203.0.113'])
             ->assertSee('Otro movimiento')->assertDontSee('Reprogramación de la CITA');
-        $this->ver(['entidad' => 'T19-Entidad', 'q' => '50%_'])->assertSee('No hay registros con esos filtros.');
+        $this->ver(['entidad' => 'T19-Entidad', 'q' => '50%_'])->assertSee('No hay registros');
     }
 
     public function test_sin_resultados_muestra_el_mensaje(): void
     {
         $this->ver(['q' => 'texto-que-no-existe-en-ningun-registro-T19'])
-            ->assertOk()->assertSee('No hay registros con esos filtros.')->assertSee('0 registros');
+            ->assertOk()->assertSee('No hay registros')->assertSee('0 registros');
     }
 
     public function test_los_filtros_se_validan(): void
