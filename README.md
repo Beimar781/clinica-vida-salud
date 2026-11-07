@@ -1,6 +1,6 @@
 # Clínica Vida Salud · Gestión de citas médicas
 
-Sistema web para gestionar las citas médicas de la Clínica Vida Salud: administración de usuarios, médicos, horarios y pacientes, y registro, reprogramación y reserva en línea de citas. Lo desarrollamos para la materia Ingeniería de Requisitos (INF-219-SC), Grupo 13, UAGRM, siguiendo el Proceso Unificado (PUDS) y UML 2.5.
+Sistema web para gestionar las citas médicas de la Clínica Vida Salud: administración de usuarios, médicos, servicios, horarios y pacientes; registro, reprogramación, reserva en línea, cancelación y control de citas con cobro en efectivo o con tarjeta; atención clínica (consulta e historia clínica); reportes con resumen de IA; registro y perfil del paciente; y recordatorios por correo. Lo desarrollamos para la materia Ingeniería de Requisitos (INF-219-SC), Grupo 13, UAGRM, siguiendo el Proceso Unificado (PUDS) y UML 2.5.
 
 **Sistema en línea:** https://clinica-vida-salud-production-aa9a.up.railway.app
 
@@ -10,22 +10,23 @@ Autores: Juan Simeón García Cervantes y Beimar Ríos Benavides.
 
 | Ciclo | Casos de uso | Estado |
 |---|---|---|
-| Ciclo I | CU-01 a CU-11 (seguridad y usuarios, gestión médica, pacientes y citas) | Implementado, probado y desplegado |
-| Adelanto del Ciclo II | CU-19 Consultar bitácora (solo el administrador) | Implementado y probado: la consulta de la bitácora ya está disponible |
-| Ciclo II | CU-12 a CU-18 y CU-20 a CU-22 (cancelación y estados de cita, agenda, historial, atención clínica, reportes, registro del paciente, perfil y recordatorios) | Se entrega en la segunda presentación |
+| Ciclo I | CU-01 a CU-11 (seguridad y usuarios, gestión médica, pacientes y citas) | Implementado y probado; ampliado en el documento v30 (servicios con precio, pago de citas y reprogramación de inasistencias pagadas) |
+| Ciclo II | CU-12 a CU-22 (cancelación y estados de cita, agenda, historial, atención clínica, reportes con IA, bitácora, registro del paciente, perfil y recordatorios) | Implementado y probado (los 22 casos de uso) |
 
-Además de los casos de uso del Ciclo I, el sistema incluye la recuperación de contraseña por correo electrónico y el bloqueo temporal de la cuenta tras 3 intentos fallidos de inicio de sesión.
+La prueba general del 07/11/2026 dio **541 pruebas y 3778 aserciones, todas aprobadas**, también en un clon limpio del repositorio con una base nueva. Además de los casos de uso, el sistema incluye la recuperación de contraseña por correo electrónico, el bloqueo temporal de la cuenta tras 3 intentos fallidos de inicio de sesión y un asistente de voz opcional en «Reportes».
 
-## Qué hace el sistema (Ciclo I)
+## Qué hace el sistema
 
 | Paquete | Casos de uso | Quién los usa |
 |---|---|---|
-| Seguridad y usuarios | CU-01 Iniciar sesión · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles | Todos los usuarios; la gestión de usuarios, el administrador |
-| Gestión médica | CU-04 Gestionar especialidades y servicios · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención | Administrador |
-| Gestión de pacientes | CU-07 Gestionar pacientes | Administrador y recepcionista |
-| Gestión de citas | CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea | Recepcionista y administrador (consultar, registrar y reprogramar citas) y paciente (consultar y reservar en línea; la reserva la hace el propio paciente) |
+| P1 Seguridad y usuarios | CU-01 Iniciar sesión · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles | Todos los usuarios; la gestión de usuarios, el administrador |
+| P2 Gestión médica | CU-04 Gestionar especialidades y servicios (con tipo y precio) · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención | Administrador |
+| P3 Gestión de pacientes | CU-07 Gestionar pacientes · CU-15 Consultar historial de citas del paciente («Mis citas») · CU-20 Registrarse como paciente · CU-21 Gestionar mi perfil | Administrador y recepcionista (CU-07 y CU-15); paciente (CU-15, CU-21); cualquier persona (CU-20) |
+| P4 Gestión de citas | CU-08 Consultar disponibilidad · CU-09 Registrar cita · CU-10 Reprogramar cita · CU-11 Reservar cita en línea · CU-12 Cancelar cita · CU-13 Controlar asistencia y estados (confirmar, cobrar, atendida, inasistencia, corregir) · CU-14 Consultar agenda médica · CU-22 Enviar recordatorios de citas | Recepcionista y administrador; paciente (consultar, reservar y cancelar las suyas); médico (control y agenda); el sistema (recordatorios) |
+| P5 Atención clínica | CU-16 Registrar consulta y tratamiento · CU-17 Consultar historia clínica | Médico |
+| P6 Reportes y bitácora | CU-18 Generar reportes con IA (ocho reportes, CSV, PDF y asistente de voz) · CU-19 Consultar bitácora | Administrador y recepcionista (CU-18); administrador (CU-19) |
 
-Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma cuenta puede tener más de un rol. El Administrador hereda las funciones de recepción (pacientes, disponibilidad, registro y reprogramación de citas), por eso la cuenta `admin` tiene solo el rol Administrador; no hereda las del médico ni las del paciente (necesitan su propia ficha), así que no usa «Reservar cita».
+Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma cuenta puede tener más de un rol (los permisos son la unión de sus roles); quien se registra solo desde la web recibe únicamente el rol Paciente. El Administrador hereda las funciones de recepción (pacientes, disponibilidad, registro y reprogramación de citas), por eso la cuenta `admin` tiene solo el rol Administrador; no hereda las del médico ni las del paciente (necesitan su propia ficha), así que no usa «Reservar cita».
 
 **Reglas de negocio y seguridad que implementamos**
 
@@ -36,6 +37,11 @@ Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma c
 - Códigos correlativos para citas, pacientes y médicos (CM-0001, PAC-0001, MED-0001).
 - Bitácora de operaciones inmutable: un trigger de PostgreSQL impide modificar o borrar sus registros.
 - Acceso por rol (middleware `rol`), cuentas desactivadas sin acceso y páginas protegidas sin caché del navegador.
+- Pagos: cada servicio tiene un precio en bolivianos y la cita guarda el monto del momento. Se paga en efectivo (queda Pendiente hasta que la recepción registra el cobro) o con tarjeta mediante Stripe Checkout alojado: el pago se autoriza, se registra la cita dentro de la transacción y solo entonces se captura; el sistema nunca ve ni guarda datos de tarjeta, solo la referencia. No hay devoluciones.
+- Estados de la cita: Programada → Confirmada o Cancelada; Confirmada → Atendida, Inasistencia o Cancelada; una inasistencia pagada se reprograma sin nuevo cobro. El paciente solo cancela sus citas y con 2 horas o más de anticipación; solo el administrador corrige un estado, con justificación.
+- La historia clínica la crea el sistema con el paciente (una por paciente) y solo la consulta el médico, en solo lectura; cada consulta queda en la bitácora sin datos clínicos.
+- Reportes con IA: las cifras las calcula siempre el sistema; el resumen opcional lo redacta Google Gemini recibiendo solo totales (nunca nombres, CI ni datos clínicos), y si falla el reporte sale igual, sin resumen.
+- Recordatorios: una tarea diaria envía un correo por paciente con sus citas del día siguiente (si tiene correo y los recordatorios activados).
 
 ## Tecnologías
 
@@ -43,6 +49,8 @@ Roles del sistema: Administrador, Recepcionista, Médico y Paciente. Una misma c
 - PostgreSQL 16 o superior (extensión `btree_gist`)
 - Blade, HTML5, CSS3 y JavaScript (sin Node ni CDN)
 - Correo en producción con la API web de Brevo
+- Pagos con la API REST de Stripe (Checkout alojado, modo de prueba), sin SDK ni scripts de Stripe
+- Resumen de reportes con la API de Google Gemini (opcional) y PDF con dompdf (barryvdh/laravel-dompdf), sin recursos externos
 - Despliegue en Railway con Docker
 
 ## Requisitos para ejecutarlo
@@ -122,7 +130,7 @@ El comando muestra cuántos avisos se enviaron, cuántas citas se omitieron y cu
 | mrojas | maria.rojas@correo.test | Paciente | `Demo1234*` |
 | jperez | juan.perez@correo.test | Paciente | `Demo1234*` |
 
-También se cargan 5 especialidades, 5 médicos con horarios, 8 pacientes, 3 días sin atención y 12 citas en distintos estados.
+También se cargan 7 especialidades y servicios con precio (5 de consulta, laboratorio y enfermería), 7 médicos y profesionales con horarios, 9 pacientes (6 sin cuenta de usuario; el CI 8123456, Ana Lucía Gutiérrez Parada, nacida el 15/06/1990, sirve para probar «Crear cuenta» con la vinculación de una ficha existente), 3 días sin atención, 3 consultas con su historia clínica, 2 antecedentes de otros hospitales y 16 citas en todos los estados y con pagos en efectivo y con tarjeta (las fechas se calculan desde el día en que se siembra).
 
 Para reiniciar los datos de demostración, desde `backend/`:
 
@@ -148,7 +156,7 @@ cd backend
 php artisan test
 ```
 
-La última corrida completa (24/10/2026) dio **250 pruebas y 1363 aserciones, todas aprobadas**. Hay una prueba por caso de uso (`CUxx_NombreTest.php`) y pruebas de la base de datos, la seguridad, los recursos del frontend y el despliegue. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
+La última corrida completa (07/11/2026) dio **541 pruebas y 3778 aserciones, todas aprobadas**: la misma cifra en el proyecto de trabajo y en un clon limpio del repositorio con una base nueva, siguiendo solo estas instrucciones. Hay un archivo de pruebas por caso de uso (`CUxx_NombreTest.php`) con un método `paso_N_...` por cada fila del plan de pruebas 8.1 del documento y pruebas de reglas internas, más pruebas de la base de datos, la seguridad, los pagos, los recursos del frontend y el despliegue. Stripe, la IA y el correo siempre se simulan: ninguna prueba sale a internet. Se puede correr un solo caso de uso con `php artisan test --filter=CU09_`. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
 
 ## Despliegue en Railway
 
@@ -217,19 +225,20 @@ clinica-vida-salud/
 │   │   │   ├── CU02_CerrarSesion/    ← CU-02: LogoutController, LogoutService
 │   │   │   └── CU03_GestionarUsuariosRoles/  ← CU-03: UsuariosController, UsuarioRequest, UsuarioService
 │   │   ├── GestionMedica/            ← P2: CU04_..., CU05_..., CU06_...
-│   │   ├── GestionPacientes/         ← P3: CU07_...
-│   │   ├── GestionCitas/             ← P4: CU08_... a CU11_... y Compartido/ (disponibilidad)
+│   │   ├── GestionPacientes/         ← P3: CU07_..., CU15_..., CU20_..., CU21_...
+│   │   ├── GestionCitas/             ← P4: CU08_... a CU14_..., CU22_ (comando de recordatorios) y Compartido/ (disponibilidad, agendado, pagos y estados)
+│   │   ├── AtencionClinica/          ← P5: CU16_RegistrarConsultaTratamiento y CU17_ConsultarHistoriaClinica
 │   │   ├── ReportesBitacora/         ← P6: CU18_GenerarReportesConIA (ReportesController, ReporteRequest, ReporteService, ResumenIAService) y CU19_ConsultarBitacora (BitacoraController, BitacoraRequest, ConsultaBitacoraService)
 │   │   └── README.md                 ← tabla de paquetes y casos de uso
 │   ├── app/Models/                   ← una clase por tabla del modelo de datos (CE del análisis)
 │   ├── app/Services/                 ← BitacoraService (registro de operaciones)
 │   ├── app/Http/Middleware/          ← VerificarRol, VerificarCuentaActiva, SinCache
-│   ├── app/Support/                  ← utilidades: Codigos (CM-0001), Texto, PanelPrincipal, Recursos, BrevoTransport
+│   ├── app/Support/                  ← utilidades: Codigos (CM-0001), Dinero (Bs 100,00), Texto, PanelPrincipal, Recursos, BrevoTransport
 │   ├── database/                     ← migraciones, seeders y schema.sql (modelo físico)
 │   └── tests/Feature/                ← una prueba por caso de uso (CUxx_NombreTest.php)
 ├── frontend/                         ← pantallas (Blade + CSS + JavaScript, sin Node ni CDN)
-│   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/ · ReportesBitacora/   ← pantalla de cada CU, misma ruta que en backend
-│   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita) y pantallas de error
+│   ├── SeguridadUsuarios/ · GestionMedica/ · GestionPacientes/ · GestionCitas/ · AtencionClinica/ · ReportesBitacora/   ← pantalla de cada CU, misma ruta que en backend
+│   ├── layouts/ · components/ · errors/  ← diseño general, componentes (ícono, logo, campo, estado de cita y de pago, tipo de servicio) y pantallas de error
 │   └── assets/                       ← css/vidasalud.css (común) y css/modulos/, js/, img/
 ├── Dockerfile · .dockerignore        ← imagen para el despliegue en Railway (ver la sección anterior)
 └── docs/                             ← documento (PDF), trazabilidad, clases de análisis y lista de capturas de la sección 4.4

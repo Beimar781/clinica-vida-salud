@@ -45,3 +45,40 @@ Correspondencia con Laravel: CI = vistas Blade del CU, CC = controlador + servic
 - Los diagramas de CU-09, CU-10, CU-11 y CU-13 no muestran los atributos de pago (`monto`, `metodo_pago`, `estado_pago`, `referencia_pago`) ni la clase `CEEspecialidad` con su precio; el código sí los usa (anotado en `docs/INCONSISTENCIAS.md` para actualizar los diagramas).
 - Controlador = nombre del CC sin el prefijo «CC» + `Controller` (`CCEstadoCita` → `EstadoCitaController`, `CCRegistro` → `RegistroController`, `CCHistorial` → `HistorialController`). Servicio = `<Nombre>Service` (los de CU-12 a CU-22 se nombran en `CLAUDE.md`, sección 4).
 - Recuperar contraseña (flujo alternativo A3 de CU-01, no es un CU nuevo y no está en el documento): `OlvidoClaveController` y `RestablecerClaveController` con `RecuperarClaveService`, dentro de `CU01_IniciarSesion/`. Sus clases de análisis se agregan a `CILogin`/`CCLogin`/`CEUsuario` (mostrarOlvido, mostrarRestablecer, solicitarRecuperacion, restablecerClave).
+
+## Correspondencia con el código (auditoría del Prompt 9, 07/11/2026)
+
+Para cada caso de uso: las clases del análisis y el archivo que las implementa. Las vistas están en `frontend/<Paquete>/<CU>/` y el controlador, el servicio y la validación en `backend/app/Modules/<Paquete>/<CU>/`.
+
+| CU | CI → pantallas (Blade) | CC → controlador · servicio | CE → modelo (`backend/app/Models`) |
+|---|---|---|---|
+| CU-01 | CILogin → `CU01_IniciarSesion/`: correo-recuperacion, correo-recuperacion-texto, login, olvido, panel, restablecer | CCLogin → LoginController, OlvidoClaveController, PanelController, RestablecerClaveController · LoginService, RecuperarClaveService | CEUsuario → Usuario |
+| CU-02 | CILogout → `CU02_CerrarSesion/`: botón «Cerrar sesión» del layout | CCLogout → LogoutController · LogoutService | CEUsuario → Usuario |
+| CU-03 | CIUsuarios → `CU03_GestionarUsuariosRoles/`: campos, crear, editar, index | CCUsuarios → UsuariosController · UsuarioService | CEUsuario, CERol → Usuario, Rol |
+| CU-04 | CIEspecialidad → `CU04_GestionarEspecialidadesServicios/`: campos, crear, editar, index | CCEspecialidad → EspecialidadController · EspecialidadService | CEEspecialidad → Especialidad |
+| CU-05 | CIMedicos → `CU05_GestionarMedicos/`: campos, crear, editar, index | CCMedicos → MedicosController · MedicoService | CEMedico, CEEspecialidad → Medico, Especialidad |
+| CU-06 | CIHorarios → `CU06_GestionarHorariosDiasSinAtencion/`: dias-sin-atencion, horarios | CCHorarios → DiasSinAtencionController, HorariosController · DiaSinAtencionService, HorarioService | CEHorario, CEMedico → HorarioAtencion, Medico |
+| CU-07 | CIPacientes → `CU07_GestionarPacientes/`: campos, crear, editar, index | CCPacientes → PacientesController · PacienteService | CEPaciente, CEHistoriaClinica, CEAntecedente → Paciente, HistoriaClinica, AntecedenteExterno |
+| CU-08 | CIDisponibilidad → `CU08_ConsultarDisponibilidadHorarios/`: disponibilidad | CCDisponibilidad → DisponibilidadController · Compartido/DisponibilidadService | CEMedico, CECita → Medico, Cita |
+| CU-09 | CIRegistrarCita → `CU09_RegistrarCitaMedica/`: comprobante, registrar | CCRegistrarCita → RegistrarCitaController · RegistrarCitaService, (Compartido: AgendarCitaService, TransicionesCita, PagoCitaService) | CEPaciente, CECita, CEMedico → Paciente, Cita, Medico |
+| CU-10 | CIReprogramarCita → `CU10_ReprogramarCitaMedica/`: buscar, comprobante, reprogramar | CCReprogramarCita → ReprogramarCitaController · ReprogramarCitaService, (Compartido: AgendarCitaService, TransicionesCita) | CECita, CEMedico → Cita, Medico |
+| CU-11 | CIReservarCita → `CU11_ReservarCitaEnLinea/`: buscar, comprobante, reservar | CCReservarCita → ReservarCitaController · ReservarCitaService, (Compartido: AgendarCitaService, TransicionesCita, PagoCitaService) | CECita, CEMedico → Cita, Medico |
+| CU-12 | CICancelarCita → `CU12_CancelarCitaMedica/`: cancelar | CCCancelarCita → CancelarCitaController · CancelarCitaService, (Compartido: AgendarCitaService, TransicionesCita) | CECita → Cita |
+| CU-13 | CIEstadoCita → `CU13_ControlarAsistenciaEstadosCita/`: control | CCEstadoCita → EstadoCitaController · EstadoCitaService, (Compartido: AgendarCitaService, TransicionesCita) | CECita → Cita |
+| CU-14 | CIAgenda → `CU14_ConsultarAgendaMedica/`: agenda | CCAgenda → AgendaController · AgendaService | CECita, CEMedico → Cita, Medico |
+| CU-15 | CIHistorial → `CU15_ConsultarHistorialCitasPaciente/`: historial | CCHistorial → HistorialController · HistorialCitasService | CEPaciente, CECita → Paciente, Cita |
+| CU-16 | CIConsulta → `CU16_RegistrarConsultaTratamiento/`: registrar | CCConsulta → ConsultaController · ConsultaService | CECita, CEConsulta, CEHistoriaClinica → Cita, Consulta, HistoriaClinica |
+| CU-17 | CIHistoriaClinica → `CU17_ConsultarHistoriaClinica/`: ver | CCHistoriaClinica → HistoriaClinicaController · HistoriaClinicaService | CEHistoriaClinica, CEConsulta, CEAntecedente → HistoriaClinica, Consulta, AntecedenteExterno |
+| CU-18 | CIReportes → `CU18_GenerarReportesConIA/`: index, pdf | CCReportes → ReportesController · ReporteService, ResumenIAService | CECita, CEPaciente, CEMedico → Cita, Paciente, Medico |
+| CU-19 | CIBitacora → `CU19_ConsultarBitacora/`: index | CCBitacora → BitacoraController · ConsultaBitacoraService | CEBitacora → Bitacora |
+| CU-20 | CIRegistro → `CU20_RegistrarsePaciente/`: registro | CCRegistro → RegistroController · RegistroPacienteService | CEUsuario, CEPaciente, CEHistoriaClinica → Usuario, Paciente, HistoriaClinica |
+| CU-21 | CIPerfil → `CU21_GestionarMiPerfil/`: perfil | CCPerfil → PerfilController · PerfilService | CEPaciente, CEHistoriaClinica, CEUsuario → Paciente, HistoriaClinica, Usuario |
+| CU-22 | CIRecordatorio → `CU22_EnviarRecordatoriosCitas/`: correo-recordatorio (correo; no hay pantallas) | CCRecordatorio → EnviarRecordatoriosCommand · RecordatorioService | CEPaciente, CECita → Paciente, Cita |
+
+### Observaciones de la auditoría
+
+- Los 22 CU tienen su clase de control con el nombre del CC sin el prefijo «CC»; `CCRecordatorio` (CU-22) es un comando programado (`citas:enviar-recordatorios`) en vez de un controlador web, porque su actor es el Temporizador.
+- `CEHorario` → `HorarioAtencion` y `CEAntecedente` → `AntecedenteExterno` (nombres de las tablas `horarios_atencion` y `antecedentes_externos` del modelo físico).
+- CU-18 incluye además `ResumenIAService` (`CCReportes::resumirConIA`) y un asistente de voz en el navegador (`frontend/assets/js/modulos/reportes-voz.js`), que no está en los diagramas.
+- CU-20 y CU-21 comparten el paquete P3 con CU-07 y CU-15; CU-21 no tiene `CEHistoriaClinica::obtenerPorPaciente` con ese nombre: se usa la relación `Paciente::historiaClinica`.
+- Sugerencias para los diagramas 5.3 (detalladas en `docs/INCONSISTENCIAS.md`): atributos de pago y `CEEspecialidad` con su precio en CU-09, CU-10, CU-11 y CU-13; `especialidad` y modalidad de IA en `CIReportes`; dirección, emergencia y privacidad en `CIPerfil`; sexo y teléfono en `CIRegistro`; `paciente` y `cita` en `CIConsulta`.

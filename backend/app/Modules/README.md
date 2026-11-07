@@ -7,11 +7,11 @@ Las pantallas (`.blade.php`) del mismo CU están en la carpeta hermana `frontend
 | Paquete | Contenido |
 |---|---|
 | `SeguridadUsuarios/` | P1: CU-01 Iniciar sesión (con el flujo alternativo «¿Olvidaste tu contraseña?») · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles |
-| `GestionMedica/` | P2: CU-04 Gestionar especialidades y servicios · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención |
-| `GestionPacientes/` | P3: CU-07 Gestionar pacientes |
-| `ReportesBitacora/` | P6: CU-18 Generar reportes con IA (Administrador y Recepcionista; ocho reportes, resumen opcional con Gemini, impresión, CSV y PDF) · CU-19 Consultar bitácora (solo el administrador y solo lectura) |
+| `GestionMedica/` | P2: CU-04 Gestionar especialidades y servicios (con tipo y precio) · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención |
+| `GestionPacientes/` | P3: CU-07 Gestionar pacientes · CU-15 Consultar historial de citas del paciente («Mis citas» y búsqueda del personal) · CU-20 Registrarse como paciente (pública) · CU-21 Gestionar mi perfil |
+| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea · CU-12 Cancelar cita médica · CU-13 Controlar asistencia y estados de la cita · CU-14 Consultar agenda médica · CU-22 Enviar recordatorios de citas (comando `citas:enviar-recordatorios`, sin pantallas). `Compartido/` reúne lo que usan varios CU: disponibilidad (CU-08, CU-09, CU-10, CU-11, CU-14), agendado y pagos con Stripe (CU-09, CU-10, CU-11) y reglas de estado de la cita (CU-12, CU-13, CU-16) |
 | `AtencionClinica/` | P5: CU-16 Registrar consulta y tratamiento · CU-17 Consultar historia clínica (solo el rol Médico; la historia es de solo lectura) |
-| `GestionCitas/` | P4: CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea · CU-22 Enviar recordatorios de citas (comando `citas:enviar-recordatorios`, sin pantallas) (y `Compartido/` con el cálculo de disponibilidad que usan CU-09, CU-10 y CU-11). |
+| `ReportesBitacora/` | P6: CU-18 Generar reportes con IA (Administrador y Recepcionista; ocho reportes, resumen opcional con Gemini, impresión, CSV, PDF y asistente de voz) · CU-19 Consultar bitácora (solo el administrador y solo lectura) |
 
 Dentro de cada CU hay, según corresponda: `...Controller.php` (el CC del documento; sus comentarios repiten el flujo de la ficha),
 `...Request.php` (validación en el servidor) y `...Service.php` (reglas de negocio). Los modelos están en `app/Models`,
