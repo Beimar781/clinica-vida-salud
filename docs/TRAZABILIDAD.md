@@ -13,7 +13,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-03 | Gestionar usuarios y roles | I | RF03 | 3 (aviso paciente sin ficha) | Hecho (C-I) | `SeguridadUsuarios/CU03_GestionarUsuariosRoles` | 3 | 18 aprobadas |
 | CU-04 | Gestionar especialidades y servicios | I | RF04 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU04_GestionarEspecialidadesServicios` | 3 | 18 aprobadas (3 filas del 8.1 + 15 de reglas internas) |
 | CU-05 | Gestionar médicos | I | RF05 | — | Hecho (C-I) | `GestionMedica/CU05_GestionarMedicos` | 4 | 16 aprobadas |
-| CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Por ajustar | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 17 (previas, rehacer) |
+| CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 25 aprobadas (5 filas del 8.1 + 20 de reglas internas) |
 | CU-07 | Gestionar pacientes | I | RF07 | — | Hecho (C-I) | `GestionPacientes/CU07_GestionarPacientes` | 5 | 19 aprobadas |
 | CU-08 | Consultar disponibilidad de horarios | I | RF08 | — | Hecho (C-I) | `GestionCitas/CU08_ConsultarDisponibilidadHorarios` | 5 | 14 aprobadas |
 | CU-09 | Registrar cita médica | I | RF09 | 2 | Por ajustar | `GestionCitas/CU09_RegistrarCitaMedica` | 8 | 17 + 1 concurrencia (previas, ampliar) |

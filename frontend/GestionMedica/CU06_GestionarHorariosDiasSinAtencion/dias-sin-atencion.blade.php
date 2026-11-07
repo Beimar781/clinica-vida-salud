@@ -74,7 +74,7 @@
         <div class="tarjeta__cuerpo">
             <div class="tabla-responsive">
                 <table class="tabla">
-                    <thead><tr><th>Fecha</th><th>Día</th><th>Motivo</th><th>Citas afectadas</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>Día</th><th>Motivo</th><th>Registrado por</th><th>Citas afectadas</th><th>Estado</th><th>Acciones</th></tr></thead>
                     <tbody>
                         @forelse ($dias as $dia)
                             @php $afectadas = $afectadasPorFecha[$dia->fecha->toDateString()] ?? 0; @endphp
@@ -82,6 +82,7 @@
                                 <td><strong>{{ $dia->fecha->format('d/m/Y') }}</strong></td>
                                 <td>{{ ucfirst($dia->fecha->isoFormat('dddd')) }}</td>
                                 <td>{{ $dia->motivo }}</td>
+                                <td>{{ $dia->registradoPor?->nombre_usuario ?? '—' }}</td>
                                 <td>
                                     @if ($afectadas > 0)
                                         <a href="{{ route('dias-sin-atencion.index', ['afectadas' => $dia->id]) }}#citas-afectadas">{{ $afectadas }} {{ $afectadas === 1 ? 'cita' : 'citas' }}</a>
@@ -108,7 +109,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="vacio">Todavía no hay días sin atención registrados.</td></tr>
+                            <tr><td colspan="7" class="vacio">Todavía no hay días sin atención registrados.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

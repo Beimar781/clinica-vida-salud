@@ -9,9 +9,11 @@ use App\Models\HorarioAtencion;
 use App\Models\Medico;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Modules\GestionCitas\Compartido\DisponibilidadService;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 
-/** CU-06: Gestionar horarios y días sin atención. */
+/** CU-06: Gestionar horarios y días sin atención. Los métodos paso_N son las filas del plan de pruebas 8.1. */
 class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
 {
     private Usuario $admin;
@@ -32,8 +34,9 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->fechaLejana = Carbon::today()->addYears(3)->setMonth(3)->setDay(15)->toDateString();
     }
 
-    /** Caso 1: registrar un horario válido (lunes 08:00 a 12:00, 30 min) → se guarda y se calculan 8 citas. */
-    public function test_registrar_horario_valido(): void
+    /** Paso 1: registrar horario válido (lunes 08:00 a 12:00, 30 min) → el horario se guarda y se calculan 8 citas. */
+    #[Test]
+    public function paso_1_registrar_horario_valido(): void
     {
         $this->actingAs($this->admin)->post(route('horarios.guardar'), $this->datos())
             ->assertRedirect(route('horarios.index', ['medico' => $this->medico->id]))
@@ -51,8 +54,9 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
             ->assertOk()->assertSee('08:00 – 12:00')->assertSee('8 citas');
     }
 
-    /** Caso 2: registrar un horario inválido (hora final menor o igual a la inicial) → el sistema rechaza el horario. */
-    public function test_registrar_horario_invalido(): void
+    /** Paso 2: registrar horario inválido (hora final menor o igual a la inicial) → el sistema rechaza el horario. */
+    #[Test]
+    public function paso_2_registrar_horario_invalido(): void
     {
         foreach (['08:00', '07:00'] as $fin) {
             $this->actingAs($this->admin)->from(route('horarios.index'))
@@ -63,8 +67,9 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertSame(0, HorarioAtencion::where('medico_id', $this->medico->id)->count());
     }
 
-    /** Caso 3: registrar un horario superpuesto (lunes 11:00 a 14:00 para el mismo médico) → el sistema rechaza el bloque superpuesto. */
-    public function test_registrar_horario_superpuesto(): void
+    /** Paso 3: registrar horario superpuesto (lunes 11:00 a 14:00 para el mismo médico) → el sistema rechaza el bloque superpuesto. */
+    #[Test]
+    public function paso_3_registrar_horario_superpuesto(): void
     {
         $this->crearHorario($this->medico, 1, '08:00', '12:00');
 
@@ -75,8 +80,9 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertSame(1, HorarioAtencion::where('medico_id', $this->medico->id)->count());
     }
 
-    /** Caso 4: registrar un día sin atención (fecha futura y motivo) → la fecha queda registrada. */
-    public function test_registrar_un_dia_sin_atencion(): void
+    /** Paso 4: registrar un día sin atención (fecha futura y motivo) → la fecha queda registrada. */
+    #[Test]
+    public function paso_4_registrar_un_dia_sin_atencion(): void
     {
         $this->actingAs($this->admin)
             ->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => 'T-Feriado de prueba'])
@@ -85,14 +91,16 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $dia = BloqueoAgenda::whereDate('fecha', $this->fechaLejana)->firstOrFail();
         $this->assertSame('T-Feriado de prueba', $dia->motivo);
         $this->assertTrue($dia->estado);
+        $this->assertSame($this->admin->id, $dia->registrado_por, 'v30: queda guardado quién registró el día sin atención.');
         $this->assertDatabaseHas('bitacora', ['accion' => 'DIA_SIN_ATENCION_CREADO', 'usuario_id' => $this->admin->id]);
 
-        $this->get(route('dias-sin-atencion.index'))->assertOk();
+        $this->get(route('dias-sin-atencion.index'))->assertOk()->assertSee('Registrado por')->assertSee('t-admin-hor');
         $this->get(route('dias-sin-atencion.index', ['afectadas' => $dia->id]))->assertOk()->assertSee('T-Feriado de prueba');
     }
 
-    /** Caso 5: registrar un día sin atención repetido (fecha ya registrada) → el sistema rechaza el duplicado. */
-    public function test_registrar_un_dia_sin_atencion_repetido(): void
+    /** Paso 5: registrar un día sin atención repetido (fecha ya registrada) → el sistema rechaza el duplicado. */
+    #[Test]
+    public function paso_5_registrar_un_dia_sin_atencion_repetido(): void
     {
         $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-Primero', 'estado' => true]);
 
@@ -103,7 +111,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertSame(1, BloqueoAgenda::whereDate('fecha', $this->fechaLejana)->count());
     }
 
-    public function test_la_duracion_debe_dividir_exactamente_el_bloque_y_avisa_los_minutos_que_sobran(): void
+    #[Test]
+    public function la_duracion_debe_dividir_exactamente_el_bloque_y_avisa_los_minutos_que_sobran(): void
     {
         // 08:00 a 12:00 son 240 minutos; con 50 minutos sobran 40.
         $this->actingAs($this->admin)->post(route('horarios.guardar'), $this->datos(['duracion_min' => 50]))
@@ -112,7 +121,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertSame(0, HorarioAtencion::where('medico_id', $this->medico->id)->count());
     }
 
-    public function test_dos_bloques_contiguos_o_de_otro_dia_u_otro_medico_no_se_superponen(): void
+    #[Test]
+    public function dos_bloques_contiguos_o_de_otro_dia_u_otro_medico_no_se_superponen(): void
     {
         $this->crearHorario($this->medico, 1, '08:00', '12:00');
         $otro = $this->crearMedico([], [$this->especialidad]);
@@ -125,7 +135,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertSame(1, HorarioAtencion::where('medico_id', $otro->id)->count());
     }
 
-    public function test_un_bloque_desactivado_no_cuenta_para_la_superposicion_pero_no_se_puede_reactivar_si_choca(): void
+    #[Test]
+    public function un_bloque_desactivado_no_cuenta_para_la_superposicion_pero_no_se_puede_reactivar_si_choca(): void
     {
         $viejo = $this->crearHorario($this->medico, 1, '08:00', '12:00', 30, activo: false);
 
@@ -137,7 +148,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertFalse($viejo->fresh()->estado);
     }
 
-    public function test_editar_un_bloque_no_choca_consigo_mismo_y_actualiza_la_agenda(): void
+    #[Test]
+    public function editar_un_bloque_no_choca_consigo_mismo_y_actualiza_la_agenda(): void
     {
         $bloque = $this->crearHorario($this->medico, 1, '08:00', '12:00');
 
@@ -154,7 +166,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
             ->assertOk()->assertSee('Editar bloque de atención');
     }
 
-    public function test_desactivar_un_bloque_lo_conserva_pero_deja_de_estar_activo(): void
+    #[Test]
+    public function desactivar_un_bloque_lo_conserva_pero_deja_de_estar_activo(): void
     {
         $bloque = $this->crearHorario($this->medico, 3, '14:00', '18:00');
 
@@ -165,7 +178,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertDatabaseHas('bitacora', ['accion' => 'HORARIO_DESACTIVADO', 'usuario_id' => $this->admin->id]);
     }
 
-    public function test_los_campos_de_horario_se_validan(): void
+    #[Test]
+    public function los_campos_de_horario_se_validan(): void
     {
         $this->actingAs($this->admin)->post(route('horarios.guardar'), ['medico_id' => $this->medico->id, 'dia_semana' => 9, 'hora_inicio' => '', 'hora_fin' => 'xx', 'duracion_min' => 2])
             ->assertSessionHasErrors([
@@ -176,7 +190,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
             ]);
     }
 
-    public function test_no_se_registran_horarios_para_un_medico_inactivo(): void
+    #[Test]
+    public function no_se_registran_horarios_para_un_medico_inactivo(): void
     {
         $inactivo = $this->crearMedico(['estado' => false], [$this->especialidad]);
 
@@ -187,7 +202,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->get(route('horarios.index', ['medico' => $inactivo->id]))->assertOk()->assertDontSee('Agenda semanal');
     }
 
-    public function test_la_fecha_de_un_dia_sin_atencion_no_puede_ser_anterior_a_hoy(): void
+    #[Test]
+    public function la_fecha_de_un_dia_sin_atencion_no_puede_ser_anterior_a_hoy(): void
     {
         $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => Carbon::yesterday()->toDateString(), 'motivo' => 'T-Ayer'])
             ->assertSessionHasErrors(['fecha' => 'La fecha no puede ser anterior a hoy.']);
@@ -197,13 +213,15 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
             ->assertSessionHasNoErrors();
     }
 
-    public function test_el_motivo_es_obligatorio(): void
+    #[Test]
+    public function el_motivo_es_obligatorio(): void
     {
         $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => ''])
             ->assertSessionHasErrors(['motivo' => 'Ingrese el motivo (por ejemplo, el nombre del feriado).']);
     }
 
-    public function test_al_registrar_un_dia_sin_atencion_se_listan_las_citas_ya_programadas_afectadas(): void
+    #[Test]
+    public function al_registrar_un_dia_sin_atencion_se_listan_las_citas_ya_programadas_afectadas(): void
     {
         $paciente = $this->crearPaciente(['nombres' => 'Afectada', 'apellidos' => 'Tcita']);
         $programada = $this->crearCita($this->medico, $paciente, $this->especialidad, $this->fechaLejana, '09:00', '09:30');
@@ -223,7 +241,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
             ->assertDontSee($cancelada->codigo)->assertDontSee($atendida->codigo);
     }
 
-    public function test_desactivar_un_dia_sin_atencion_vuelve_a_dejar_disponible_la_fecha(): void
+    #[Test]
+    public function desactivar_un_dia_sin_atencion_vuelve_a_dejar_disponible_la_fecha(): void
     {
         $dia = $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-Temporal', 'estado' => true]);
 
@@ -238,7 +257,8 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
         $this->assertTrue($dia->fresh()->estado);
     }
 
-    public function test_solo_el_administrador_gestiona_horarios_y_dias_sin_atencion(): void
+    #[Test]
+    public function solo_el_administrador_gestiona_horarios_y_dias_sin_atencion(): void
     {
         $this->get(route('horarios.index'))->assertRedirect('/login');
         $this->get(route('dias-sin-atencion.index'))->assertRedirect('/login');
@@ -253,6 +273,101 @@ class CU06_GestionarHorariosDiasSinAtencionTest extends SistemaTestCase
 
         $this->assertSame(0, HorarioAtencion::where('medico_id', $this->medico->id)->count());
         $this->assertSame(0, BloqueoAgenda::whereDate('fecha', $this->fechaLejana)->count());
+    }
+
+    #[Test]
+    public function el_dia_sin_atencion_registrado_por_otro_administrador_muestra_su_autor(): void
+    {
+        $otro = $this->crearUsuario('t-admin-otro', [Rol::ADMINISTRADOR]);
+        $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-De otro', 'estado' => true, 'registrado_por' => $otro->id]);
+
+        $this->actingAs($this->admin)->get(route('dias-sin-atencion.index'))
+            ->assertOk()->assertSee('T-De otro')->assertSee('t-admin-otro');
+        $this->assertSame('t-admin-otro', BloqueoAgenda::whereDate('fecha', $this->fechaLejana)->firstOrFail()->registradoPor->nombre_usuario);
+    }
+
+    #[Test]
+    public function la_fecha_del_dia_sin_atencion_debe_existir_en_el_calendario(): void
+    {
+        foreach (['2031-02-31', '31/12/2031', 'mañana', ''] as $fecha) {
+            $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $fecha, 'motivo' => 'T-Mala fecha'])
+                ->assertSessionHasErrors('fecha');
+        }
+        $this->assertSame(0, BloqueoAgenda::where('motivo', 'T-Mala fecha')->count());
+    }
+
+    #[Test]
+    public function un_dia_sin_atencion_desactivado_tampoco_se_puede_registrar_otra_vez_y_se_reactiva_desde_el_listado(): void
+    {
+        $dia = $this->crearBloqueo(['fecha' => $this->fechaLejana, 'motivo' => 'T-Desactivado', 'estado' => false]);
+
+        $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => 'T-Otra vez'])
+            ->assertSessionHasErrors(['fecha' => 'La fecha ya está registrada como día sin atención.']);
+
+        $this->get(route('dias-sin-atencion.index'))->assertOk()->assertSee('Desactivado');
+        $this->post(route('dias-sin-atencion.activar', $dia))->assertSessionHas('exito');
+        $this->assertTrue($dia->fresh()->estado);
+    }
+
+    #[Test]
+    public function un_dia_sin_atencion_bloquea_la_disponibilidad_y_al_desactivarlo_la_fecha_vuelve_a_estar_disponible(): void
+    {
+        $lunes = $this->proximaFecha(1, 14);
+        $this->crearHorario($this->medico, 1, '08:00', '12:00', 30);
+        $disponibilidad = app(DisponibilidadService::class);
+        $this->assertCount(8, $disponibilidad->calcularLibres($this->medico, $lunes)->libres);
+
+        $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $lunes, 'motivo' => 'T-Paro'])->assertSessionHasNoErrors();
+        $bloqueada = $disponibilidad->calcularLibres($this->medico, $lunes);
+        $this->assertCount(0, $bloqueada->libres);
+        $this->assertStringContainsString('T-Paro', $bloqueada->mensaje);
+
+        $dia = BloqueoAgenda::whereDate('fecha', $lunes)->firstOrFail();
+        $this->post(route('dias-sin-atencion.desactivar', $dia));
+        $this->assertCount(8, $disponibilidad->calcularLibres($this->medico, $lunes)->libres, 'La fecha vuelve a estar disponible.');
+    }
+
+    #[Test]
+    public function las_citas_afectadas_incluyen_confirmadas_y_las_de_cualquier_medico_y_no_se_modifican(): void
+    {
+        $otroMedico = $this->crearMedico([], [$this->especialidad]);
+        $confirmada = $this->crearCita($otroMedico, $this->crearPaciente(), $this->especialidad, $this->fechaLejana, '08:00', '08:30', Cita::CONFIRMADA);
+        $programada = $this->crearCita($this->medico, $this->crearPaciente(), $this->especialidad, $this->fechaLejana, '09:00', '09:30');
+
+        $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => 'T-Dos medicos'])
+            ->assertSessionHas('exito', fn ($m) => str_contains($m, '2 citas programadas afectadas'));
+
+        $dia = BloqueoAgenda::whereDate('fecha', $this->fechaLejana)->firstOrFail();
+        $this->get(route('dias-sin-atencion.index', ['afectadas' => $dia->id]))
+            ->assertOk()->assertSee($confirmada->codigo)->assertSee($programada->codigo)->assertSee('deben reprogramarse');
+
+        $this->assertSame(Cita::CONFIRMADA, $confirmada->fresh()->estado);
+        $this->assertSame(Cita::PROGRAMADA, $programada->fresh()->estado);
+    }
+
+    #[Test]
+    public function registrar_un_dia_sin_citas_avisa_que_no_hay_citas_afectadas(): void
+    {
+        $this->actingAs($this->admin)->post(route('dias-sin-atencion.guardar'), ['fecha' => $this->fechaLejana, 'motivo' => 'T-Sin citas'])
+            ->assertSessionHas('exito', fn ($m) => str_contains($m, 'No hay citas programadas ese día.'));
+    }
+
+    #[Test]
+    public function el_formulario_de_dias_sin_atencion_pide_fecha_futura_y_motivo(): void
+    {
+        $this->actingAs($this->admin)->get(route('dias-sin-atencion.index'))
+            ->assertOk()->assertSee('name="fecha"', false)->assertSee('min="'.Carbon::today()->toDateString().'"', false)
+            ->assertSee('name="motivo"', false)->assertSee('data-validar', false);
+    }
+
+    #[Test]
+    public function la_agenda_semanal_muestra_los_bloques_con_su_cantidad_de_citas(): void
+    {
+        $this->crearHorario($this->medico, 1, '08:00', '12:00', 30);
+        $this->crearHorario($this->medico, 1, '14:00', '17:00', 20);
+
+        $this->actingAs($this->admin)->get(route('horarios.index', ['medico' => $this->medico->id]))
+            ->assertOk()->assertSee('08:00 – 12:00')->assertSee('8 citas')->assertSee('14:00 – 17:00')->assertSee('9 citas');
     }
 
     /** Datos válidos de un bloque (lunes 08:00 a 12:00, 30 min) para el médico de la prueba. */

@@ -33,7 +33,7 @@ class DiaSinAtencionService
      */
     public function listar(): array
     {
-        $dias = BloqueoAgenda::orderByRaw('fecha < current_date')->orderBy('fecha')->paginate(self::POR_PAGINA);
+        $dias = BloqueoAgenda::with('registradoPor')->orderByRaw('fecha < current_date')->orderBy('fecha')->paginate(self::POR_PAGINA);
 
         $afectadas = Cita::whereIn('fecha', $dias->pluck('fecha')->map->toDateString())
             ->whereIn('estado', [Cita::PROGRAMADA, Cita::CONFIRMADA])
@@ -71,7 +71,7 @@ class DiaSinAtencionService
     }
 
     /**
-     * Registra el día sin atención (activo).
+     * Registra el día sin atención (activo) y guarda quién lo registró (registrado_por, v30).
      *
      * @CC CCHorarios (guardar) @CE CEHorario (crear)
      *
