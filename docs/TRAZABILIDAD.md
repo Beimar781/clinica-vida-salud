@@ -1,70 +1,58 @@
-# Trazabilidad requisito → código → prueba
+# Trazabilidad documento v30 ↔ código ↔ pruebas (archivo de trabajo local, no se sube al repositorio)
 
-Una fila por caso de uso. «Prueba» es `backend/tests/Feature/CUxx_NombreTest.php`; el estado se actualiza al correr `php artisan test --filter=CUxx`.
+Claude Code mantiene este archivo: actualiza la fila de cada CU al terminarlo (Prompts 1 a 8) y completa las columnas de resultado en el Prompt 9. De aquí salen las tablas 8.1 y 8.2 del documento.
 
-## Base técnica
+Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 · **Por ajustar** = implementado, el v30 lo cambia · **Pendiente** = por construir · **Adelantado** = hecho antes de su ciclo.
 
-| Elemento | Archivo | Prueba | Estado |
-|---|---|---|---|
-| Modelo físico del Ciclo I (13 tablas + las técnicas `migrations` y `password_reset_tokens`), EXCLUDE, secuencias, trigger de bitácora; columna técnica `bitacora.ip` (migración `2026_10_01_000007_agregar_ip_a_bitacora`) | `backend/database/migrations/*` (desde `backend/database/schema.sql`) | `backend/tests/Feature/BaseDatosTest.php` | Aprobado |
-| Usuario con `password_hash`, middleware `rol` (el Administrador hereda las funciones de recepción en `Usuario::tieneRol`; no las de médico ni paciente), inicio público | `backend/app/Models/Usuario.php`, `backend/app/Http/Middleware/VerificarRol.php` | `backend/tests/Feature/BaseSeguridadTest.php` | Aprobado |
-| Normalización de texto | `backend/app/Support/Texto.php` | `backend/tests/Unit/TextoTest.php` | Aprobado |
-| Assets del frontend por la ruta `assets` (sin symlinks, anti path traversal, caché) | `backend/app/Http/Controllers/RecursoController.php`, `backend/app/Support/Recursos.php` | `backend/tests/Feature/RecursosTest.php` | Aprobado |
-| Preparación del despliegue en Railway: seeders idempotentes (`SEMBRAR_DEMO`, `ADMIN_PASSWORD`), proxy con https, `Dockerfile` | `Dockerfile`, `.dockerignore`, `backend/database/seeders/*`, `backend/bootstrap/app.php`, `backend/app/Providers/AppServiceProvider.php` | `backend/tests/Feature/DespliegueTest.php` | Aprobado |
+## 1. Casos de uso
 
-## Ciclo I
+| CU | Nombre (v30) | Ciclo | RF | Prompt | Estado | Carpeta de código | Filas 8.1 | Pruebas (último resultado) |
+|---|---|---|---|---|---|---|---|---|
+| CU-01 | Iniciar sesión | I | RF01 | — | Hecho (C-I) | `SeguridadUsuarios/CU01_IniciarSesion` | 4 | 39 aprobadas (incluye recuperación) |
+| CU-02 | Cerrar sesión | I | RF02 | — | Hecho (C-I) | `SeguridadUsuarios/CU02_CerrarSesion` | 2 | 6 aprobadas |
+| CU-03 | Gestionar usuarios y roles | I | RF03 | 3 (aviso paciente sin ficha) | Hecho (C-I) | `SeguridadUsuarios/CU03_GestionarUsuariosRoles` | 3 | 18 aprobadas |
+| CU-04 | Gestionar especialidades y servicios | I | RF04 | 1 | Por ajustar | `GestionMedica/CU04_GestionarEspecialidadesServicios` | 3 | 8 (previas, rehacer) |
+| CU-05 | Gestionar médicos | I | RF05 | — | Hecho (C-I) | `GestionMedica/CU05_GestionarMedicos` | 4 | 16 aprobadas |
+| CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Por ajustar | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 17 (previas, rehacer) |
+| CU-07 | Gestionar pacientes | I | RF07 | — | Hecho (C-I) | `GestionPacientes/CU07_GestionarPacientes` | 5 | 19 aprobadas |
+| CU-08 | Consultar disponibilidad de horarios | I | RF08 | — | Hecho (C-I) | `GestionCitas/CU08_ConsultarDisponibilidadHorarios` | 5 | 14 aprobadas |
+| CU-09 | Registrar cita médica | I | RF09 | 2 | Por ajustar | `GestionCitas/CU09_RegistrarCitaMedica` | 8 | 17 + 1 concurrencia (previas, ampliar) |
+| CU-10 | Reprogramar cita médica | I | RF10 | 3 | Por ajustar | `GestionCitas/CU10_ReprogramarCitaMedica` | 6 | 17 (previas, ampliar) |
+| CU-11 | Reservar cita en línea | I | RF11 | 2 | Por ajustar | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 16 (previas, ampliar) |
+| CU-12 | Cancelar cita médica | II | RF12 | 4 | Pendiente | `GestionCitas/CU12_CancelarCitaMedica` | 4 | — |
+| CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Pendiente | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | — |
+| CU-14 | Consultar agenda médica | II | RF14 | 4 | Pendiente | `GestionCitas/CU14_ConsultarAgendaMedica` | 4 | — |
+| CU-15 | Consultar historial de citas del paciente | II | RF15 | 4 | Pendiente | `GestionPacientes/CU15_ConsultarHistorialCitasPaciente` | 2 | — |
+| CU-16 | Registrar consulta y tratamiento | II | RF16 | 5 | Pendiente | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | 3 | — |
+| CU-17 | Consultar historia clínica | II | RF17 | 5 | Pendiente | `AtencionClinica/CU17_ConsultarHistoriaClinica` | 3 | — |
+| CU-18 | Generar reportes (con IA) | II | RF18 | 7 | Pendiente | `ReportesBitacora/CU18_GenerarReportesConIA` | 7 | — |
+| CU-19 | Consultar bitácora | II | RF19 | 6 (ajuste) | Adelantado | `ReportesBitacora/CU19_ConsultarBitacora` | 2 | 23 aprobadas |
+| CU-20 | Registrarse como paciente | II | RF20 | 6 | Pendiente | `GestionPacientes/CU20_RegistrarsePaciente` | 4 | — |
+| CU-21 | Gestionar mi perfil | II | RF21 | 6 | Pendiente | `GestionPacientes/CU21_GestionarMiPerfil` | 4 | — |
+| CU-22 | Enviar recordatorios de citas | II | RF22 | 8 | Pendiente | `GestionCitas/CU22_EnviarRecordatoriosCitas` | 2 | — |
 
-Los nombres de clase (CI, CC, CE) son los de los diagramas (`docs/CLASES_ANALISIS.md`). Backend: `backend/app/Modules/<Paquete>/<CU>/`; pantallas: `frontend/<Paquete>/<CU>/`; pruebas: `backend/tests/Feature/`. Las rutas de cada paquete están en `backend/app/Modules/<Paquete>/routes.php`.
+Total de filas del plan 8.1: 93. Cada fila es un método `paso_N_...` del archivo `backend/tests/Feature/CUxx_*Test.php`; los CU con más pruebas que filas incluyen casos extra (bitácora, permisos, validaciones).
 
-| CU | RF | Paquete | CI (pantalla) | CC (controlador · servicio) | Rutas | CE (modelos) | Tablas | Prueba | Estado |
-|---|---|---|---|---|---|---|---|---|---|
-| CU-01 Iniciar sesión | RF01 | P1 SeguridadUsuarios | `CILogin` · `CU01_IniciarSesion/login`, `panel`, `olvido`, `restablecer` (A3) | `CCLogin` · LoginController, PanelController · LoginService (LoginRequest). Flujo alternativo A3 «Recuperar contraseña»: OlvidoClaveController, RestablecerClaveController · RecuperarClaveService (OlvidoClaveRequest, RestablecerClaveRequest); correo `BrevoTransport` | `GET/POST /login`, `GET /panel`; A3: `GET/POST /olvido-clave`, `GET /restablecer-clave/{token}`, `POST /restablecer-clave` | `CEUsuario` (Usuario, Rol) | usuarios, rol_usuario, bitacora; técnica: password_reset_tokens | `CU01_IniciarSesionTest` (39) | Aprobado |
-| CU-02 Cerrar sesión | RF02 | P1 SeguridadUsuarios | `CILogout` · botón del menú (`layouts/app`) | `CCLogout` · LogoutController · LogoutService | `POST /logout` | `CEUsuario` (Usuario) | usuarios | `CU02_CerrarSesionTest` (6) | Aprobado |
-| CU-03 Gestionar usuarios y roles | RF03 | P1 SeguridadUsuarios | `CIUsuarios` · `CU03_GestionarUsuariosRoles/index`, `crear`, `editar`, `campos` | `CCUsuarios` · UsuariosController · UsuarioService (UsuarioRequest) | `/usuarios` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEUsuario` (Usuario), `CERol` (Rol) | usuarios, roles, rol_usuario | `CU03_GestionarUsuariosRolesTest` (18) | Aprobado |
-| CU-04 Gestionar especialidades médicas | RF04 | P2 GestionMedica | `CIEspecialidad` · `CU04_GestionarEspecialidadesMedicas/` | `CCEspecialidad` · EspecialidadController · EspecialidadService (EspecialidadRequest) | `/especialidades` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEEspecialidad` (Especialidad) | especialidades | `CU04_GestionarEspecialidadesMedicasTest` (8) | Aprobado |
-| CU-05 Gestionar médicos | RF05 | P2 GestionMedica | `CIMedicos` · `CU05_GestionarMedicos/` | `CCMedicos` · MedicosController · MedicoService (MedicoRequest) | `/medicos` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEMedico` (Medico), `CEEspecialidad` (Especialidad) | medicos, medico_especialidad | `CU05_GestionarMedicosTest` (16) | Aprobado |
-| CU-06 Gestionar horarios y días sin atención | RF06 | P2 GestionMedica | `CIHorarios` · `CU06_GestionarHorariosDiasSinAtencion/` | `CCHorarios` · HorariosController, DiasSinAtencionController · HorarioService, DiaSinAtencionService (HorarioRequest, DiaSinAtencionRequest) | `/horarios` (index, guardar, actualizar, desactivar, activar) y `/dias-sin-atencion` (index, guardar, desactivar, activar) | `CEHorario` (HorarioAtencion), `CEMedico` (Medico); BloqueoAgenda | horarios_atencion, bloqueos_agenda | `CU06_GestionarHorariosDiasSinAtencionTest` (17) | Aprobado |
-| CU-07 Gestionar pacientes | RF07 | P3 GestionPacientes | `CIPacientes` · `CU07_GestionarPacientes/` | `CCPacientes` · PacientesController · PacienteService (PacienteRequest) | `/pacientes` (index, crear, guardar, editar, actualizar, desactivar, activar) | `CEPaciente` (Paciente), `CEHistoriaClinica` (HistoriaClinica), `CEAntecedente` (AntecedenteExterno) | pacientes, historias_clinicas, antecedentes_externos | `CU07_GestionarPacientesTest` (19) | Aprobado |
-| CU-08 Consultar disponibilidad de horarios | RF08 | P4 GestionCitas | `CIDisponibilidad` · `CU08_ConsultarDisponibilidadHorarios/` | `CCDisponibilidad` · DisponibilidadController · DisponibilidadService y CatalogoMedicosService (en `Compartido/`), DisponibilidadRequest | `GET /disponibilidad` | `CEMedico` (Medico), `CECita` (Cita) | horarios_atencion, citas, bloqueos_agenda | `CU08_ConsultarDisponibilidadHorariosTest` (14) | Aprobado |
-| CU-09 Registrar cita médica | RF09 | P4 GestionCitas | `CIRegistrarCita` · `CU09_RegistrarCitaMedica/` | `CCRegistrarCita` · RegistrarCitaController · RegistrarCitaService (RegistrarCitaRequest), AgendarCitaService (en `Compartido/`: transacción, bloqueo del médico y 23P01) | `GET /citas/registrar`, `POST /citas`, `GET /citas/{cita}/comprobante` | `CEPaciente`, `CECita`, `CEMedico` | citas | `CU09_RegistrarCitaMedicaTest` (17) y `CU09_RegistrarCitaMedicaConcurrenciaTest` (1, dos procesos reales) | Aprobado |
-| CU-10 Reprogramar cita médica | RF10 | P4 GestionCitas | `CIReprogramarCita` · `CU10_ReprogramarCitaMedica/` (y listado de citas) | `CCReprogramarCita` · ReprogramarCitaController · ReprogramarCitaService (ReprogramarCitaRequest), reutiliza AgendarCitaService y DisponibilidadService (`Compartido/`) | `GET /citas`, `GET|PUT /citas/{cita}/reprogramar`, `GET /citas/{cita}/reprogramada` | `CECita`, `CEMedico` | citas | `CU10_ReprogramarCitaMedicaTest` (17) | Aprobado |
-| CU-11 Reservar cita en línea | RF11 | P4 GestionCitas | `CIReservarCita` · `CU11_ReservarCitaEnLinea/` | `CCReservarCita` · ReservarCitaController · ReservarCitaService (ReservarCitaRequest), reutiliza AgendarCitaService, DisponibilidadService y CatalogoMedicosService (`Compartido/`) | `GET /reservas/crear`, `GET /reservas/reservar`, `POST /reservas`, `GET /reservas/{cita}/comprobante` | `CECita`, `CEMedico` | citas | `CU11_ReservarCitaEnLineaTest` (16) | Aprobado |
+Referencia del Ciclo I (24/10): 250 pruebas, 1363 aserciones, todas aprobadas. Los CU «Por ajustar» se vuelven a ejecutar tras cada prompt y el conteo se actualiza en esta tabla.
 
-## Adelantado del Ciclo II
+## 2. Tareas técnicas
 
-| CU | RF | Paquete | CI (pantalla) | CC (controlador · servicio) | Rutas | CE (modelos) | Tablas | Prueba | Estado |
-|---|---|---|---|---|---|---|---|---|---|
-| CU-19 Consultar bitácora | RF19 | P6 ReportesBitacora | `CIBitacora` · `CU19_ConsultarBitacora/index` | `CCBitacora` · BitacoraController · ConsultaBitacoraService (BitacoraRequest), catálogo `AccionesBitacora` | `GET /bitacora` (solo Administrador; solo lectura) | `CEBitacora` (Bitacora), `CEUsuario` | bitacora (con la columna técnica `ip`), usuarios | `CU19_ConsultarBitacoraTest` (23) | Aprobado |
+| Tarea | Prompt | Estado |
+|---|---|---|
+| Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`) y `schema.sql` nuevo | 0 | Pendiente |
+| Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago) | 0 | Pendiente |
+| Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | 2 | Pendiente |
+| Proveedor de IA para el resumen de reportes | 7 | Pendiente |
+| Programador y comando `citas:enviar-recordatorios`; servicio cron en Railway | 8, 10 | Pendiente |
+| Auditoría documento ↔ código y prueba general | 9 | Pendiente |
+| Redespliegue en Railway con variables de Stripe, IA y Brevo | 10 | Pendiente |
 
-El documento aún no trae la ficha de CU-19 (RF19: «Registra y permite consultar los eventos relevantes del sistema (quién hizo qué y cuándo)»); el flujo propuesto está en el comentario de `BitacoraController`. Los nombres CI, CC y CE son propuestos.
+## 3. Prueba general (la llena el Prompt 9)
 
-## Reporte de prueba del Ciclo I (insumo de la sección 8.2)
-
-Corrida del 24/10/2026 con `php artisan test` sobre la base ya migrada y sembrada (`php artisan migrate --seed`): **250 pruebas, 1363 aserciones, todas aprobadas** (incluidas las 23 de CU-19, que se adelantó del Ciclo II).
-
-| CU | Archivo de prueba | Pruebas | Filas del plan 8.1 | Resultado |
+| Fecha | Comando | Pruebas | Aserciones | Resultado |
 |---|---|---|---|---|
-| CU-01 | `CU01_IniciarSesionTest` | 39 | 4 (más recuperación de contraseña, bloqueo de 60 s y `BrevoTransport`) | Aprobado |
-| CU-02 | `CU02_CerrarSesionTest` | 6 | 2 | Aprobado |
-| CU-03 | `CU03_GestionarUsuariosRolesTest` | 18 | 3 | Aprobado |
-| CU-04 | `CU04_GestionarEspecialidadesMedicasTest` | 8 | 2 | Aprobado |
-| CU-05 | `CU05_GestionarMedicosTest` | 16 | 4 | Aprobado |
-| CU-06 | `CU06_GestionarHorariosDiasSinAtencionTest` | 17 | 5 | Aprobado |
-| CU-07 | `CU07_GestionarPacientesTest` | 19 | 5 | Aprobado |
-| CU-08 | `CU08_ConsultarDisponibilidadHorariosTest` | 14 | 5 | Aprobado |
-| CU-09 | `CU09_RegistrarCitaMedicaTest` y `CU09_RegistrarCitaMedicaConcurrenciaTest` | 17 + 1 | 7 | Aprobado |
-| CU-10 | `CU10_ReprogramarCitaMedicaTest` | 17 | 4 | Aprobado |
-| CU-11 | `CU11_ReservarCitaEnLineaTest` | 16 | 4 | Aprobado |
+| | `php artisan test` | | | |
 
-Las otras 39 pruebas (base de datos, seguridad, assets, normalización de texto y preparación del despliegue) están en la tabla «Base técnica».
+## 4. Tabla 8.2 (resultado por CU para el documento)
 
-## Flujo alternativo A3 de CU-01 · Recuperar contraseña (texto sugerido para la ficha del documento)
-
-No es un caso de uso nuevo: se agrega a la ficha de CU-01 (sección 4.3) y a su plan de pruebas (8.1). Controladores `OlvidoClaveController` y `RestablecerClaveController`, servicio `RecuperarClaveService`, tabla técnica `password_reset_tokens`.
-
-**Flujo alternativo A3.** En el paso 2, el usuario elige «¿Olvidaste tu contraseña?». (A3.1) El sistema solicita el correo de la cuenta. (A3.2) El usuario lo ingresa. (A3.3) Si la cuenta existe y está activa, el sistema envía a ese correo un enlace con un token de un solo uso que vence a los 60 minutos; en todos los casos responde «Si el correo está registrado, te enviamos un enlace de recuperación». (A3.4) El usuario abre el enlace. (A3.5) El sistema solicita la contraseña nueva (mínimo 8 caracteres) y su confirmación. (A3.6) El usuario las ingresa. (A3.7) El sistema guarda la contraseña con hash bcrypt, invalida el token, desbloquea la cuenta si estaba bloqueada por intentos fallidos, registra la operación en la bitácora y muestra el inicio de sesión con «Contraseña actualizada. Ya puedes iniciar sesión.».
-
-**Excepciones de A3.** Correo no registrado o cuenta inactiva: el sistema responde igual y no envía nada. Enlace vencido, ya usado o alterado: «El enlace de recuperación venció o ya fue usado. Solicita uno nuevo.» y se ofrece pedir otro. Contraseña de menos de 8 caracteres o confirmación distinta: el sistema indica el error junto al campo. Falla del servicio de correo: «No pudimos enviar el correo en este momento. Inténtalo de nuevo en unos minutos.». Más de 5 solicitudes por minuto desde un mismo equipo: el sistema las rechaza.
-
-**Casos de prueba nuevos (8.1).** Solicitud con cuenta activa (se envía el enlace); con correo inexistente (misma respuesta, no se envía); con cuenta inactiva (no se envía); restablecer con token válido (entra con la clave nueva, no con la anterior); token inválido, vencido o reutilizado; contraseña corta o sin confirmación; el restablecimiento limpia el bloqueo.
-
+Se llena tras la prueba general: por cada CU, `Aprobado` o `Fallido` y observaciones. Mientras tanto todas figuran como pendientes.

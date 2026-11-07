@@ -1,6 +1,6 @@
-# Capturas para la sección 4.4 «Prototipar interfaz de usuario» (Ciclo I)
+# Capturas para la sección 4.4 «Prototipar interfaz de usuario» (v30: CU-01 a CU-22)
 
-Una captura por pantalla importante de cada caso de uso, en el orden del documento (CU-01 a CU-11). Para que todas salgan con los mismos datos:
+Una captura por pantalla importante de cada caso de uso, en el orden del documento (CU-01 a CU-22; el Ciclo II va al final desde la figura 72). Para que todas salgan con los mismos datos:
 
 1. Desde `backend/`: `php artisan migrate:fresh --seed` y `php artisan serve` (http://localhost:8000). Las fechas de las citas de demostración se calculan desde el día en que se siembra, así que conviene sembrar el mismo día de las capturas y no mezclar días.
 2. Navegador a 1280 px de ancho (PC), zoom 100 %. Una captura final a 768 px (tablet, RNF04).
@@ -48,20 +48,20 @@ Las URL son relativas a `http://localhost:8000`.
 | 22 | Edición | `/usuarios/{id}/editar` | Editar `demo.doble` | Datos y roles cargados; contraseña opcional |
 | 23 | Usuario desactivado | `/usuarios` | Desactivar `demo.doble` | Fila con estado «Inactivo» (el registro se conserva) |
 
-## CU-04 Gestionar especialidades médicas (`admin`)
+## CU-04 Gestionar especialidades y servicios (`admin`) · v30: con tipo y precio
 
 | N.º | Pantalla | URL | Datos | Qué debe verse |
 |---|---|---|---|---|
-| 24 | Listado | `/especialidades` | Demostración | 5 especialidades con su estado |
+| 24 | Listado | `/especialidades` | Demostración | Especialidades y servicios (consulta, laboratorio, enfermería) con tipo, precio en Bs y estado |
 | 25 | Duplicado normalizado | `/especialidades/crear` | Nombre `cardiologia ` (minúsculas, sin tilde, con espacio al final) | Rechazo por nombre repetido |
-| 26 | Alta | `/especialidades/crear` → `/especialidades` | Nombre `Dermatología`, descripción «Piel y cabello» | Aviso verde y la especialidad activa en el listado |
+| 26 | Alta | `/especialidades/crear` → `/especialidades` | Nombre `Dermatología`, tipo Consulta, precio `150`, descripción «Piel y cabello» | Aviso verde y la especialidad activa en el listado |
 | 27 | Desactivada | `/especialidades` | Desactivar `Dermatología` | Estado «Inactiva» |
 
 ## CU-05 Gestionar médicos (`admin`)
 
 | N.º | Pantalla | URL | Datos | Qué debe verse |
 |---|---|---|---|---|
-| 28 | Listado | `/medicos` | Demostración | 5 médicos con código MED-, especialidades y ubicación |
+| 28 | Listado | `/medicos` | Demostración | Médicos con código MED-, especialidades y ubicación |
 | 29 | Validación | `/medicos/crear` | Enviar vacío | Errores junto a cada campo |
 | 30 | Registro repetido | `/medicos/crear` | Cualquier dato y el número de registro de un médico del listado | Rechazo por registro profesional repetido |
 | 31 | Alta con cuenta | `/medicos/crear` → `/medicos` | Nombres `Ana`, apellidos `Prueba Soria`, registro `MP-9001`, teléfono `70000001`, correo `ana.prueba@vidasalud.test`, ubicación `Sede Central · Consultorio 301`, dos especialidades, «puede marcar atendidas» y cuenta con usuario `aprueba` | Aviso verde y código MED-0006 |
@@ -110,9 +110,11 @@ Las URL son relativas a `http://localhost:8000`.
 |---|---|---|---|---|
 | 55 | Buscar al paciente | `/citas/registrar?q=6543` | CI parcial | María Elena Rojas Suárez con el botón «Seleccionar» |
 | 56 | Horarios libres | `/citas/registrar` (tras «Seleccionar») | Especialidad Medicina general, médico Carla Montaño, una fecha con atención (miércoles) | Horarios libres y formulario con modalidad y motivo |
-| 57 | Comprobante | `/citas/{id}/comprobante` | Un horario libre, modalidad Virtual, motivo «Control de presión» | Código CM-0013 en adelante, paciente, especialidad, médico, fecha, horario, modalidad, estado «Programada» y botón de imprimir |
+| 57 | Comprobante (efectivo) | `/citas/{id}/comprobante` | Un horario libre, modalidad Virtual, motivo «Control de presión», pago en efectivo | Código CM-0013 en adelante, paciente, especialidad, médico, fecha, horario, modalidad, monto, pago «Pendiente», estado «Programada» y botón de imprimir |
 | 58 | Horario ocupado | `/citas/registrar` | Con dos pestañas abiertas en el mismo horario, confirmar primero en una y luego en la otra | «El horario fue ocupado por otro usuario. Elija otro de los horarios libres que se muestran.» con la lista actualizada |
 | 59 | Paciente inactivo | `/citas/registrar?q=` + nombre | Paciente desactivado (figura 49) | Paciente marcado como no seleccionable |
+
+| 59 bis | Pago con tarjeta | Stripe Checkout y `/pagos/stripe/retorno` | Tarjeta de prueba de Stripe 4242 4242 4242 4242 | Comprobante con pago «Pagado» y referencia; con la tarjeta 4000 0000 0000 0002, aviso de pago rechazado y sin cita |
 
 ## CU-10 Reprogramar cita médica (`recepcion`)
 
@@ -134,9 +136,38 @@ Las URL son relativas a `http://localhost:8000`.
 | 68 | Comprobante | `/reservas/{id}/comprobante` | Confirmar la reserva | Cita a nombre de María Elena Rojas Suárez, estado «Programada» |
 | 69 | Horario ocupado | `/reservas/reservar` | Dos pestañas, una con `mrojas` y otra con otro paciente con cuenta | Aviso de horario ocupado y horarios actualizados |
 
+| 69 bis | Pago en línea | `/reservas/reservar` | Método Tarjeta (Stripe, modo de prueba, cobro en Bs) | Comprobante con monto, «Pagado» y referencia |
+
 ## Transversal
 
 | N.º | Pantalla | URL | Datos | Qué debe verse |
 |---|---|---|---|---|
 | 70 | Tablet | `/panel` | `admin`, ventana de 768 px | Diseño adaptado (RNF04) |
 | 71 | Página inexistente | `/no-existe` | `admin` | Pantalla de error en español, sin rutas ni datos técnicos |
+
+## Ciclo II (CU-12 a CU-22)
+
+Las URL son las propuestas en `CLAUDE.md` sección 4; si Claude Code las cambió, usa las reales. Antes de capturar: `php artisan migrate:fresh --seed` el mismo día. Datos: citas de demostración en todos los estados y pagos; la ficha sin cuenta (para CU-20) está en la lista de pacientes.
+
+| N.º | CU | Pantalla | URL | Usuario y datos | Qué debe verse |
+|---|---|---|---|---|---|
+| 72 | CU-12 | Cancelar cita | `/citas/{id}/cancelar` | `recepcion`, cita Programada | Motivo obligatorio y confirmación |
+| 73 | CU-12 | Cancelar con pago | mismo | Cita pagada | Aviso «el pago no se devuelve» |
+| 74 | CU-12 | Plazo del paciente | mismo | `mrojas`, cita a menos de 2 h | Rechazo por plazo |
+| 75 | CU-13 | Control de citas | `/control-citas` | `recepcion` | Agenda del día con acciones confirmar, cobrar, atendida, inasistencia |
+| 76 | CU-13 | Cobro en efectivo | `/control-citas` | Cita con pago Pendiente | Pago «Pagado» tras cobrar |
+| 77 | CU-13 | Corrección | `/control-citas` | `admin`, justificación | Cambio de estado con justificación |
+| 78 | CU-14 | Agenda médica | `/agenda` | `cmontano` | Citas del rango con motivo; contacto oculto si el paciente lo pidió |
+| 79 | CU-15 | Historial | `/historial-citas` | `mrojas` | Citas propias con filtros y botón «Cancelar» |
+| 80 | CU-15 | Búsqueda del personal | `/historial-citas?q=6543210` | `recepcion` | Historial del paciente buscado |
+| 81 | CU-16 | Registrar consulta | `/consultas/{cita}` | `cmontano`, cita Confirmada | Diagnóstico, tratamiento, observaciones |
+| 82 | CU-17 | Historia clínica | `/historia-clinica/{paciente}` | `cmontano` | Antecedentes y consultas en orden |
+| 83 | CU-17 | Sin acceso | `/historia-clinica` | `recepcion` | Acceso denegado |
+| 84 | CU-18 | Reportes | `/reportes` | `admin` | Selector de 8 tipos, filtros, totales y tabla |
+| 85 | CU-18 | Resumen con IA | `/reportes` | Modalidad con IA | Resumen rotulado como generado por IA |
+| 86 | CU-18 | Exportar | `/reportes/exportar/pdf` y `/csv` | `admin` | PDF y CSV abiertos |
+| 87 | CU-19 | Bitácora | `/bitacora` | `admin` | Eventos con filtros (incluye cobros y pagos) |
+| 88 | CU-20 | Registro | `/registro` | Sin sesión | Formulario público |
+| 89 | CU-20 | Vincular ficha | `/registro` | CI de la ficha sin cuenta y fecha de nacimiento | Cuenta creada y ficha vinculada |
+| 90 | CU-21 | Mi perfil | `/perfil` | `mrojas` | Datos editables, CI de solo lectura, cambio de contraseña |
+| 91 | CU-22 | Recordatorio | correo / `laravel.log` | `php artisan citas:enviar-recordatorios` | Correo con fecha, hora y médico de la cita |
