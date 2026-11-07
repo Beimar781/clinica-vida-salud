@@ -151,6 +151,32 @@ class AgendarCitaService
     }
 
     /**
+     * Comprueba que una cita que va a volver a ocupar su horario (por ejemplo, el administrador corrige CANCELADA -> PROGRAMADA)
+     * no choque con otra cita: bloquea la fila del médico y revisa que ningún otro registro no cancelado se superponga con el
+     * horario del médico ni con el del paciente. No aplica la regla de «fecha pasada»: corregir una cita antigua es válido.
+     * Las restricciones EXCLUDE de la base siguen siendo la última barrera.
+     *
+     * @CC CCEstadoCita (cambiarEstado) @CE CECita (estaLibre)
+     *
+     * @throws HorarioOcupadoException
+     * @throws ReglaCitaException
+     */
+    public function verificarEspacioDeCita(Cita $cita): void
+    {
+        Medico::whereKey($cita->medico_id)->lockForUpdate()->firstOrFail();
+
+        $ocupado = Cita::where('medico_id', $cita->medico_id)->where('id', '<>', $cita->id)
+            ->whereDate('fecha', $cita->fecha->toDateString())->where('estado', '<>', Cita::CANCELADA)
+            ->where('hora_inicio', '<', $cita->hora_fin)->where('hora_fin', '>', $cita->hora_inicio)->exists();
+
+        if ($ocupado) {
+            throw new HorarioOcupadoException('El horario de esta cita ya fue ocupado por otra cita: no se puede restablecer. Reprograme o registre una cita nueva.');
+        }
+
+        $this->verificarPaciente($cita->paciente, $cita->fecha->toDateString(), ['inicio' => $cita->hora_inicio, 'fin' => $cita->hora_fin], $cita->id);
+    }
+
+    /**
      * Cancela la autorización de Stripe cuando la cita no se pudo registrar: no se cobra nada. Si la cancelación
      * misma falla se deja en el log (la autorización vence sola en Stripe) y se sigue con el error original.
      */

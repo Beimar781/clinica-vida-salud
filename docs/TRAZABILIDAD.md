@@ -20,7 +20,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-10 | Reprogramar cita médica | I | RF10 | 3 | Hecho (v30, 07/11) | `GestionCitas/CU10_ReprogramarCitaMedica` | 6 | 26 aprobadas (6 filas del 8.1 + 20 de reglas internas) |
 | CU-11 | Reservar cita en línea | I | RF11 | 2, 3 | Hecho (v30, 07/11) | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 36 aprobadas (7 filas del 8.1 + 29 de reglas internas, pago y cuenta sin ficha) |
 | CU-12 | Cancelar cita médica | II | RF12 | 4 | Hecho (07/11) | `GestionCitas/CU12_CancelarCitaMedica` | 4 | 13 aprobadas (4 filas del 8.1 + 9 de reglas internas) |
-| CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Pendiente | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | — |
+| CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Hecho (07/11) | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | 26 aprobadas (6 filas del 8.1 + 20 de reglas internas) |
 | CU-14 | Consultar agenda médica | II | RF14 | 4 | Pendiente | `GestionCitas/CU14_ConsultarAgendaMedica` | 4 | — |
 | CU-15 | Consultar historial de citas del paciente | II | RF15 | 4 | Pendiente | `GestionPacientes/CU15_ConsultarHistorialCitasPaciente` | 2 | — |
 | CU-16 | Registrar consulta y tratamiento | II | RF16 | 5 | Pendiente | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | 3 | — |

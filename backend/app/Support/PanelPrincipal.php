@@ -48,6 +48,7 @@ class PanelPrincipal
                 ['nombre' => 'Registrar cita', 'ruta' => 'citas.registrar', 'icono' => 'mas', 'cu' => 'CU-09', 'roles' => [Rol::RECEPCIONISTA]],
                 ['nombre' => 'Citas y reprogramación', 'ruta' => 'citas.index', 'icono' => 'calendario', 'cu' => 'CU-10', 'roles' => [Rol::RECEPCIONISTA]],
                 ['nombre' => 'Reservar cita', 'ruta' => 'reservas.crear', 'icono' => 'cita', 'cu' => 'CU-11', 'roles' => [Rol::PACIENTE]],
+                ['nombre' => 'Control de citas', 'ruta' => 'control.index', 'icono' => 'check', 'cu' => 'CU-13', 'roles' => [Rol::RECEPCIONISTA, Rol::MEDICO]],
             ],
         ],
         [

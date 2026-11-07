@@ -47,3 +47,11 @@
 .pago-opcion small { color: var(--vs-muted); font-size: .8rem; }
 .pago-opcion--deshabilitada { opacity: .55; cursor: not-allowed; background: #F5F7F9; }
 .campo--error .pago-opcion { border-color: var(--vs-danger); }
+
+/* ---------- Control de citas (CU-13) ---------- */
+.corregir-estado { position: relative; }
+.corregir-estado summary { list-style: none; cursor: pointer; }
+.corregir-estado summary::-webkit-details-marker { display: none; }
+.corregir-estado__form { display: grid; gap: .4rem; min-width: 250px; margin-top: .4rem; padding: .75rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; }
+.corregir-estado__form label { font-size: .8rem; font-weight: 700; color: var(--vs-blue-900); }
+.corregir-estado__form select, .corregir-estado__form textarea { width: 100%; }

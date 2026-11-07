@@ -6,6 +6,7 @@ use App\Modules\GestionCitas\CU09_RegistrarCitaMedica\RegistrarCitaController;
 use App\Modules\GestionCitas\CU10_ReprogramarCitaMedica\ReprogramarCitaController;
 use App\Modules\GestionCitas\CU11_ReservarCitaEnLinea\ReservarCitaController;
 use App\Modules\GestionCitas\CU12_CancelarCitaMedica\CancelarCitaController;
+use App\Modules\GestionCitas\CU13_ControlarAsistenciaEstadosCita\EstadoCitaController;
 use Illuminate\Support\Facades\Route;
 
 // Paquete P4 - Gestión de Citas (CU-08 a CU-14 y CU-22).
@@ -43,6 +44,12 @@ Route::middleware(['auth', 'rol:Paciente'])->prefix('reservas')->name('reservas.
 Route::middleware(['auth', 'rol:Recepcionista,Paciente'])->prefix('citas')->group(function () {
     Route::get('/{cita}/cancelar', [CancelarCitaController::class, 'mostrar'])->whereNumber('cita')->name('citas.cancelar');
     Route::post('/{cita}/cancelar', [CancelarCitaController::class, 'guardar'])->whereNumber('cita')->name('citas.cancelar.guardar');
+});
+
+// CU-13: Controlar asistencia y estados de la cita (Recepcionista, Administrador y Médico; cada acción la valida TransicionesCita)
+Route::middleware(['auth', 'rol:Recepcionista,Médico'])->group(function () {
+    Route::get('/control-citas', [EstadoCitaController::class, 'index'])->name('control.index');
+    Route::post('/citas/{cita}/estado', [EstadoCitaController::class, 'cambiar'])->whereNumber('cita')->name('citas.estado');
 });
 
 // Pago con tarjeta (Stripe Checkout alojado) de CU-09 y CU-11: regreso de la página de pago y pago cancelado.
