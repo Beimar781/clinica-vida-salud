@@ -59,6 +59,8 @@ class AccionesBitacora
         'PACIENTE_DESACTIVADO' => 'Paciente desactivado',
         'PACIENTE_REGISTRADO' => 'Paciente registrado desde la web',
         'FICHA_VINCULADA' => 'Cuenta vinculada a la ficha del paciente',
+        'REPORTE_GENERADO' => 'Reporte generado',
+        'REPORTE_EXPORTADO' => 'Reporte exportado',
         'PERFIL_ACTUALIZADO' => 'Perfil del paciente actualizado',
         'PERFIL_CLAVE_RECHAZADA' => 'Cambio de contraseña rechazado',
         'CITA_REGISTRADA' => 'Cita registrada',

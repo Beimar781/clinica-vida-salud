@@ -15,3 +15,48 @@
 .accion-gris { background: #ECEFF2; color: #4C5B69; border-color: #D3D9DF; }
 .accion-azul { background: var(--vs-sky-100); color: var(--vs-blue-700); border-color: var(--vs-sky-200); }
 .tabla-bitacora .etiqueta-estado { white-space: nowrap; }
+
+/* ---------- CU-18: reportes ---------- */
+.filtros-reporte { display: grid; gap: .8rem 1rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); align-items: end; margin-bottom: 1rem; }
+.filtros-reporte > div[hidden] { display: none; }
+.modalidad-ia { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.modalidad-ia legend { padding: 0; margin-bottom: .4rem; grid-column: 1 / -1; }
+
+.opcion-modalidad { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .85rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; cursor: pointer; }
+.opcion-modalidad:hover, .opcion-modalidad:has(input:checked) { border-color: var(--vs-sky-400); }
+.opcion-modalidad input { width: 1.1rem; height: 1.1rem; margin-top: .2rem; accent-color: var(--vs-blue-600); flex: none; }
+.opcion-modalidad span { display: flex; flex-direction: column; font-weight: 600; color: var(--vs-blue-900); }
+.opcion-modalidad small { color: var(--vs-muted); font-size: .8rem; font-weight: 400; line-height: 1.3; }
+
+.reporte { background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: var(--vs-radius); box-shadow: var(--vs-shadow); padding: 1.1rem 1.25rem; }
+.reporte__cabecera { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: .9rem; }
+.reporte__cabecera h2 { margin: 0 0 .25rem; }
+.reporte__acciones { display: flex; gap: .5rem; flex-wrap: wrap; }
+.reporte h3 { margin: 1.2rem 0 .5rem; font-size: 1.02rem; }
+
+.resumen-ia { border: 1px solid var(--vs-sky-200); border-left: 4px solid var(--vs-sky-400); background: var(--vs-sky-50); border-radius: 8px; padding: .8rem 1rem; margin: .5rem 0 1rem; }
+.resumen-ia h3 { margin: 0 0 .35rem; color: var(--vs-blue-900); }
+.resumen-ia p { margin: 0 0 .5rem; line-height: 1.5; }
+
+.totales-reporte { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); margin: 0; }
+.totales-reporte__dato { background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; padding: .55rem .75rem; }
+.totales-reporte dt { color: var(--vs-muted); font-size: .8rem; line-height: 1.25; }
+.totales-reporte dd { margin: .15rem 0 0; font-size: 1.15rem; font-weight: 700; color: var(--vs-blue-900); }
+
+.tabla-reporte { font-size: .86rem; }
+.tabla-reporte td, .tabla-reporte th { white-space: nowrap; }
+.tabla-reporte td.num { text-align: right; }
+
+/* Impresión: solo el reporte, sin formulario ni botones (la barra superior y .sin-impresion ya se ocultan en vidasalud.css) */
+@page { size: A4 landscape; margin: 12mm; }
+@media print {
+    .contenedor { max-width: none; width: 100%; margin: 0; }
+    .reporte { border: 0; box-shadow: none; padding: 0; }
+    .reporte h2 { font-size: 1.2rem; }
+    .tabla-reporte { font-size: .7rem; width: 100%; table-layout: auto; }
+    .tabla-reporte td, .tabla-reporte th, .tabla th { white-space: normal; padding: .25rem .4rem; }
+    .totales-reporte { grid-template-columns: repeat(3, 1fr); }
+    .resumen-ia, .totales-reporte__dato { break-inside: avoid; }
+    .tabla-reporte tr { break-inside: avoid; }
+    .tabla-responsive { overflow: visible; }
+}

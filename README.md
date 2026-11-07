@@ -86,6 +86,17 @@ Tarjetas de prueba de Stripe: `4242 4242 4242 4242` (aprobada) y `4000 0000 0000
 
 En Windows, si al pagar con tarjeta aparece el aviso «No se pudo procesar el pago con tarjeta» y en `backend/storage/logs/laravel.log` dice `cURL error 60: SSL certificate`, PHP no tiene los certificados raíz: descargue `cacert.pem` de https://curl.se/ca/cacert.pem y en su `php.ini` configure `curl.cainfo` y `openssl.cafile` con la ruta de ese archivo.
 
+### Reportes con resumen de IA (opcional)
+
+«Reportes» (CU-18) funciona siempre; la modalidad «Con IA» agrega un resumen redactado por Google Gemini y solo necesita una clave gratuita de https://aistudio.google.com/apikey en `backend/.env`. Sin clave, o si el servicio falla o tarda más de 20 s, el reporte se muestra completo con el aviso «No se pudo generar el resumen con IA»:
+
+```
+GEMINI_API_KEY=su_clave
+IA_MODELO=gemini-3.5-flash-lite   # rápido y económico; Google retira modelos con el tiempo: si responde 404, elija uno vigente
+```
+
+A la IA solo se le envían el tipo de reporte, el período y los totales (cantidades e ingresos, y el total de cada médico y de cada especialidad): nunca nombres, CI, correos, teléfonos ni datos clínicos de los pacientes. El PDF se genera con dompdf, sin recursos externos. En Windows, la llamada a la IA necesita los mismos certificados raíz de PHP que el pago con tarjeta (ver arriba).
+
 ## Usuarios de demostración
 
 `php artisan migrate --seed` crea un usuario por rol. Todas las cuentas de demostración, incluida la del administrador, usan la contraseña `Demo1234*`. Si se define `ADMIN_PASSWORD` (en `backend/.env` o en las variables del servicio), el administrador usa esa contraseña en lugar de `Demo1234*`.
@@ -197,7 +208,7 @@ clinica-vida-salud/
 │   │   ├── GestionMedica/            ← P2: CU04_..., CU05_..., CU06_...
 │   │   ├── GestionPacientes/         ← P3: CU07_...
 │   │   ├── GestionCitas/             ← P4: CU08_... a CU11_... y Compartido/ (disponibilidad)
-│   │   ├── ReportesBitacora/         ← P6: CU19_ConsultarBitacora (BitacoraController, BitacoraRequest, ConsultaBitacoraService)
+│   │   ├── ReportesBitacora/         ← P6: CU18_GenerarReportesConIA (ReportesController, ReporteRequest, ReporteService, ResumenIAService) y CU19_ConsultarBitacora (BitacoraController, BitacoraRequest, ConsultaBitacoraService)
 │   │   └── README.md                 ← tabla de paquetes y casos de uso
 │   ├── app/Models/                   ← una clase por tabla del modelo de datos (CE del análisis)
 │   ├── app/Services/                 ← BitacoraService (registro de operaciones)

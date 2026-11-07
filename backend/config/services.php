@@ -36,7 +36,7 @@ return [
     // Resumen con IA de los reportes (CU-18, RNF09): Google Gemini; solo recibe totales agregados.
     'ia' => [
         'gemini_key' => env('GEMINI_API_KEY'),
-        'modelo' => env('IA_MODELO', 'gemini-2.5-flash'),
+        'modelo' => env('IA_MODELO', 'gemini-3.5-flash-lite'),
     ],
 
     'ses' => [

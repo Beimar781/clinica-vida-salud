@@ -66,6 +66,7 @@ class PanelPrincipal
         [
             'clave' => 'reportes-bitacora', 'nombre' => 'Reportes y bitácora', 'icono' => 'documento',
             'funciones' => [
+                ['nombre' => 'Reportes', 'ruta' => 'reportes.index', 'icono' => 'documento', 'cu' => 'CU-18', 'roles' => [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA]],
                 ['nombre' => 'Bitácora', 'ruta' => 'bitacora.index', 'icono' => 'historial', 'cu' => 'CU-19', 'roles' => [Rol::ADMINISTRADOR]],
             ],
         ],
