@@ -156,7 +156,7 @@ cd backend
 php artisan test
 ```
 
-La última corrida completa (07/11/2026) dio **541 pruebas y 3778 aserciones, todas aprobadas** en el proyecto de trabajo y en un clon limpio del repositorio con una base nueva, siguiendo solo estas instrucciones; después del despliegue (Prompt 10) la suite completa da **544 pruebas y 3794 aserciones**. Hay un archivo de pruebas por caso de uso (`CUxx_NombreTest.php`) con un método `paso_N_...` por cada fila del plan de pruebas 8.1 del documento y pruebas de reglas internas, más pruebas de la base de datos, la seguridad, los pagos, los recursos del frontend y el despliegue. Stripe, la IA y el correo siempre se simulan: ninguna prueba sale a internet. Se puede correr un solo caso de uso con `php artisan test --filter=CU09_`. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
+La última corrida completa (07/11/2026) dio **541 pruebas y 3778 aserciones, todas aprobadas** en el proyecto de trabajo y en un clon limpio del repositorio con una base nueva, siguiendo solo estas instrucciones; después del despliegue la suite completa da **544 pruebas y 3794 aserciones**. Hay un archivo de pruebas por caso de uso (`CUxx_NombreTest.php`) con un método `paso_N_...` por cada fila del plan de pruebas 8.1 del documento y pruebas de reglas internas, más pruebas de la base de datos, la seguridad, los pagos, los recursos del frontend y el despliegue. Stripe, la IA y el correo siempre se simulan: ninguna prueba sale a internet. Se puede correr un solo caso de uso con `php artisan test --filter=CU09_`. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
 
 ## Despliegue en Railway
 

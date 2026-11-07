@@ -37,20 +37,20 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 
 ## 2. Tareas técnicas
 
-| Tarea | Prompt | Estado |
-|---|---|---|
-| Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`, tabla `consultas`) y `schema.sql` nuevo | 0 | Hecho (07/11) |
-| Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago, consultas) | 0, 5 | Hecho (07/11) |
-| Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | 2 | Hecho (07/11): probado también con Stripe real en modo de prueba |
-| Proveedor de IA para el resumen de reportes (Google Gemini, modelo `gemini-3.5-flash-lite`) | 7 | Hecho (07/11): probado también con Gemini real |
-| PDF de reportes con dompdf (barryvdh/laravel-dompdf 3.1.2) | 7 | Hecho (07/11) |
-| Asistente de voz de «Reportes» (extra, navegador) | 7 | Hecho (07/11) |
-| Programador y comando `citas:enviar-recordatorios` | 8 | Hecho (07/11) |
-| Servicio cron en Railway para los recordatorios | 10 | Documentado en el README (comando de inicio, horario `0 22 * * *` = 18:00 en La Paz, variables); lo crea el equipo en Railway |
-| Auditoría documento ↔ código y prueba general | 9 | Hecho (07/11) |
-| Redespliegue en Railway con variables de Stripe, IA y Brevo | 10 | Dockerfile revisado (memoria del PDF, comprobación de extensiones), arranque probado con base nueva y con datos del Ciclo I, README actualizado; verificado en línea con lecturas: **la IA no responde en producción** (revisar `GEMINI_API_KEY` e `IA_MODELO`) |
+| Tarea | Estado |
+|---|---|
+| Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`, tabla `consultas`) y `schema.sql` nuevo | Hecho (07/11) |
+| Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago, consultas) | Hecho (07/11) |
+| Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | Hecho (07/11): probado también con Stripe real en modo de prueba |
+| Proveedor de IA para el resumen de reportes (Google Gemini, modelo `gemini-3.5-flash-lite`) | Hecho (07/11): probado también con Gemini real |
+| PDF de reportes con dompdf (barryvdh/laravel-dompdf 3.1.2) | Hecho (07/11) |
+| Asistente de voz de «Reportes» (extra, navegador) | Hecho (07/11) |
+| Programador y comando `citas:enviar-recordatorios` | Hecho (07/11) |
+| Servicio cron en Railway para los recordatorios | Documentado en el README (comando de inicio, horario `0 22 * * *` = 18:00 en La Paz, variables); lo crea el equipo en Railway |
+| Auditoría documento ↔ código y prueba general | Hecho (07/11) |
+| Redespliegue en Railway con variables de Stripe, IA y Brevo | Dockerfile revisado (memoria del PDF, comprobación de extensiones), arranque probado con base nueva y con datos del Ciclo I, README actualizado; verificado en línea con lecturas: **la IA no responde en producción** (revisar `GEMINI_API_KEY` e `IA_MODELO`) |
 
-### Base técnica (Prompt 0, 07/11/2026)
+### Base técnica (07/11/2026)
 
 | Elemento | Archivo | Tabla / uso | Prueba |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 | Dinero y configuración | `App\Support\Dinero`, `config/vidasalud.php`, `config/services.php`, `.env.example` | formato `Bs 100,00`, conversión a Stripe | `PagosTest`, CU-09, CU-11 |
 | Seeders idempotentes | `EspecialidadSeeder`, `MedicoSeeder`, `PacienteSeeder`, `CitaSeeder`, `ConsultaSeeder` | datos base y demostración del v30 | `DespliegueTest` |
 
-### Pago de citas (Prompt 2)
+### Pago de citas
 
 | Elemento | Archivo | Uso | Prueba |
 |---|---|---|---|
@@ -73,7 +73,7 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 | Retorno de Stripe | `Compartido/RetornoPagoController.php`, rutas `GET /pagos/stripe/retorno` y `/pagos/stripe/cancelado` | agenda al volver del pago o devuelve al formulario | CU-09, CU-11 |
 | Reglas de estado | `Compartido/TransicionesCita.php` | diagrama 6.2.3 para CU-12, CU-13 y CU-16 | CU-12, CU-13, CU-16 |
 
-### Ciclo II (Prompts 4 a 8)
+### Ciclo II
 
 | Elemento | Archivo | Uso | Prueba |
 |---|---|---|---|
@@ -83,7 +83,7 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 | Asistente de voz | `frontend/assets/js/modulos/reportes-voz.js` | frases a filtros y lectura de totales (navegador) | CU-18 (marcado y sin recursos externos) |
 | Recordatorios | `GestionCitas/CU22_.../EnviarRecordatoriosCommand.php`, `RecordatorioService.php`, `RecordatorioCitaMail.php`; `routes/console.php` | comando diario a las 18:00 (La Paz) | CU-22 |
 
-## 3. Prueba general (Prompt 9)
+## 3. Prueba general
 
 | Fecha | Comando | Pruebas | Aserciones | Resultado |
 |---|---|---|---|---|
