@@ -55,3 +55,14 @@
 .corregir-estado__form { display: grid; gap: .4rem; min-width: 250px; margin-top: .4rem; padding: .75rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; }
 .corregir-estado__form label { font-size: .8rem; font-weight: 700; color: var(--vs-blue-900); }
 .corregir-estado__form select, .corregir-estado__form textarea { width: 100%; }
+
+/* ---------- Agenda médica (CU-14) ---------- */
+.resumen-agenda { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
+.resumen-agenda__dato { padding: .35rem .8rem; background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 999px; color: var(--vs-muted); font-size: .9rem; }
+.resumen-agenda__dato strong { color: var(--vs-blue-900); font-size: 1.05rem; }
+.cita-cancelada td:not(:last-child) { opacity: .7; }
+.paciente-agenda summary { cursor: pointer; font-weight: 600; color: var(--vs-blue-700); }
+.paciente-agenda__datos { display: grid; gap: .15rem; margin: .5rem 0 0; padding: .6rem .8rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; font-size: .88rem; }
+.paciente-agenda__datos > div { display: grid; grid-template-columns: 5.5rem 1fr; gap: .5rem; }
+.paciente-agenda__datos dt { color: var(--vs-muted); font-weight: 600; }
+.paciente-agenda__datos dd { margin: 0; }
