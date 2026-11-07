@@ -22,7 +22,7 @@ class ReprogramarCitaRequest extends FormRequest
         return [
             'fecha' => ['required', 'date_format:Y-m-d'],
             'hora_inicio' => ['required', 'date_format:H:i'],
-            'motivo_cambio' => ['required', 'string', 'max:200'],
+            'motivo_cambio' => ['required', 'string', 'max:150'], // cabe completo en el detalle de la bitácora (300)
         ];
     }
 
@@ -34,7 +34,7 @@ class ReprogramarCitaRequest extends FormRequest
             'hora_inicio.required' => 'Seleccione uno de los horarios libres.',
             'hora_inicio.date_format' => 'El horario seleccionado no es válido.',
             'motivo_cambio.required' => 'Ingrese el motivo del cambio.',
-            'motivo_cambio.max' => 'El motivo del cambio no puede superar los 200 caracteres.',
+            'motivo_cambio.max' => 'El motivo del cambio no puede superar los 150 caracteres.',
         ];
     }
 }

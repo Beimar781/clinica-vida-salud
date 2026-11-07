@@ -168,8 +168,8 @@ class AgendarCitaService
     }
 
     /**
-     * Cambia la fecha y hora de una cita conservando su código: solo desde PROGRAMADA o CONFIRMADA; queda en
-     * PROGRAMADA y el horario anterior queda libre.
+     * Cambia la fecha y hora de una cita conservando su código y su pago: desde PROGRAMADA, CONFIRMADA o INASISTENCIA ya
+     * pagada; queda en PROGRAMADA y el horario anterior queda libre.
      *
      * @CC CCReprogramarCita (reprogramar) @CE CECita (obtener, reprogramar)
      *
@@ -197,11 +197,14 @@ class AgendarCitaService
                 }
                 $this->verificarPaciente($actual->paciente, $fecha, $bloque, $actual->id);
 
+                // Conserva el código y el pago (no hay nuevo cobro); la cita vuelve a PROGRAMADA y, como cambió la
+                // fecha, el recordatorio de CU-22 se vuelve a enviar.
                 $actual->update([
                     'fecha' => $fecha,
                     'hora_inicio' => $bloque['inicio'],
                     'hora_fin' => $bloque['fin'],
                     'estado' => Cita::PROGRAMADA,
+                    'recordatorio_enviado' => false,
                 ]);
 
                 return $actual;
@@ -211,15 +214,23 @@ class AgendarCitaService
         }
     }
 
-    /** Solo las citas PROGRAMADA o CONFIRMADA se pueden reprogramar. */
+    /**
+     * Se pueden reprogramar las citas PROGRAMADA o CONFIRMADA y las que tienen INASISTENCIA pero ya están pagadas (el pago
+     * no se devuelve: se reprograman sin un nuevo cobro). Atendida, cancelada o inasistencia sin pago: se registra una nueva (CU-09).
+     */
     public static function sePuedeReprogramar(Cita $cita): bool
     {
-        return in_array($cita->estado, [Cita::PROGRAMADA, Cita::CONFIRMADA], true);
+        return in_array($cita->estado, [Cita::PROGRAMADA, Cita::CONFIRMADA], true)
+            || ($cita->estado === Cita::INASISTENCIA && $cita->estado_pago === Cita::PAGO_PAGADO);
     }
 
     public static function mensajeNoReprogramable(Cita $cita): string
     {
-        $estado = ['ATENDIDA' => 'atendida', 'CANCELADA' => 'cancelada', 'INASISTENCIA' => 'con inasistencia'][$cita->estado] ?? mb_strtolower($cita->estado);
+        $estado = [
+            'ATENDIDA' => 'atendida',
+            'CANCELADA' => 'cancelada',
+            'INASISTENCIA' => 'con inasistencia y sin pago',
+        ][$cita->estado] ?? mb_strtolower($cita->estado);
 
         return "La cita está {$estado}: no se puede reprogramar. Registre una cita nueva.";
     }

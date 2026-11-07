@@ -14,9 +14,10 @@ use App\Support\Texto;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
- * Reprogramación de citas: cambia la fecha y la hora de una cita PROGRAMADA o CONFIRMADA a otro horario libre del
- * mismo médico, conservando su código; la cita queda PROGRAMADA y el horario anterior queda libre. La transacción y
- * el control de superposiciones están en Compartido/AgendarCitaService (los mismos de CU-09 y CU-11).
+ * Reprogramación de citas: cambia la fecha y la hora de una cita PROGRAMADA o CONFIRMADA, o con INASISTENCIA ya pagada,
+ * a otro horario libre del mismo médico, conservando su código y su pago (sin nuevo cobro); la cita queda PROGRAMADA, vuelve a
+ * recibir su recordatorio y el horario anterior queda libre. La transacción y el control de superposiciones están en
+ * Compartido/AgendarCitaService (los mismos de CU-09 y CU-11).
  *
  * El motivo del cambio no tiene columna en la tabla citas: se guarda en la bitácora junto con el horario anterior.
  *
@@ -33,7 +34,7 @@ class ReprogramarCitaService
 
     /**
      * Busca citas por código, CI o nombre del paciente (sin distinguir mayúsculas ni tildes). Sin texto lista las
-     * citas vigentes (programadas o confirmadas) desde hoy, las más próximas primero.
+     * citas vigentes (programadas o confirmadas desde hoy) y las inasistencias ya pagadas que esperan una nueva fecha.
      *
      * @CC CCReprogramarCita (buscar) @CE CECita (obtener)
      */
@@ -46,7 +47,9 @@ class ReprogramarCitaService
         $consulta = Cita::with(['paciente', 'medico', 'especialidad']);
 
         if ($texto === '') {
-            $consulta->whereIn('estado', [Cita::PROGRAMADA, Cita::CONFIRMADA])->whereDate('fecha', '>=', now()->toDateString())
+            $consulta->where(fn ($q) => $q
+                ->where(fn ($vigentes) => $vigentes->whereIn('estado', [Cita::PROGRAMADA, Cita::CONFIRMADA])->whereDate('fecha', '>=', now()->toDateString()))
+                ->orWhere(fn ($inasistencias) => $inasistencias->where('estado', Cita::INASISTENCIA)->where('estado_pago', Cita::PAGO_PAGADO)))
                 ->orderBy('fecha')->orderBy('hora_inicio');
         } else {
             $consulta->where(fn ($q) => $q
@@ -62,7 +65,7 @@ class ReprogramarCitaService
         return $consulta->paginate(self::POR_PAGINA)->withQueryString();
     }
 
-    /** Solo las citas PROGRAMADA o CONFIRMADA se pueden reprogramar. */
+    /** Programada, confirmada o con inasistencia ya pagada (el pago no se devuelve: se reprograma sin nuevo cobro). */
     public function puedeReprogramarse(Cita $cita): bool
     {
         return AgendarCitaService::sePuedeReprogramar($cita);
@@ -88,7 +91,7 @@ class ReprogramarCitaService
      *
      * @CC CCReprogramarCita (reprogramar) @CE CECita (reprogramar)
      *
-     * @return array{cita: Cita, anterior: array{fecha: string, horario: string, estado: string}, motivo: string}
+     * @return array{cita: Cita, anterior: array{fecha: string, horario: string, estado: string, pago_conservado: bool}, motivo: string}
      *
      * @throws HorarioOcupadoException
      * @throws ReglaCitaException
@@ -99,14 +102,17 @@ class ReprogramarCitaService
             'fecha' => $cita->fecha->format('d/m/Y'),
             'horario' => $cita->hora_inicio_corta.' – '.$cita->hora_fin_corta,
             'estado' => $cita->estado,
+            'pago_conservado' => $cita->estado === Cita::INASISTENCIA,
         ];
 
         $cita = $this->agendar->mover($cita, $fecha, $inicio);
         $motivoCambio = trim($motivoCambio);
 
+        // Detalle de la bitácora (300 caracteres): código, horario anterior y nuevo y, al final, el motivo completo.
+        $origen = $anterior['pago_conservado'] ? ' (inasistencia pagada, sin nuevo cobro)' : '';
         BitacoraService::registrar(
             'CITA_REPROGRAMADA', 'Cita',
-            "Cita {$cita->codigo} reprogramada de {$anterior['fecha']} {$anterior['horario']} a ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' – '.$cita->hora_fin_corta.". Motivo: {$motivoCambio}",
+            "Cita {$cita->codigo}{$origen} reprogramada de {$anterior['fecha']} {$anterior['horario']} a ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' – '.$cita->hora_fin_corta.". Motivo: {$motivoCambio}",
             $actor->id
         );
 

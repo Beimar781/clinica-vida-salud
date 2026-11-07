@@ -1,5 +1,5 @@
 {{-- @CU CU-10 @RF RF10 @CI CIReprogramarCita (buscarCita, mostrarHorarios, confirmarCambio) @CC CCReprogramarCita @CE CECita, CEMedico
-     Pasos 2 a 5 del flujo: ReprogramarCitaController::reprogramar() muestra la cita, verifica que pueda reprogramarse y ofrece
+     Pasos 2 a 5 del flujo: ReprogramarCitaController::reprogramar() muestra la cita, verifica que pueda reprogramarse según su estado y su pago y ofrece
      los horarios libres del mismo médico en la nueva fecha; actualizar() confirma. Si el horario ya fue ocupado, vuelve aquí. --}}
 @extends('layouts.app')
 
@@ -23,6 +23,13 @@
         <div class="tarjeta__encabezado"><x-icono nombre="documento" /><h2>Datos de la cita</h2></div>
         <div class="tarjeta__cuerpo">
             @include('gestioncitas::Compartido.comprobante-datos')
+
+            @if ($puede && $cita->estado === 'INASISTENCIA')
+                <div class="aviso aviso-info" role="status">
+                    <x-icono nombre="info" />
+                    <span>La cita tiene inasistencia y su pago ya está registrado ({{ $cita->monto_texto }}). Se reprograma <strong>sin un nuevo cobro</strong>, porque el pago no se devuelve.</span>
+                </div>
+            @endif
 
             @unless ($puede)
                 <div class="aviso aviso-alerta" role="alert">
@@ -63,8 +70,8 @@
                             @include('gestioncitas::Compartido.horarios')
 
                             <div class="formulario" style="margin-top:1rem">
-                                <x-areatexto nombre="motivo_cambio" etiqueta="Motivo del cambio" required maxlength="200" rows="2"
-                                             ayuda="Queda registrado en la bitácora junto con el horario anterior." />
+                                <x-areatexto nombre="motivo_cambio" etiqueta="Motivo del cambio" required maxlength="150" rows="2"
+                                             ayuda="Queda registrado en la bitácora junto con el horario anterior (máximo 150 caracteres)." />
                             </div>
 
                             <div class="acciones">

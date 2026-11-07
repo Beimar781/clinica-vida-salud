@@ -1,5 +1,5 @@
 {{-- @CU CU-10 @RF RF10 @CI CIReprogramarCita (mostrarComprobante) @CC CCReprogramarCita @CE CECita
-     Paso 7 del flujo: ReprogramarCitaController::comprobante() muestra el comprobante actualizado de la cita reprogramada. --}}
+     Paso 7 del flujo: ReprogramarCitaController::comprobante() muestra el comprobante actualizado de la cita reprogramada, con su pago conservado. --}}
 @extends('layouts.app')
 
 @section('titulo', 'Comprobante de la cita reprogramada')
@@ -25,8 +25,16 @@
                     <x-icono nombre="info" />
                     <span>
                         Horario anterior: <strong>{{ $reprogramacion['anterior']['fecha'] }} · {{ $reprogramacion['anterior']['horario'] }}</strong>
-                        (ahora libre). Motivo del cambio: {{ $reprogramacion['motivo'] }}
+                        (ahora libre).@if ($reprogramacion['anterior']['pago_conservado']) La cita estaba con inasistencia y volvió a Programada.@endif
+                        Motivo del cambio: {{ $reprogramacion['motivo'] }}
                     </span>
+                </div>
+            @endif
+
+            @if ($cita->estado_pago === 'PAGADO')
+                <div class="aviso aviso-info" role="status">
+                    <x-icono nombre="check" />
+                    <span>El pago registrado se conserva: <strong>no se realizó un nuevo cobro</strong> ({{ $cita->monto_texto }}, {{ $cita->metodo_pago_texto }}).</span>
                 </div>
             @endif
 

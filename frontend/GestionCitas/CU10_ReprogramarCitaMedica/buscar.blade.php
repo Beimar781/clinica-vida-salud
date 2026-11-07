@@ -15,7 +15,7 @@
     </div>
 
     <div class="tarjeta">
-        <div class="tarjeta__encabezado"><x-icono nombre="calendario" /><h2>{{ $buscar === '' ? 'Citas vigentes (programadas y confirmadas)' : 'Resultado de la búsqueda' }}</h2></div>
+        <div class="tarjeta__encabezado"><x-icono nombre="calendario" /><h2>{{ $buscar === '' ? 'Citas vigentes (programadas y confirmadas) e inasistencias pagadas por reprogramar' : 'Resultado de la búsqueda' }}</h2></div>
         <div class="tarjeta__cuerpo">
             <form method="GET" action="{{ route('citas.index') }}" class="herramientas" role="search">
                 <div class="campo">

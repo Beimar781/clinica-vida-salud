@@ -15,13 +15,13 @@ use Throwable;
  * CU-10: Reprogramar cita médica (paquete P4 Gestión de Citas, RF10). Solo la Recepcionista.
  * Incluye CU-08 (horarios libres del mismo médico) con el mismo DisponibilidadService.
  *
- * Precondición: la cita existe y está en estado Programada o Confirmada.
+ * Precondición: la cita existe y está en estado Programada o Confirmada, o con Inasistencia y pagada.
  *
  * Flujo de suceso (ficha 4.3 del documento):
  *  1. La recepcionista accede a «Citas» y busca la cita por código, CI
  *     o nombre del paciente.                                            -> index() con ReprogramarCitaService::buscar()
  *  2. El sistema muestra los datos de la cita y verifica que pueda
- *     reprogramarse.                                                    -> reprogramar() con ReprogramarCitaService::puedeReprogramarse()
+ *     reprogramarse según su estado y su pago.                          -> reprogramar() con ReprogramarCitaService::puedeReprogramarse()
  *  3. Selecciona la opción «Reprogramar» e indica la nueva fecha.       -> botón «Reprogramar» de buscar.blade.php y fecha de reprogramar.blade.php
  *  4. El sistema consulta la disponibilidad (CU-08) y muestra
  *     únicamente los horarios libres del médico.                        -> reprogramar() con ReprogramarCitaService::calcularLibres()
@@ -30,11 +30,14 @@ use Throwable;
  *  6. El sistema vuelve a verificar la disponibilidad dentro de una
  *     transacción, actualiza la fecha y la hora, deja la cita en estado
  *     Programada y libera el horario anterior.                          -> actualizar() -> ReprogramarCitaService::reprogramar() -> AgendarCitaService::mover() (lockForUpdate)
- *  7. El sistema muestra el comprobante actualizado.                    -> actualizar() redirige a comprobante()
+ *  7. El sistema muestra el comprobante actualizado (con el pago
+ *     conservado).                                                      -> actualizar() redirige a comprobante()
  *
  * Excepciones:
- *  - La cita está Atendida, Cancelada o con Inasistencia: no se puede reprogramar y se sugiere registrar una cita
- *    nueva (CU-09), según la política del sistema (reprogramar() y actualizar()).
+ *  - La cita está Atendida o Cancelada, o con Inasistencia y sin pago: no se puede reprogramar y se sugiere registrar una
+ *    cita nueva (CU-09), según la política del sistema (reprogramar() y actualizar()).
+ *  - La cita está con Inasistencia y ya está pagada: se reprograma sin un nuevo cobro, porque el pago no se devuelve
+ *    (conserva su código y su pago; AgendarCitaService::mover() no toca el pago).
  *  - El nuevo horario fue ocupado mientras tanto: se rechaza el cambio y se vuelven a mostrar los horarios libres.
  *  - La fecha es pasada, feriado o día sin atención, o el médico no atiende ese día: se indica y no se muestran horarios.
  *
