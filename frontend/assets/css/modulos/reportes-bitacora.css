@@ -28,6 +28,25 @@
 .opcion-modalidad span { display: flex; flex-direction: column; font-weight: 600; color: var(--vs-blue-900); }
 .opcion-modalidad small { color: var(--vs-muted); font-size: .8rem; font-weight: 400; line-height: 1.3; }
 
+/* Asistente de voz */
+.asistente-voz { background: var(--vs-white); border: 1px solid var(--vs-sky-200); border-left: 4px solid var(--vs-sky-400); border-radius: var(--vs-radius); padding: 1rem 1.25rem; margin: 0 0 1.25rem; }
+.asistente-voz h2 { display: flex; align-items: center; gap: .5rem; margin: 0 0 .25rem; font-size: 1.1rem; }
+.asistente-voz h2 .icono { color: var(--vs-sky-400); }
+.asistente-voz h3 { margin: 1rem 0 .4rem; font-size: .95rem; color: var(--vs-blue-900); }
+.asistente-voz__entrada { display: flex; gap: .6rem; flex-wrap: wrap; align-items: stretch; margin: .6rem 0 .4rem; }
+.asistente-voz__entrada input { flex: 1 1 260px; min-width: 0; padding: .55rem .7rem; font: inherit; color: var(--vs-text); background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 8px; }
+.asistente-voz__entrada input:focus { border-color: var(--vs-blue-600); outline: 3px solid var(--vs-sky-200); }
+.asistente-voz__estado { margin: .3rem 0 .6rem; min-height: 1.4rem; color: var(--vs-blue-700); font-weight: 600; }
+.asistente-voz__lectura { display: flex; gap: .5rem; flex-wrap: wrap; }
+.asistente-voz__ejemplos { list-style: none; margin: 0 0 .8rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.ejemplo-voz { cursor: pointer; font: inherit; font-size: .88rem; color: var(--vs-blue-700); background: var(--vs-sky-50); border: 1px solid var(--vs-sky-200); border-radius: 999px; padding: .3rem .8rem; }
+.ejemplo-voz:hover, .ejemplo-voz:focus-visible { background: var(--vs-sky-100); border-color: var(--vs-sky-400); }
+.asistente-voz__privacidad { display: flex; gap: .5rem; align-items: flex-start; margin: .8rem 0 0; padding: .55rem .75rem; background: var(--vs-sky-50); border-radius: 8px; font-size: .84rem; color: var(--vs-muted); }
+.asistente-voz__privacidad .icono { flex: none; color: var(--vs-sky-400); margin-top: .1rem; }
+#voz-microfono.escuchando { background: #FBE3E3; border-color: #EFB4B4; color: #9C2B2B; }
+#voz-microfono.escuchando .icono { animation: voz-latido 1s ease-in-out infinite; }
+@keyframes voz-latido { 50% { opacity: .35; } }
+
 .reporte { background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: var(--vs-radius); box-shadow: var(--vs-shadow); padding: 1.1rem 1.25rem; }
 .reporte__cabecera { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: .9rem; }
 .reporte__cabecera h2 { margin: 0 0 .25rem; }

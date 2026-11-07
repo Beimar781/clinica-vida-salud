@@ -95,7 +95,7 @@ GEMINI_API_KEY=su_clave
 IA_MODELO=gemini-3.5-flash-lite   # rápido y económico; Google retira modelos con el tiempo: si responde 404, elija uno vigente
 ```
 
-A la IA solo se le envían el tipo de reporte, el período y los totales (cantidades e ingresos, y el total de cada médico y de cada especialidad): nunca nombres, CI, correos, teléfonos ni datos clínicos de los pacientes. El PDF se genera con dompdf, sin recursos externos. En Windows, la llamada a la IA necesita los mismos certificados raíz de PHP que el pago con tarjeta (ver arriba).
+A la IA solo se le envían el tipo de reporte, el período y los totales (cantidades e ingresos, y el total de cada médico y de cada especialidad): nunca nombres, CI, correos, teléfonos ni datos clínicos de los pacientes. El PDF se genera con dompdf, sin recursos externos. «Reportes» incluye además un asistente de voz opcional (dictar o escribir una frase y escuchar los totales) que usa las voces del navegador; el dictado funciona en Chrome o Edge. En Windows, la llamada a la IA necesita los mismos certificados raíz de PHP que el pago con tarjeta (ver arriba).
 
 ## Usuarios de demostración
 

@@ -605,6 +605,55 @@ class CU18_GenerarReportesConIATest extends SistemaTestCase
         $this->actingAs($medico)->get('/panel')->assertOk()->assertDontSee('CU-18');
     }
 
+    // ---------- Asistente de voz (extra del equipo) ----------
+
+    #[Test]
+    public function test_el_asistente_de_voz_muestra_ejemplos_controles_y_aviso_de_privacidad(): void
+    {
+        $this->escenario();
+
+        $this->actingAs($this->recepcion)->get('/reportes')->assertOk()
+            ->assertSee('Asistente de voz')->assertSee('id="voz-frase"', false)->assertSee('id="voz-microfono"', false)
+            ->assertSee('id="voz-leer"', false)->assertSee('id="voz-detener"', false)
+            ->assertSee('Frases que entiende')
+            ->assertSee('data-frase="Citas de hoy"', false)->assertSee('data-frase="Citas por médico del 1 al 31 de octubre"', false)
+            ->assertSee('data-frase="Ingresos por método de pago de este mes"', false)
+            ->assertSee('data-frase="Agenda de '.Medico::where('estado', true)->orderBy('apellidos')->orderBy('nombres')->first()->nombre_completo.' de mañana"', false)
+            ->assertSee('leer totales')->assertSee('detener')
+            ->assertSee('Solo se leen los totales, nunca nombres ni datos de pacientes')
+            ->assertSee('envía el audio al servicio de su fabricante')
+            ->assertSee('id="resultado-reporte"', false)->assertSee('reportes-voz.js', false);
+    }
+
+    #[Test]
+    public function test_el_asistente_aparece_tambien_con_un_reporte_generado_y_no_se_imprime(): void
+    {
+        $this->escenario();
+
+        $this->actingAs($this->admin)->get($this->ruta(['tipo' => 'por_medico']))->assertOk()
+            ->assertSee('id="asistente-voz"', false)->assertSee('asistente-voz sin-impresion', false)->assertSee('id="titulo-reporte"', false)
+            ->assertSee('totales-reporte__dato', false);
+    }
+
+    #[Test]
+    public function test_los_scripts_del_asistente_se_sirven_y_no_usan_recursos_externos(): void
+    {
+        $this->actingAs($this->admin);
+        foreach (['reportes-voz.js', 'reportes-bitacora.js'] as $archivo) {
+            $ruta = base_path('../frontend/assets/js/modulos/'.$archivo);
+            $this->assertFileExists($ruta);
+            $this->assertStringNotContainsString('http://', file_get_contents($ruta));
+            $this->assertStringNotContainsString('https://', file_get_contents($ruta));
+            $this->assertStringNotContainsString('//cdn', file_get_contents($ruta));
+        }
+        $js = file_get_contents(base_path('../frontend/assets/js/modulos/reportes-voz.js'));
+        // Solo se piden los filtros del propio formulario al propio servidor; la frase hablada no se envía a ningún lado.
+        $this->assertSame(1, substr_count($js, 'fetch('));
+        $this->assertStringContainsString("form.getAttribute('action')", $js);
+        $this->assertStringNotContainsString('XMLHttpRequest', $js);
+        $this->assertStringNotContainsString('sendBeacon', $js);
+    }
+
     #[Test]
     public function test_la_pantalla_trae_la_impresion_y_los_enlaces_de_exportacion_con_los_mismos_filtros(): void
     {

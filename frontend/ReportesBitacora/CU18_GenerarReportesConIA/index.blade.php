@@ -11,6 +11,7 @@
 
 @push('scripts')
     <script src="@recurso('js/modulos/reportes-bitacora.js')" defer></script>
+    <script src="@recurso('js/modulos/reportes-voz.js')" defer></script>
 @endpush
 
 @section('contenido')
@@ -19,6 +20,18 @@
         use App\Support\Dinero;
 
         $valor = fn (string $campo) => $filtros[$campo] ?? null;
+        $medicoEjemplo = $medicos->firstWhere('estado', true)?->nombre_completo;
+        // Frases que entiende el asistente de voz (se pueden dictar, escribir o tocar).
+        $ejemplos = array_values(array_filter([
+            'Citas de hoy',
+            'Citas por médico del 1 al 31 de octubre',
+            'Citas por especialidad de esta semana',
+            'Citas por estado de este mes con IA',
+            'Ingresos por método de pago de este mes',
+            'Pacientes registrados de este año',
+            'Atendidas, canceladas e inasistencias del mes pasado',
+            $medicoEjemplo ? "Agenda de {$medicoEjemplo} de mañana" : null,
+        ]));
     @endphp
 
     <div class="encabezado-pagina sin-impresion">
@@ -66,6 +79,37 @@
         </form>
     </div>
 
+
+    {{-- Asistente de voz (extra del equipo, no está en el documento): entiende una frase dictada o escrita, llena este formulario, genera el
+         reporte y lee en voz alta SOLO los totales. La frase se interpreta en el navegador (reportes-voz.js): no va a la IA ni al servidor. --}}
+    <section class="asistente-voz sin-impresion" id="asistente-voz" aria-labelledby="titulo-asistente-voz">
+        <h2 id="titulo-asistente-voz"><x-icono nombre="microfono" /> Asistente de voz</h2>
+        <p class="texto-suave">Dicte o escriba una frase: el asistente llena el formulario, genera el reporte y le lee los totales en voz alta.</p>
+        <div class="asistente-voz__entrada">
+            <label class="sr-only" for="voz-frase">Frase para el asistente</label>
+            <input type="text" id="voz-frase" maxlength="200" autocomplete="off" placeholder="Ej.: citas por médico del 1 al 31 de octubre">
+            <button type="button" class="btn btn-primario" id="voz-enviar"><x-icono nombre="buscar" /> Preguntar</button>
+            <button type="button" class="btn btn-secundario" id="voz-microfono" aria-pressed="false"><x-icono nombre="microfono" /> Dictar</button>
+        </div>
+        <p class="asistente-voz__estado" id="voz-estado" role="status" aria-live="polite">Toque un ejemplo, escriba una frase o use «Dictar».</p>
+        <div class="asistente-voz__lectura">
+            <button type="button" class="btn btn-secundario btn-sm" id="voz-leer" disabled><x-icono nombre="altavoz" /> Escuchar totales</button>
+            <button type="button" class="btn btn-secundario btn-sm" id="voz-leer-ia" hidden><x-icono nombre="altavoz" /> Escuchar resumen de IA</button>
+            <button type="button" class="btn btn-secundario btn-sm" id="voz-detener"><x-icono nombre="cerrar" /> Detener</button>
+        </div>
+        <h3>Frases que entiende</h3>
+        <ul class="asistente-voz__ejemplos">
+            @foreach ($ejemplos as $ejemplo)
+                <li><button type="button" class="ejemplo-voz" data-frase="{{ $ejemplo }}">«{{ $ejemplo }}»</button></li>
+            @endforeach
+        </ul>
+        <p class="texto-suave sin-margen">Puede cambiar las fechas: «hoy», «ayer», «mañana», «esta semana», «este mes», «el mes pasado», «octubre», «del 1 al 15 de noviembre» o «10/11/2026». Agregue «con IA» para pedir el resumen. Órdenes: «leer totales», «leer el resumen», «detener» y «ayuda».</p>
+        <p class="asistente-voz__privacidad"><x-icono nombre="info" /> <span>Solo se leen los totales, nunca nombres ni datos de pacientes. El dictado usa el reconocimiento de voz del navegador (Chrome o Edge), que envía el audio al servicio de su fabricante: no diga nombres de pacientes ni CI. Si prefiere, escriba la frase.</span></p>
+        <p class="aviso aviso-info" id="voz-sin-microfono" hidden><x-icono nombre="info" /> <span>Este navegador no permite dictar: escriba la frase o toque un ejemplo.</span></p>
+        <p class="aviso aviso-info" id="voz-sin-lectura" hidden><x-icono nombre="info" /> <span>Este navegador no puede leer en voz alta: los totales se muestran en pantalla.</span></p>
+    </section>
+
+    <div id="resultado-reporte" aria-live="polite">
     @if ($errors->any() && ! $reporte)
         <div class="aviso aviso-alerta sin-impresion" role="alert"><x-icono nombre="alerta" /> <span>No se generó el reporte: revise los filtros marcados.</span></div>
     @endif
@@ -158,4 +202,5 @@
             @endif
         </article>
     @endif
+    </div>
 @endsection

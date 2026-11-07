@@ -52,7 +52,8 @@
     }
 
     // CU-18: imprimir el reporte (el CSS @media print oculta todo lo demás).
-    document.querySelectorAll('[data-imprimir]').forEach(function (boton) {
-        boton.addEventListener('click', function () { window.print(); });
+    // (delegado en el documento: el asistente de voz reemplaza el reporte sin recargar la página)
+    document.addEventListener('click', function (evento) {
+        if (evento.target.closest && evento.target.closest('[data-imprimir]')) { window.print(); }
     });
 })();
