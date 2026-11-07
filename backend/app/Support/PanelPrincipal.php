@@ -41,6 +41,7 @@ class PanelPrincipal
                 ['nombre' => 'Pacientes', 'ruta' => 'pacientes.index', 'icono' => 'paciente', 'cu' => 'CU-07', 'roles' => [Rol::ADMINISTRADOR, Rol::RECEPCIONISTA]],
                 ['nombre' => 'Historial de citas', 'ruta' => 'historial.index', 'icono' => 'historial', 'cu' => 'CU-15', 'roles' => [Rol::RECEPCIONISTA]],
                 ['nombre' => 'Mis citas', 'ruta' => 'historial.index', 'icono' => 'historial', 'cu' => 'CU-15', 'roles' => [Rol::PACIENTE]],
+                ['nombre' => 'Mi perfil', 'ruta' => 'perfil.mostrar', 'icono' => 'usuario', 'cu' => 'CU-21', 'roles' => [Rol::PACIENTE]],
             ],
         ],
         [

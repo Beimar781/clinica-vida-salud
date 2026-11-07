@@ -28,7 +28,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-18 | Generar reportes (con IA) | II | RF18 | 7 | Pendiente | `ReportesBitacora/CU18_GenerarReportesConIA` | 7 | — |
 | CU-19 | Consultar bitácora | II | RF19 | 6 (ajuste) | Completo | `ReportesBitacora/CU19_ConsultarBitacora` | 2 | 25 aprobadas |
 | CU-20 | Registrarse como paciente | II | RF20 | 6 | Hecho (07/11) | `GestionPacientes/CU20_RegistrarsePaciente` | 4 | 24 aprobadas (4 filas del 8.1 + 20 de reglas internas) |
-| CU-21 | Gestionar mi perfil | II | RF21 | 6 | Pendiente | `GestionPacientes/CU21_GestionarMiPerfil` | 4 | — |
+| CU-21 | Gestionar mi perfil | II | RF21 | 6 | Hecho (07/11) | `GestionPacientes/CU21_GestionarMiPerfil` | 4 | 23 aprobadas (4 filas del 8.1 + 19 de reglas internas) |
 | CU-22 | Enviar recordatorios de citas | II | RF22 | 8 | Pendiente | `GestionCitas/CU22_EnviarRecordatoriosCitas` | 2 | — |
 
 Total de filas del plan 8.1: 93. Cada fila es un método `paso_N_...` del archivo `backend/tests/Feature/CUxx_*Test.php`; los CU con más pruebas que filas incluyen casos extra (bitácora, permisos, validaciones).

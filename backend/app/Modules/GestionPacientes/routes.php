@@ -3,6 +3,7 @@
 use App\Modules\GestionPacientes\CU07_GestionarPacientes\PacientesController;
 use App\Modules\GestionPacientes\CU15_ConsultarHistorialCitasPaciente\HistorialController;
 use App\Modules\GestionPacientes\CU20_RegistrarsePaciente\RegistroController;
+use App\Modules\GestionPacientes\CU21_GestionarMiPerfil\PerfilController;
 use Illuminate\Support\Facades\Route;
 
 // Paquete P3 - Gestión de Pacientes (CU-07, CU-15, CU-20 y CU-21).
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('/registro', [RegistroController::class, 'mostrar'])->middleware('throttle:30,1,registro-pantalla')->name('registro.mostrar');
     Route::post('/registro', [RegistroController::class, 'guardar'])->middleware('throttle:10,1,registro-envio')->name('registro.guardar');
+});
+
+// CU-21: Gestionar mi perfil (solo el rol Paciente; la ficha sale siempre de la cuenta, nunca de la URL)
+Route::middleware(['auth', 'rol:Paciente'])->prefix('perfil')->name('perfil.')->group(function () {
+    Route::get('/', [PerfilController::class, 'mostrar'])->name('mostrar');
+    Route::put('/', [PerfilController::class, 'actualizar'])->name('actualizar');
+    Route::put('/contrasena', [PerfilController::class, 'cambiarContrasena'])->middleware('throttle:5,1,perfil-clave')->name('contrasena');
 });
 
 // CU-07: Gestionar pacientes (Recepcionista y Administrador)
