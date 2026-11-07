@@ -67,6 +67,9 @@ class AccionesBitacora
         'COBRO_REGISTRADO' => 'Cobro en efectivo registrado',
         'INASISTENCIA_REGISTRADA' => 'Inasistencia registrada',
         'ESTADO_CORREGIDO' => 'Estado de la cita corregido',
+        'CONSULTA_REGISTRADA' => 'Consulta registrada',
+        'CONSULTA_CORREGIDA' => 'Consulta corregida',
+        'HISTORIA_CONSULTADA' => 'Historia clínica consultada',
     ];
 
     private const ROJAS = ['LOGIN_FALLIDO', 'LOGIN_BLOQUEADO', 'LOGIN_RECHAZADO', 'ACCESO_DENEGADO', 'PAGO_TARJETA_FALLIDO'];

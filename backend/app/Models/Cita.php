@@ -6,6 +6,7 @@ use App\Support\Dinero;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -126,6 +127,12 @@ class Cita extends Model
     public function especialidad(): BelongsTo
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
+    }
+
+    /** La consulta registrada en esta cita (CU-16); una cita tiene como máximo una. */
+    public function consulta(): HasOne
+    {
+        return $this->hasOne(Consulta::class, 'cita_id');
     }
 
     public function creador(): BelongsTo

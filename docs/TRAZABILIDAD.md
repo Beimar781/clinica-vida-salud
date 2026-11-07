@@ -23,7 +23,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Hecho (07/11) | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | 26 aprobadas (6 filas del 8.1 + 20 de reglas internas) |
 | CU-14 | Consultar agenda médica | II | RF14 | 4 | Hecho (07/11) | `GestionCitas/CU14_ConsultarAgendaMedica` | 4 | 15 aprobadas (4 filas del 8.1 + 11 de reglas internas) |
 | CU-15 | Consultar historial de citas del paciente | II | RF15 | 4 | Hecho (07/11) | `GestionPacientes/CU15_ConsultarHistorialCitasPaciente` | 2 | 14 aprobadas (2 filas del 8.1 + 12 de reglas internas) |
-| CU-16 | Registrar consulta y tratamiento | II | RF16 | 5 | Pendiente | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | 3 | — |
+| CU-16 | Registrar consulta y tratamiento | II | RF16 | 5 | Hecho (07/11) | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | 3 | 18 aprobadas (3 filas del 8.1 + 15 de reglas internas) |
 | CU-17 | Consultar historia clínica | II | RF17 | 5 | Pendiente | `AtencionClinica/CU17_ConsultarHistoriaClinica` | 3 | — |
 | CU-18 | Generar reportes (con IA) | II | RF18 | 7 | Pendiente | `ReportesBitacora/CU18_GenerarReportesConIA` | 7 | — |
 | CU-19 | Consultar bitácora | II | RF19 | 6 (ajuste) | Adelantado | `ReportesBitacora/CU19_ConsultarBitacora` | 2 | 23 aprobadas |

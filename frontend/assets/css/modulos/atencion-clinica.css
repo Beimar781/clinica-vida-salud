@@ -1,0 +1,23 @@
+/* P5 Atención Clínica · estilos propios del paquete (usan las variables de vidasalud.css) */
+
+/* Datos del paciente y de la cita (CU-16) y datos de la historia clínica (CU-17) */
+.datos-consulta { display: grid; gap: 1rem 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1rem; }
+.dato-clinico { display: grid; gap: .1rem; margin: 0; }
+.dato-clinico > div { display: grid; grid-template-columns: 9.5rem 1fr; gap: .75rem; padding: .45rem .25rem; border-bottom: 1px solid var(--vs-border); }
+.dato-clinico dt { color: var(--vs-muted); font-weight: 600; }
+.dato-clinico dd { margin: 0; overflow-wrap: anywhere; }
+.dato-clinico--alerta dd { color: #8A2D2D; font-weight: 600; }
+.dato-clinico--fila { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem 1.5rem; }
+.dato-clinico--fila > div { display: block; border-bottom: 0; padding: 0; }
+.dato-clinico--cuadricula { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .25rem 2rem; }
+
+/* Consultas y antecedentes en la historia clínica */
+.consulta-registro { padding: .9rem 1rem; margin-bottom: .8rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-left: 4px solid var(--vs-blue-600); border-radius: 8px; }
+.consulta-registro--externa { border-left-color: var(--vs-sky-400); background: var(--vs-white); }
+.consulta-registro:last-child { margin-bottom: 0; }
+.consulta-registro header { display: flex; flex-wrap: wrap; gap: .25rem .9rem; align-items: baseline; margin-bottom: .4rem; }
+.consulta-registro .dato-clinico > div { border-bottom-color: var(--vs-sky-200); }
+
+.formulario--vertical { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+
+@media (max-width: 600px) { .dato-clinico > div { grid-template-columns: 1fr; gap: .1rem; } }

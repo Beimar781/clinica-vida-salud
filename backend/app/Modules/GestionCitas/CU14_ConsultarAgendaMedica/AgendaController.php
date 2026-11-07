@@ -3,6 +3,7 @@
 namespace App\Modules\GestionCitas\CU14_ConsultarAgendaMedica;
 
 use App\Http\Controllers\Controller;
+use App\Modules\AtencionClinica\CU16_RegistrarConsultaTratamiento\ConsultaService;
 use App\Modules\GestionPacientes\CU15_ConsultarHistorialCitasPaciente\HistorialCitasService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
  *     código, el paciente, la especialidad, el estado y el motivo (si
  *     el usuario tiene permiso para verlo), e identifica las citas
  *     pendientes, atendidas y canceladas.                                  -> agenda.blade.php con AgendaService::resumen() y puedeVerMotivo()
+ *     (el médico con permiso ve además «Registrar consulta» o «Ver consulta»: CU-16)  -> columna de acciones de agenda.blade.php con ConsultaService::accion()
  *  5. Al seleccionar una cita, muestra los datos básicos del paciente
  *     (nombre, edad, sexo y, si el paciente lo permite, su teléfono).      -> detalle de cada cita con AgendaService::puedeVerContacto()
  *
@@ -71,6 +73,7 @@ class AgendaController extends Controller
             'resumen' => $citas ? $this->agenda->resumen($citas) : null,
             'libres' => $consulta && $unSoloDia ? $this->agenda->libres($medico, $desde) : null,
             'servicio' => $this->agenda,
+            'consultas' => app(ConsultaService::class), // botón «Registrar consulta» (CU-16)
             'usuario' => $usuario,
         ]);
     }

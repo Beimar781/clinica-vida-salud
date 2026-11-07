@@ -106,7 +106,7 @@ class AgendaService
      */
     public function citas(Medico $medico, string $desde, ?string $hasta, ?string $filtro = null): Collection
     {
-        return Cita::with(['paciente', 'especialidad'])
+        return Cita::with(['paciente', 'especialidad', 'consulta'])
             ->where('medico_id', $medico->id)
             ->whereDate('fecha', '>=', $desde)->whereDate('fecha', '<=', filled($hasta) ? $hasta : $desde)
             ->when(array_key_exists((string) $filtro, HistorialCitasService::FILTROS), fn ($q) => $q->whereIn('estado', HistorialCitasService::FILTROS[$filtro][1]))

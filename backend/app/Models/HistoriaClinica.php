@@ -38,6 +38,12 @@ class HistoriaClinica extends Model
         return $this->belongsTo(Paciente::class, 'paciente_id');
     }
 
+    /** Las consultas registradas en la clínica (CU-16) dentro de esta historia. */
+    public function consultas(): HasMany
+    {
+        return $this->hasMany(Consulta::class, 'historia_clinica_id');
+    }
+
     public function antecedentesExternos(): HasMany
     {
         return $this->hasMany(AntecedenteExterno::class, 'historia_clinica_id');

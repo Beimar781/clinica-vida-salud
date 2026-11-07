@@ -89,7 +89,7 @@
                 <div class="tarjeta__cuerpo">
                     <div class="tabla-responsive">
                         <table class="tabla">
-                            <thead><tr><th>Hora</th><th>Código</th><th>Paciente</th><th>Especialidad</th><th>Estado</th><th>Motivo</th></tr></thead>
+                            <thead><tr><th>Hora</th><th>Código</th><th>Paciente</th><th>Especialidad</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead>
                             <tbody>
                                 @foreach ($delDia as $cita)
                                     @php $paciente = $cita->paciente; @endphp
@@ -118,6 +118,16 @@
                                                 {{ $cita->motivo ?: '—' }}
                                             @else
                                                 <span class="texto-suave">Sin permiso</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @php $accionConsulta = Route::has('consultas.mostrar') ? $consultas->accion($cita, $usuario) : null; @endphp
+                                            @if ($accionConsulta === 'registrar')
+                                                <a class="btn btn-primario btn-sm" href="{{ route('consultas.mostrar', $cita) }}"><x-icono nombre="corazon" /> Registrar consulta</a>
+                                            @elseif ($accionConsulta === 'ver')
+                                                <a class="btn btn-secundario btn-sm" href="{{ route('consultas.mostrar', $cita) }}"><x-icono nombre="documento" /> Ver consulta</a>
+                                            @else
+                                                <span class="texto-suave">—</span>
                                             @endif
                                         </td>
                                     </tr>

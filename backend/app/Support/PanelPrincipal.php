@@ -55,6 +55,14 @@ class PanelPrincipal
             ],
         ],
         [
+            'clave' => 'atencion-clinica', 'nombre' => 'Atención clínica', 'icono' => 'corazon',
+            'funciones' => [
+                // «Registrar consulta» se hace desde la agenda médica: el enlace lleva a la agenda y la función aparece cuando existe la ruta de la consulta.
+                ['nombre' => 'Registrar consulta (desde la agenda)', 'ruta' => 'agenda.index', 'existe' => 'consultas.mostrar', 'icono' => 'corazon', 'cu' => 'CU-16', 'roles' => [Rol::MEDICO]],
+                ['nombre' => 'Historia clínica', 'ruta' => 'historia.index', 'icono' => 'documento', 'cu' => 'CU-17', 'roles' => [Rol::MEDICO]],
+            ],
+        ],
+        [
             'clave' => 'reportes-bitacora', 'nombre' => 'Reportes y bitácora', 'icono' => 'documento',
             'funciones' => [
                 ['nombre' => 'Bitácora', 'ruta' => 'bitacora.index', 'icono' => 'historial', 'cu' => 'CU-19', 'roles' => [Rol::ADMINISTRADOR]],
@@ -78,7 +86,7 @@ class PanelPrincipal
                 if (! $usuario->tieneRol(...$funcion['roles'])) {
                     continue;
                 }
-                $existe = Route::has($funcion['ruta']);
+                $existe = Route::has($funcion['existe'] ?? $funcion['ruta']) && Route::has($funcion['ruta']);
                 if ($soloImplementadas && ! $existe) {
                     continue;
                 }
