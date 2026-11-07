@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
  * médica (tipo de sangre, alergias, crónicas, medicamentos y antecedentes) en su historia clínica, sin tocar las consultas.
  * El CI no se edita. Todo cambio queda en la bitácora indicando qué secciones cambiaron (nunca contraseñas ni datos clínicos).
  *
- * @CU CU-21 @RF RF21 @CI CIPerfil @CC CCPerfil @CE CEPaciente (actualizar), CEHistoriaClinica (actualizar), CEUsuario (cambiarContrasena)
+ * @CU CU-21 @RF RF21 @CI CIPerfil @CC CCPerfil @CE CEPaciente (obtener, actualizarPerfil), CEHistoriaClinica (obtenerPorPaciente, actualizarDatosMedicos), CEUsuario (cambiarClave)
  */
 class PerfilService
 {
@@ -34,7 +34,7 @@ class PerfilService
     /**
      * La ficha del paciente de la cuenta (nunca de un identificador de la URL); null si la cuenta aún no tiene ficha.
      *
-     * @CE CEPaciente (obtenerPorUsuario)
+     * @CE CEPaciente (obtener)
      */
     public function fichaDe(Usuario $usuario): ?Paciente
     {
@@ -50,7 +50,7 @@ class PerfilService
     /**
      * Pasos 5 y 6: guarda los cambios de una o más secciones y los registra en la bitácora.
      *
-     * @CC CCPerfil (actualizar) @CE CEPaciente (actualizar), CEHistoriaClinica (actualizar)
+     * @CC CCPerfil (actualizar) @CE CEPaciente (actualizarPerfil), CEHistoriaClinica (actualizarDatosMedicos)
      *
      * @param  array<string, mixed>  $datos  campos validados de PerfilRequest
      * @return list<string> secciones que cambiaron (vacío si no hubo cambios)
@@ -91,11 +91,11 @@ class PerfilService
     /**
      * Paso 4: cambia la contraseña si la actual es correcta. La sesión se renueva y la bitácora no guarda ninguna contraseña.
      *
-     * @CC CCPerfil (cambiarContrasena) @CE CEUsuario (cambiarContrasena)
+     * @CC CCPerfil (cambiarClave) @CE CEUsuario (cambiarClave)
      *
      * @throws ValidationException si la contraseña actual es incorrecta
      */
-    public function cambiarContrasena(Usuario $usuario, string $actual, string $nueva): void
+    public function cambiarClave(Usuario $usuario, string $actual, string $nueva): void
     {
         if (! Hash::check($actual, $usuario->password_hash)) {
             BitacoraService::registrar('PERFIL_CLAVE_RECHAZADA', 'Usuario', 'Cambio de contraseña rechazado: la contraseña actual era incorrecta', $usuario->id);

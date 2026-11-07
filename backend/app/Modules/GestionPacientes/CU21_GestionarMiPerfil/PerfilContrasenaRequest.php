@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Validación del cambio de contraseña del perfil (paso 4 del flujo): contraseña actual, nueva de al menos 8 caracteres,
  * distinta de la actual, y su confirmación. Que la actual sea la correcta lo comprueba PerfilService.
  *
- * @CU CU-21 @RF RF21 @CI CIPerfil (validarDatos) @CC CCPerfil (cambiarContrasena) @CE CEUsuario
+ * @CU CU-21 @RF RF21 @CI CIPerfil (validarDatos) @CC CCPerfil (cambiarClave) @CE CEUsuario
  */
 class PerfilContrasenaRequest extends FormRequest
 {

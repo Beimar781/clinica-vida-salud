@@ -39,7 +39,7 @@ class PerfilController extends Controller
     /**
      * Pasos 1 y 2: muestra el perfil del paciente autenticado (siempre el suyo, aunque la URL traiga otro identificador).
      *
-     * @CI CIPerfil (mostrarPerfil) @CC CCPerfil (obtener)
+     * @CI CIPerfil (mostrarPerfil) @CC CCPerfil (consultar)
      */
     public function mostrar(Request $request): View
     {
@@ -56,7 +56,7 @@ class PerfilController extends Controller
     /**
      * Pasos 3, 5 y 6: valida y guarda los datos de las secciones del perfil.
      *
-     * @CI CIPerfil (enviarDatos) @CC CCPerfil (actualizar)
+     * @CI CIPerfil (enviarCambios, mostrarResultado) @CC CCPerfil (actualizar)
      */
     public function actualizar(PerfilRequest $request): RedirectResponse
     {
@@ -78,11 +78,11 @@ class PerfilController extends Controller
     /**
      * Pasos 4 y 5: cambia la contraseña con la actual y la nueva.
      *
-     * @CI CIPerfil (enviarDatos) @CC CCPerfil (cambiarContrasena)
+     * @CI CIPerfil (enviarDatos) @CC CCPerfil (cambiarClave)
      */
     public function cambiarContrasena(PerfilContrasenaRequest $request): RedirectResponse
     {
-        $this->perfil->cambiarContrasena($request->user(), $request->string('password_actual')->toString(), $request->string('password')->toString());
+        $this->perfil->cambiarClave($request->user(), $request->string('password_actual')->toString(), $request->string('password')->toString());
 
         return redirect()->route('perfil.mostrar')->with('exito', 'Contraseña cambiada correctamente.');
     }

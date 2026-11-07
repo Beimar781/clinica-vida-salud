@@ -12,3 +12,4 @@
 .perfil { display: grid; gap: 1.25rem; max-width: 820px; }
 .perfil .tarjeta__cuerpo > .grupo-datos:last-of-type { margin-bottom: 1rem; }
 .perfil input[readonly] { background: var(--vs-sky-50); color: var(--vs-muted); cursor: not-allowed; }
+.perfil .grupo-datos > p.sin-margen { margin-bottom: .8rem; }
