@@ -373,6 +373,46 @@ class CU18_GenerarReportesConIATest extends SistemaTestCase
     }
 
     #[Test]
+    public function test_si_el_modelo_configurado_ya_no_existe_se_reintenta_una_vez_con_el_modelo_por_defecto(): void
+    {
+        $this->escenario();
+        config(['services.ia.modelo' => 'gemini-2.5-flash']); // modelo retirado por Google
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::sequence()
+            ->push(['error' => ['code' => 404, 'message' => 'This model is no longer available to new users.']], 404)
+            ->push(['candidates' => [['content' => ['parts' => [['text' => self::TEXTO_IA]]]]]], 200)]);
+
+        $this->actingAs($this->admin)->get($this->ruta(['tipo' => 'por_estado', 'ia' => 'con']))->assertOk()
+            ->assertSee('Resumen generado por IA')->assertSee('En el período se registraron 6 citas')->assertDontSee('No se pudo generar el resumen con IA');
+
+        Http::assertSentCount(2);
+        $urls = Http::recorded()->map(fn ($par) => $par[0]->url())->all();
+        $this->assertStringContainsString('models/gemini-2.5-flash:generateContent', $urls[0]);
+        $this->assertStringContainsString('models/'.ResumenIAService::MODELO_POR_DEFECTO.':generateContent', $urls[1]);
+    }
+
+    #[Test]
+    public function test_si_el_modelo_por_defecto_responde_404_no_se_reintenta_y_el_reporte_sale_sin_resumen(): void
+    {
+        $this->escenario();
+        config(['services.ia.modelo' => ResumenIAService::MODELO_POR_DEFECTO]);
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::response(['error' => ['code' => 404]], 404)]);
+
+        $this->actingAs($this->admin)->get($this->ruta(['tipo' => 'por_estado', 'ia' => 'con']))->assertOk()
+            ->assertSee('No se pudo generar el resumen con IA')->assertDontSee('Resumen generado por IA')->assertSee('Total de citas');
+
+        Http::assertSentCount(1);
+    }
+
+    #[Test]
+    public function test_el_pdf_tiene_un_tope_de_filas_que_cabe_en_la_memoria_del_servidor(): void
+    {
+        // dompdf consume ~56 MB + 0,3 MB por fila; el Dockerfile fija memory_limit=256M (se midió: 1000 filas lo agotan).
+        $this->assertLessThanOrEqual(300, ReporteService::LIMITE_PDF);
+        $this->assertGreaterThan(ReporteService::LIMITE_PANTALLA, ReporteService::LIMITE_PDF);
+        $this->assertStringContainsString('memory_limit=256M', (string) file_get_contents(base_path('../Dockerfile')));
+    }
+
+    #[Test]
     public function test_una_respuesta_vacia_o_bloqueada_de_la_ia_tambien_es_un_fallo(): void
     {
         $this->escenario();

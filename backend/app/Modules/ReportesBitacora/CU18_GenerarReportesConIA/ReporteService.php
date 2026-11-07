@@ -44,7 +44,8 @@ class ReporteService
     /** Filas del detalle que se muestran en pantalla (el CSV las trae todas y el PDF hasta LIMITE_PDF). */
     public const LIMITE_PANTALLA = 200;
 
-    public const LIMITE_PDF = 1000;
+    /** dompdf usa unos 56 MB más 0,3 MB por fila: con el límite de memoria de 256 MB del Dockerfile, 300 filas (~144 MB, ~2,4 s) es seguro y 1000 no. */
+    public const LIMITE_PDF = 300;
 
     public const MENSAJE_VACIO = 'No hay citas en el período seleccionado.';
 

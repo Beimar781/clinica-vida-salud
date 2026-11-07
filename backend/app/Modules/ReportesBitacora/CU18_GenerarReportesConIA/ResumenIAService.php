@@ -2,6 +2,7 @@
 
 namespace App\Modules\ReportesBitacora\CU18_GenerarReportesConIA;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -23,6 +24,8 @@ class ResumenIAService
     public const AVISO_SIN_RESUMEN = 'No se pudo generar el resumen con IA. El reporte se muestra completo, sin resumen.';
 
     public const TIEMPO_MAXIMO = 20;
+
+    public const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 
     private const URL = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
@@ -54,22 +57,17 @@ class ResumenIAService
             return null;
         }
 
-        $modelo = (string) config('services.ia.modelo', 'gemini-3.5-flash-lite');
+        $modelo = (string) config('services.ia.modelo', self::MODELO_POR_DEFECTO);
 
         try {
-            // La clave va en el encabezado (no en la URL) para que nunca aparezca en un mensaje de error ni en el log.
-            $respuesta = Http::timeout(self::TIEMPO_MAXIMO)
-                ->connectTimeout(10)
-                ->acceptJson()
-                ->withHeaders(['x-goog-api-key' => (string) config('services.ia.gemini_key')])
-                ->post(self::URL.rawurlencode($modelo).':generateContent', [
-                    'systemInstruction' => ['parts' => [['text' => self::INSTRUCCIONES]]],
-                    'contents' => [['role' => 'user', 'parts' => [['text' => json_encode($totales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]]]],
-                    'generationConfig' => [
-                        'temperature' => 0.3,
-                        'maxOutputTokens' => 1000,
-                    ],
-                ]);
+            $respuesta = $this->pedir($modelo, $totales);
+
+            // Google retira modelos con el tiempo (404 «ya no está disponible»): si el configurado ya no existe, se reintenta una sola vez con
+            // el modelo por defecto en lugar de dejar la IA caída hasta que alguien corrija la variable IA_MODELO.
+            if ($respuesta->status() === 404 && $modelo !== self::MODELO_POR_DEFECTO) {
+                Log::warning("CU-18: el modelo de IA «{$modelo}» ya no está disponible (404); se reintenta con «".self::MODELO_POR_DEFECTO.'». Actualice IA_MODELO.');
+                $respuesta = $this->pedir(self::MODELO_POR_DEFECTO, $totales);
+            }
 
             if ($respuesta->failed()) {
                 Log::error('CU-18: la IA respondió con error '.$respuesta->status().': '.mb_substr((string) $respuesta->body(), 0, 300));
@@ -92,5 +90,20 @@ class ResumenIAService
         }
 
         return mb_substr($texto, 0, 1500);
+    }
+
+    /** @param  array<string, mixed>  $totales */
+    private function pedir(string $modelo, array $totales): Response
+    {
+        // La clave va en el encabezado (no en la URL) para que nunca aparezca en un mensaje de error ni en el log.
+        return Http::timeout(self::TIEMPO_MAXIMO)
+            ->connectTimeout(10)
+            ->acceptJson()
+            ->withHeaders(['x-goog-api-key' => (string) config('services.ia.gemini_key')])
+            ->post(self::URL.rawurlencode($modelo).':generateContent', [
+                'systemInstruction' => ['parts' => [['text' => self::INSTRUCCIONES]]],
+                'contents' => [['role' => 'user', 'parts' => [['text' => json_encode($totales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]]]],
+                'generationConfig' => ['temperature' => 0.3, 'maxOutputTokens' => 1000],
+            ]);
     }
 }

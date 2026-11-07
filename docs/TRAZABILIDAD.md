@@ -25,7 +25,7 @@ Estado: **Hecho** = implementado, con todas sus pruebas aprobadas. Las vistas es
 | CU-15 | Consultar historial de citas del paciente | II | RF15 | `GestionPacientes/CU15_ConsultarHistorialCitasPaciente` | historial | HistorialController · HistorialCitasService | Cita, Paciente | citas, pacientes | CU15_ConsultarHistorialCitasPacienteTest.php | 2 | 14 pruebas, 142 aserciones: **Aprobado** | Hecho |
 | CU-16 | Registrar consulta y tratamiento | II | RF16 | `AtencionClinica/CU16_RegistrarConsultaTratamiento` | registrar | ConsultaController · ConsultaService | Consulta, Cita, HistoriaClinica | consultas, citas, historias_clinicas | CU16_RegistrarConsultaTratamientoTest.php | 3 | 18 pruebas, 170 aserciones: **Aprobado** | Hecho |
 | CU-17 | Consultar historia clínica | II | RF17 | `AtencionClinica/CU17_ConsultarHistoriaClinica` | ver | HistoriaClinicaController · HistoriaClinicaService | HistoriaClinica, Consulta, AntecedenteExterno | historias_clinicas, consultas, antecedentes_externos | CU17_ConsultarHistoriaClinicaTest.php | 3 | 12 pruebas, 106 aserciones: **Aprobado** | Hecho |
-| CU-18 | Generar reportes con IA | II | RF18 | `ReportesBitacora/CU18_GenerarReportesConIA` | index, pdf | ReportesController · ReporteService, ResumenIAService | Cita, Paciente, Medico, Especialidad | citas, pacientes, historias_clinicas, medicos, especialidades | CU18_GenerarReportesConIATest.php | 7 | 32 pruebas, 379 aserciones: **Aprobado** | Hecho |
+| CU-18 | Generar reportes con IA | II | RF18 | `ReportesBitacora/CU18_GenerarReportesConIA` | index, pdf | ReportesController · ReporteService, ResumenIAService | Cita, Paciente, Medico, Especialidad | citas, pacientes, historias_clinicas, medicos, especialidades | CU18_GenerarReportesConIATest.php | 7 | 35 pruebas, 395 aserciones: **Aprobado** | Hecho |
 | CU-19 | Consultar bitácora | II (adelantado) | RF19 | `ReportesBitacora/CU19_ConsultarBitacora` | index | BitacoraController · ConsultaBitacoraService | Bitacora | bitacora | CU19_ConsultarBitacoraTest.php | 2 | 25 pruebas, 195 aserciones: **Aprobado** | Hecho |
 | CU-20 | Registrarse como paciente | II | RF20 | `GestionPacientes/CU20_RegistrarsePaciente` | registro | RegistroController · RegistroPacienteService | Usuario, Paciente, HistoriaClinica | usuarios, rol_usuario, pacientes, historias_clinicas | CU20_RegistrarsePacienteTest.php | 4 | 24 pruebas, 149 aserciones: **Aprobado** | Hecho |
 | CU-21 | Gestionar mi perfil | II | RF21 | `GestionPacientes/CU21_GestionarMiPerfil` | perfil | PerfilController · PerfilService | Paciente, HistoriaClinica, Usuario | pacientes, historias_clinicas, usuarios | CU21_GestionarMiPerfilTest.php | 4 | 23 pruebas, 189 aserciones: **Aprobado** | Hecho |
@@ -46,9 +46,9 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 | PDF de reportes con dompdf (barryvdh/laravel-dompdf 3.1.2) | 7 | Hecho (07/11) |
 | Asistente de voz de «Reportes» (extra, navegador) | 7 | Hecho (07/11) |
 | Programador y comando `citas:enviar-recordatorios` | 8 | Hecho (07/11) |
-| Servicio cron en Railway para los recordatorios | 10 | Pendiente |
+| Servicio cron en Railway para los recordatorios | 10 | Documentado en el README (comando de inicio, horario `0 22 * * *` = 18:00 en La Paz, variables); lo crea el equipo en Railway |
 | Auditoría documento ↔ código y prueba general | 9 | Hecho (07/11) |
-| Redespliegue en Railway con variables de Stripe, IA y Brevo | 10 | Pendiente |
+| Redespliegue en Railway con variables de Stripe, IA y Brevo | 10 | Dockerfile revisado (memoria del PDF, comprobación de extensiones), arranque probado con base nueva y con datos del Ciclo I, README actualizado; verificado en línea con lecturas: **la IA no responde en producción** (revisar `GEMINI_API_KEY` e `IA_MODELO`) |
 
 ### Base técnica (Prompt 0, 07/11/2026)
 
@@ -88,9 +88,10 @@ Notas: CU-04 pasó de «especialidades médicas» a «especialidades y servicios
 | Fecha | Comando | Pruebas | Aserciones | Resultado |
 |---|---|---|---|---|
 | 07/11/2026 | `php artisan test` en el proyecto de trabajo (base migrada y sembrada) | 541 | 3778 | Todas aprobadas |
+| 07/11/2026 (cierre del despliegue) | `php artisan test` en el proyecto de trabajo, tras el tope del PDF, el reintento del modelo de IA y el Dockerfile | 544 | 3794 | Todas aprobadas |
 | 07/11/2026 | `php artisan test` en un clon limpio del repositorio, con una base nueva y siguiendo solo el README (`composer install`, `.env`, `key:generate`, `migrate --seed`) | 541 | 3778 | Todas aprobadas; el servidor del clon responde (inicio, login, assets, panel, reportes con 16 citas) |
 
-Distribución: Ciclo I (CU-01 a CU-11) 258 pruebas y 1660 aserciones; Ciclo II (CU-12 a CU-22) 218 pruebas y 1842 aserciones; pruebas de base, seguridad, pagos, despliegue y utilidades 65 pruebas y 276 aserciones.
+Distribución al cierre (544 pruebas y 3794 aserciones): Ciclo I (CU-01 a CU-11) 258 pruebas y 1660 aserciones; Ciclo II (CU-12 a CU-22) 221 pruebas y 1858 aserciones (CU-18 pasó de 32 a 35 pruebas y de 379 a 395 aserciones); pruebas de base, seguridad, pagos, despliegue y utilidades 65 pruebas y 276 aserciones.
 
 ## 4. Tabla 8.2 (resultado por CU para el documento)
 
@@ -122,7 +123,7 @@ Todas las pruebas se ejecutaron el 07/11/2026 sobre PostgreSQL con la base migra
 | CP-15 | CU-15 Consultar historial de citas del paciente | Historial de citas del paciente («Mis citas») con filtros y búsqueda del personal por CI o nombre. | Caja negra (PHPUnit) | Frontend / Backend / BD | 2 | **Aprobado** (14 pruebas, 142 aserciones) |
 | CP-16 | CU-16 Registrar consulta y tratamiento | Registro de la consulta (diagnóstico y tratamiento) por el médico de la cita; la cita pasa a Atendida. | Caja negra (PHPUnit) | Frontend / Backend / BD | 3 | **Aprobado** (18 pruebas, 170 aserciones) |
 | CP-17 | CU-17 Consultar historia clínica | Consulta de solo lectura de la historia clínica (datos generales, consultas y antecedentes externos) por el médico. | Caja negra (PHPUnit) | Frontend / Backend / BD | 3 | **Aprobado** (12 pruebas, 106 aserciones) |
-| CP-18 | CU-18 Generar reportes con IA | Ocho reportes con totales, resumen opcional con IA (solo totales), impresión, CSV y PDF, y asistente de voz. | Caja negra (PHPUnit) | Frontend / Backend / BD | 7 | **Aprobado** (32 pruebas, 379 aserciones) |
+| CP-18 | CU-18 Generar reportes con IA | Ocho reportes con totales, resumen opcional con IA (solo totales), impresión, CSV y PDF, y asistente de voz. | Caja negra (PHPUnit) | Frontend / Backend / BD | 7 | **Aprobado** (35 pruebas, 395 aserciones) |
 | CP-19 | CU-19 Consultar bitácora | Consulta de la bitácora inmutable con filtros por usuario, acción, entidad y fechas. | Caja negra (PHPUnit) | Frontend / Backend / BD | 2 | **Aprobado** (25 pruebas, 195 aserciones) |
 | CP-20 | CU-20 Registrarse como paciente | Registro del paciente desde la web (cuenta, ficha e historia clínica) y vinculación con la ficha creada en recepción. | Caja negra (PHPUnit) | Frontend / Backend / BD | 4 | **Aprobado** (24 pruebas, 149 aserciones) |
 | CP-21 | CU-21 Gestionar mi perfil | Edición del perfil del paciente (datos, información médica, emergencia, preferencias) y cambio de contraseña. | Caja negra (PHPUnit) | Frontend / Backend / BD | 4 | **Aprobado** (23 pruebas, 189 aserciones) |

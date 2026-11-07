@@ -13,7 +13,7 @@ Autores: Juan Simeón García Cervantes y Beimar Ríos Benavides.
 | Ciclo I | CU-01 a CU-11 (seguridad y usuarios, gestión médica, pacientes y citas) | Implementado y probado; ampliado en el documento v30 (servicios con precio, pago de citas y reprogramación de inasistencias pagadas) |
 | Ciclo II | CU-12 a CU-22 (cancelación y estados de cita, agenda, historial, atención clínica, reportes con IA, bitácora, registro del paciente, perfil y recordatorios) | Implementado y probado (los 22 casos de uso) |
 
-La prueba general del 07/11/2026 dio **541 pruebas y 3778 aserciones, todas aprobadas**, también en un clon limpio del repositorio con una base nueva. Además de los casos de uso, el sistema incluye la recuperación de contraseña por correo electrónico, el bloqueo temporal de la cuenta tras 3 intentos fallidos de inicio de sesión y un asistente de voz opcional en «Reportes».
+La prueba general del 07/11/2026 dio **541 pruebas y 3778 aserciones, todas aprobadas** también en un clon limpio del repositorio con una base nueva; tras los últimos ajustes del despliegue la suite completa da **544 pruebas y 3794 aserciones, todas aprobadas**. Además de los casos de uso, el sistema incluye la recuperación de contraseña por correo electrónico, el bloqueo temporal de la cuenta tras 3 intentos fallidos de inicio de sesión y un asistente de voz opcional en «Reportes».
 
 ## Qué hace el sistema
 
@@ -156,11 +156,11 @@ cd backend
 php artisan test
 ```
 
-La última corrida completa (07/11/2026) dio **541 pruebas y 3778 aserciones, todas aprobadas**: la misma cifra en el proyecto de trabajo y en un clon limpio del repositorio con una base nueva, siguiendo solo estas instrucciones. Hay un archivo de pruebas por caso de uso (`CUxx_NombreTest.php`) con un método `paso_N_...` por cada fila del plan de pruebas 8.1 del documento y pruebas de reglas internas, más pruebas de la base de datos, la seguridad, los pagos, los recursos del frontend y el despliegue. Stripe, la IA y el correo siempre se simulan: ninguna prueba sale a internet. Se puede correr un solo caso de uso con `php artisan test --filter=CU09_`. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
+La última corrida completa (07/11/2026) dio **541 pruebas y 3778 aserciones, todas aprobadas** en el proyecto de trabajo y en un clon limpio del repositorio con una base nueva, siguiendo solo estas instrucciones; después del despliegue (Prompt 10) la suite completa da **544 pruebas y 3794 aserciones**. Hay un archivo de pruebas por caso de uso (`CUxx_NombreTest.php`) con un método `paso_N_...` por cada fila del plan de pruebas 8.1 del documento y pruebas de reglas internas, más pruebas de la base de datos, la seguridad, los pagos, los recursos del frontend y el despliegue. Stripe, la IA y el correo siempre se simulan: ninguna prueba sale a internet. Se puede correr un solo caso de uso con `php artisan test --filter=CU09_`. La relación entre cada requisito, su código y su prueba está en `docs/TRAZABILIDAD.md`.
 
 ## Despliegue en Railway
 
-El repositorio trae un `Dockerfile` en la raíz (PHP 8.3 con `pdo_pgsql`, `pgsql`, `zip` e `intl`, y Composer `--no-dev`) y un `.dockerignore`. Railway construye una sola imagen con todo el repositorio (`backend/` lee la carpeta hermana `frontend/`, por eso el servicio no usa `backend/` como directorio raíz). Al arrancar, el contenedor crea las carpetas de `storage`, migra la base, carga los datos base y enciende el servidor en el puerto que asigna Railway. Los seeders son idempotentes: pueden correr en cada arranque sin duplicar nada.
+El repositorio trae un `Dockerfile` en la raíz (PHP 8.3 con `pdo_pgsql`, `pgsql`, `zip` e `intl`; Composer `--no-dev`; `memory_limit=256M` para el PDF de los reportes) y un `.dockerignore`. El PDF (dompdf) solo necesita `dom` y `mbstring`, que ya trae la imagen de PHP: no hace falta la extensión `gd`. El propio Dockerfile comprueba al construir que las extensiones están. Railway construye una sola imagen con todo el repositorio (`backend/` lee la carpeta hermana `frontend/`, por eso el servicio no usa `backend/` como directorio raíz). Al arrancar, el contenedor crea las carpetas de `storage`, migra la base (las migraciones nuevas se aplican sobre la base existente sin perder datos), carga los datos base y enciende el servidor en el puerto que asigna Railway. Los seeders son idempotentes: pueden correr en cada arranque sin duplicar nada.
 
 **Cómo lo desplegamos**
 
@@ -197,17 +197,48 @@ El repositorio trae un `Dockerfile` en la raíz (PHP 8.3 con `pdo_pgsql`, `pgsql
 | `BREVO_API_KEY` | clave de API de Brevo (empieza con `xkeysib-`) |
 | `MAIL_FROM_ADDRESS` | el remitente verificado en Brevo |
 | `MAIL_FROM_NAME` | `Clínica Vida Salud` |
+| `STRIPE_SECRET` | clave secreta de **prueba** de Stripe (`sk_test_...`, de https://dashboard.stripe.com/test/apikeys). Sin ella, la tarjeta aparece deshabilitada y el efectivo sigue funcionando |
+| `STRIPE_MONEDA` | `bob` (los montos están en bolivianos; si la cuenta de Stripe rechazara BOB: `usd`) |
+| `TIPO_CAMBIO` | `1` (con `STRIPE_MONEDA=usd`, `6.96`) |
+| `GEMINI_API_KEY` | clave de Google Gemini (https://aistudio.google.com/apikey) para el resumen de los reportes. Sin ella el reporte sale completo, sin resumen y con el aviso «No se pudo generar el resumen con IA» |
+| `IA_MODELO` | `gemini-3.5-flash-lite`. Google retira modelos con el tiempo: `gemini-2.5-flash` ya no está disponible para claves nuevas. Si esta variable apunta a un modelo retirado, el sistema reintenta una vez con el modelo por defecto, pero conviene corregirla (o borrarla) |
 
 No hay que definir `PORT`: lo asigna Railway. Las claves y contraseñas viven solo en las variables de Railway; nunca se suben al repositorio.
 
-**Verificación tras el despliegue**
+**Actualizar un despliegue que ya existe con el Ciclo II**
 
-- En **Deployments → View logs** se ven las migraciones (`Running migrations`), el sembrado (`Seeding`) y la línea `Server running on [http://0.0.0.0:...]`.
-- El dominio abre el inicio público y «Iniciar sesión», con los estilos cargados y todo por `https`.
-- Se puede iniciar sesión con `admin`; con `SEMBRAR_DEMO=true` también con `recepcion`, `cmontano`, `mrojas`, etc.
-- Tras 3 intentos fallidos con una cuenta, el siguiente intento muestra el bloqueo de 60 segundos.
-- «¿Olvidaste tu contraseña?» envía el correo desde el remitente verificado (puede llegar a spam) y el enlace abre con `https`.
-- Se puede registrar una cita y reprogramarla.
+1. **Respaldo de la base** antes de cambiar nada: en el servicio PostgreSQL de Railway, pestaña **Data** o **Backups** (o con `pg_dump` desde su cadena de conexión pública).
+2. Cargar las variables nuevas del servicio web (`STRIPE_SECRET`, `STRIPE_MONEDA`, `TIPO_CAMBIO`, `GEMINI_API_KEY`, `IA_MODELO`) y revisar que `IA_MODELO` no siga en `gemini-2.5-flash`.
+3. Redesplegar el servicio web (basta un `git push` a `main`, o **Deployments → Redeploy**). Las 4 migraciones del v30 (`tipo` y `precio`, `registrado_por`, datos de pago de `citas` y la tabla `consultas`) se aplican solas al arrancar sin perder datos: las especialidades antiguas quedan como consulta y reciben su precio base, las citas antiguas quedan en efectivo pendiente con el precio de su especialidad, y los días sin atención quedan a nombre del administrador. En **View logs** deben verse las migraciones `2026_11_06_...` con `DONE` (o `Nothing to migrate` si ya estaban).
+4. Con `SEMBRAR_DEMO=true` se agregan los datos de demostración del v30 (idempotente: no duplica nada). Para datos reales, `SEMBRAR_DEMO=false`.
+5. Crear el servicio cron de los recordatorios (siguiente apartado).
+
+**Servicio cron de los recordatorios (CU-22)**
+
+La tarea programada del sistema solo corre si algo la ejecuta; en Railway se resuelve con un segundo servicio que ejecuta el comando una vez al día y termina:
+
+1. En el mismo proyecto: **+ New → GitHub Repo** y elegir el mismo repositorio (usa el mismo `Dockerfile`).
+2. **Settings → Deploy → Custom Start Command**:
+   ```
+   sh -c "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && php artisan package:discover --ansi && php artisan citas:enviar-recordatorios"
+   ```
+   No lleva `migrate` ni `serve`: lo migra el servicio web.
+3. **Settings → Cron Schedule**: `0 22 * * *`. Railway usa hora UTC y La Paz es UTC−4 sin horario de verano, así que 22:00 UTC son las **18:00 en La Paz**, la hora que usa el sistema. (Opcional, para reintentar los envíos fallidos: un segundo horario `0 0 * * *`, las 20:00 en La Paz; el comando no repite los avisos ya enviados.)
+4. **Variables**: las mismas que el servicio web (enlazarlas con `${{web.NOMBRE}}`, cambiando `web` por el nombre de ese servicio): `APP_KEY`, `APP_ENV`, `APP_URL`, `DB_*`, `MAIL_MAILER`, `BREVO_API_KEY`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` y `LOG_CHANNEL=stderr`.
+5. Probarlo sin esperar: **Deployments → Run now** (o `railway run` con la CLI de Railway) y leer en **View logs** la línea «Recordatorios para el dd/mm/aaaa: N avisos enviados…». También sirve `php artisan citas:enviar-recordatorios --fecha=AAAA-MM-DD` para un día concreto.
+
+**Qué revisar en la URL en línea después de desplegar**
+
+- En **Deployments → View logs**: las migraciones (`Running migrations`), el sembrado (`Seeding database`) y la línea `Server running on [http://0.0.0.0:...]`.
+- Con `admin`: el panel muestra las cinco tarjetas (Seguridad y Usuarios, Gestión Médica, Gestión de Pacientes, Gestión de Citas, Reportes y bitácora) y «Especialidades y servicios» muestra tipo y precio en Bs.
+- Inicio de sesión: tras 3 intentos fallidos con una cuenta, el siguiente muestra el bloqueo de 60 segundos. «¿Olvidaste tu contraseña?» envía el correo desde el remitente verificado en Brevo (puede llegar a spam) y el enlace abre con `https`.
+- Con `recepcion`: registrar una cita en efectivo (queda Pendiente), cobrarla en «Control de citas», reprogramar y cancelar otra (la cita pagada avisa que el pago no se devuelve).
+- Con `mrojas`: reservar una cita pagando con la tarjeta de prueba `4242 4242 4242 4242` (comprobante «Pagado» con referencia) y probar `4000 0000 0000 0002` (rechazada); «Mis citas», «Mi perfil» y cancelar con más de 2 horas de anticipación.
+- Con `cmontano`: agenda, registrar la consulta de una cita y ver la historia clínica; `recepcion` y `admin` no ven la historia (acceso denegado).
+- Con `admin`: «Reportes» con la modalidad **Con IA** muestra el «Resumen generado por IA» (si aparece «No se pudo generar el resumen con IA», revisar `GEMINI_API_KEY` y `IA_MODELO`), exportar PDF y CSV, y «Bitácora» con los eventos.
+- Sin sesión: «Crear cuenta» con un CI nuevo (o el CI `8123456` y la fecha `15/06/1990` para vincular la ficha de demostración).
+- El recordatorio: ejecutar el servicio cron a mano y comprobar que llega el correo (el paciente debe tener correo y los recordatorios activados).
+- `https://<dominio>/up` responde 200 y todo sale por `https`.
 
 **Nota sobre los datos de demostración:** como el repositorio es público, las contraseñas `Demo1234*` son conocidas. Para usar el sistema con datos reales hay que poner `SEMBRAR_DEMO=false`, definir un `ADMIN_PASSWORD` propio y desactivar o cambiar la contraseña de las cuentas de demostración desde «Usuarios y roles». El administrador se crea una sola vez: cambiar `ADMIN_PASSWORD` después no modifica su contraseña, eso se hace desde «Usuarios y roles».
 
