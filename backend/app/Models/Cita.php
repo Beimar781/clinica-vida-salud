@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Dinero;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +58,30 @@ class Cita extends Model
     public function scopePagadas(Builder $consulta): Builder
     {
         return $consulta->where('estado_pago', self::PAGO_PAGADO);
+    }
+
+    /** «Efectivo en la clínica» o «Tarjeta (Stripe)». */
+    public function getMetodoPagoTextoAttribute(): string
+    {
+        return $this->metodo_pago === self::METODO_TARJETA ? 'Tarjeta (Stripe)' : 'Efectivo en la clínica';
+    }
+
+    /** «Pagado» o «Pendiente». */
+    public function getEstadoPagoTextoAttribute(): string
+    {
+        return $this->estado_pago === self::PAGO_PAGADO ? 'Pagado' : 'Pendiente';
+    }
+
+    /** «Bs 100,00». */
+    public function getMontoTextoAttribute(): string
+    {
+        return Dinero::formato($this->monto);
+    }
+
+    /** Resumen para la bitácora: «Tarjeta (Stripe), Pagado, Bs 100,00». */
+    public function resumenPago(): string
+    {
+        return $this->metodo_pago_texto.', '.$this->estado_pago_texto.', '.$this->monto_texto;
     }
 
     public function estaPagada(): bool

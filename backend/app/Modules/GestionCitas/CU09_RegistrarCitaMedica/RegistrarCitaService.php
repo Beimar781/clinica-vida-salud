@@ -11,6 +11,7 @@ use App\Modules\GestionCitas\Compartido\AgendarCitaService;
 use App\Modules\GestionCitas\Compartido\Disponibilidad;
 use App\Modules\GestionCitas\Compartido\DisponibilidadService;
 use App\Modules\GestionCitas\Compartido\HorarioOcupadoException;
+use App\Modules\GestionCitas\Compartido\PagoCita;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
 use App\Services\BitacoraService;
 use App\Support\Texto;
@@ -70,20 +71,21 @@ class RegistrarCitaService
     }
 
     /**
-     * Valida las reglas, vuelve a verificar la disponibilidad dentro de una transacción y registra la cita.
+     * Valida las reglas, vuelve a verificar la disponibilidad dentro de una transacción y registra la cita con su pago:
+     * efectivo (Pendiente) o tarjeta ya autorizada en Stripe (se captura en la transacción y queda Pagado).
      *
      * @CC CCRegistrarCita (registrar) @CE CECita (crear)
      *
      * @throws HorarioOcupadoException
      * @throws ReglaCitaException
      */
-    public function registrar(Paciente $paciente, Especialidad $especialidad, Medico $medico, string $fecha, string $inicio, string $modalidad, ?string $motivo, Usuario $actor): Cita
+    public function registrar(Paciente $paciente, Especialidad $especialidad, Medico $medico, string $fecha, string $inicio, string $modalidad, ?string $motivo, Usuario $actor, ?PagoCita $pago = null): Cita
     {
-        $cita = $this->agendar->crear($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $actor->id);
+        $cita = $this->agendar->crear($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $actor->id, $pago);
 
         BitacoraService::registrar(
             'CITA_REGISTRADA', 'Cita',
-            "Cita {$cita->codigo} registrada: {$paciente->nombre_completo} con {$medico->nombre_completo} el ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' ('.$modalidad.')',
+            "Cita {$cita->codigo} registrada: {$paciente->nombre_completo} con {$medico->nombre_completo} el ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' ('.$modalidad.'); pago: '.$cita->resumenPago().($cita->referencia_pago ? ' ['.$cita->referencia_pago.']' : ''),
             $actor->id
         );
 

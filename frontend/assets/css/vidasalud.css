@@ -226,3 +226,7 @@ small, .texto-suave { color: var(--vs-muted); }
     .contenedor { padding: 0; }
     .tarjeta { box-shadow: none; }
 }
+
+/* Estado de pago de la cita (CU-09, CU-11, CU-13): Pendiente en ámbar, Pagado en verde */
+.pago-pendiente { background: #FDEFD0; color: #7A5000; border-color: #F0D49A; }
+.pago-pagado { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }

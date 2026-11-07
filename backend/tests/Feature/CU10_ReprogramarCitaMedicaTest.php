@@ -285,6 +285,19 @@ class CU10_ReprogramarCitaMedicaTest extends SistemaTestCase
         $this->assertSame('09:00', $cita->hora_inicio_corta);
     }
 
+    public function test_el_listado_de_citas_muestra_el_monto_y_el_estado_de_pago(): void
+    {
+        $pagada = $this->crearCita($this->medico, $this->paciente, $this->especialidad, $this->lunes, '09:00', '09:30');
+        $pagada->update(['monto' => 150, 'metodo_pago' => 'TARJETA', 'estado_pago' => 'PAGADO', 'referencia_pago' => 'pi_t_1', 'fecha_pago' => now()]);
+        $pendiente = $this->crearCita($this->medico, $this->crearPaciente(['nombres' => 'Otra', 'apellidos' => 'Tpendiente']), $this->especialidad, $this->lunes, '10:00', '10:30');
+        $pendiente->update(['monto' => 80]);
+
+        $this->actingAs($this->recepcion)->get(route('citas.index', ['q' => $pagada->codigo]))->assertOk()
+            ->assertSee('Monto')->assertSee('Bs 150,00')->assertSee('Pagado')->assertSee('Tarjeta');
+        $this->get(route('citas.index', ['q' => $pendiente->codigo]))->assertOk()
+            ->assertSee('Bs 80,00')->assertSee('Pendiente')->assertSee('Efectivo');
+    }
+
     /** Datos válidos para pasar la cita al otro lunes a las 10:00. */
     private function datos(array $cambios = []): array
     {

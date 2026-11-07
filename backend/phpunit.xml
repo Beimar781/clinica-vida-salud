@@ -28,6 +28,10 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="STRIPE_SECRET" value=""/>
+        <env name="STRIPE_MONEDA" value="bob"/>
+        <env name="TIPO_CAMBIO" value="1"/>
+        <env name="GEMINI_API_KEY" value=""/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

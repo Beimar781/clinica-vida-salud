@@ -12,7 +12,10 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use App\Support\Texto;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Client\Factory as HttpFactory;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -29,6 +32,25 @@ abstract class SistemaTestCase extends TestCase
 
     /** Contraseña de los usuarios de prueba creados con crearUsuario(). */
     public const CLAVE = 'Prueba1234';
+
+    /** Centavos de la última sesión de Checkout que el sistema pidió a la API fingida de Stripe. */
+    protected ?int $centavosStripe = null;
+
+    /** Estado que la API fingida de Stripe le da al PaymentIntent después de capturarlo o cancelarlo. */
+    protected ?string $estadoFinalStripe = null;
+
+    /** Token de la reserva que el sistema envió en metadata al crear la sesión de Checkout. */
+    protected ?string $tokenStripe = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Ninguna prueba sale a internet: toda petición HTTP debe estar simulada (Stripe, IA...), y el pago con
+        // tarjeta solo está disponible en las pruebas que lo activan con activarStripe().
+        Http::preventStrayRequests();
+        config(['services.stripe.secret' => null]);
+    }
 
     /**
      * Crea un usuario de prueba (correo «<nombre>@prueba.test») con los roles indicados.
@@ -119,6 +141,75 @@ abstract class SistemaTestCase extends TestCase
         return BloqueoAgenda::create($datos + [
             'registrado_por' => Usuario::where('nombre_usuario', 'admin')->value('id'),
         ]);
+    }
+
+    /** Activa el pago con tarjeta en la prueba (clave falsa; la API de Stripe se simula con fingirStripe()). */
+    protected function activarStripe(float $tipoCambio = 1, string $moneda = 'bob'): void
+    {
+        config(['services.stripe.secret' => 'sk_test_clave_de_prueba', 'vidasalud.tipo_cambio' => $tipoCambio, 'vidasalud.stripe_moneda' => $moneda]);
+    }
+
+    /**
+     * Simula la API REST de Stripe (nunca se llama a Stripe de verdad). Opciones:
+     *  'crear' (200) · 'consultar' (200) · 'captura' (200; otro valor = Stripe rechaza la captura) · 'estado' del PaymentIntent
+     *  ('requires_capture' = pago autorizado) · 'token' (por defecto el que envió el sistema al crear la sesión) · 'centavos' y
+     *  'moneda' (por defecto los que pidió el sistema) · 'sesion' y 'intento' (identificadores).
+     */
+    protected function fingirStripe(array $opciones = []): void
+    {
+        $o = $opciones + [
+            'sesion' => 'cs_test_123', 'intento' => 'pi_test_123', 'estado' => 'requires_capture', 'crear' => 200,
+            'consultar' => 200, 'captura' => 200, 'token' => null, 'centavos' => null, 'moneda' => null,
+        ];
+        // Cliente HTTP nuevo: un segundo fingirStripe() REEMPLAZA al anterior (Http::fake() acumularía simuladores y ganaría el primero).
+        Http::swap(new HttpFactory);
+        Http::preventStrayRequests();
+
+        $this->centavosStripe = null;
+        $this->estadoFinalStripe = null;
+        $this->tokenStripe = null;
+        $moneda = fn () => $o['moneda'] ?? config('vidasalud.stripe_moneda');
+
+        Http::fake(function (Request $peticion) use ($o, $moneda) {
+            $url = $peticion->url();
+            $error = fn (int $http) => Http::response(['error' => ['type' => 'api_error', 'code' => 'prueba', 'message' => 'Error simulado']], $http);
+
+            if ($peticion->method() === 'POST' && $url === 'https://api.stripe.com/v1/checkout/sessions') {
+                if ($o['crear'] !== 200) {
+                    return $error($o['crear']);
+                }
+                $this->centavosStripe = (int) $peticion['line_items'][0]['price_data']['unit_amount'];
+                $this->tokenStripe = $peticion['metadata']['token'] ?? null;
+
+                return Http::response(['id' => $o['sesion'], 'url' => 'https://checkout.stripe.com/c/pay/'.$o['sesion'], 'payment_intent' => null]);
+            }
+            if ($peticion->method() === 'GET' && str_starts_with($url, 'https://api.stripe.com/v1/checkout/sessions/'.$o['sesion'])) {
+                if ($o['consultar'] !== 200) {
+                    return $error($o['consultar']);
+                }
+
+                return Http::response([
+                    'id' => $o['sesion'], 'url' => null,
+                    'metadata' => ['token' => $o['token'] ?? $this->tokenStripe ?? 'sin-token'],
+                    'payment_intent' => ['id' => $o['intento'], 'status' => $this->estadoFinalStripe ?? $o['estado'], 'amount' => $o['centavos'] ?? $this->centavosStripe, 'currency' => $moneda()],
+                ]);
+            }
+            if ($peticion->method() === 'POST' && $url === 'https://api.stripe.com/v1/payment_intents/'.$o['intento'].'/capture') {
+                if ($o['captura'] !== 200) {
+                    return $error($o['captura']);
+                }
+                $this->estadoFinalStripe = 'succeeded';
+
+                return Http::response(['id' => $o['intento'], 'status' => 'succeeded']);
+            }
+            if ($peticion->method() === 'POST' && $url === 'https://api.stripe.com/v1/payment_intents/'.$o['intento'].'/cancel') {
+                $this->estadoFinalStripe = 'canceled';
+
+                return Http::response(['id' => $o['intento'], 'status' => 'canceled']);
+            }
+
+            return $error(404);
+        });
     }
 
     /** Cita de prueba (código «T-...»). */

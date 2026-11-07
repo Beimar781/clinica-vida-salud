@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\GestionCitas\Compartido\RetornoPagoController;
 use App\Modules\GestionCitas\CU08_ConsultarDisponibilidadHorarios\DisponibilidadController;
 use App\Modules\GestionCitas\CU09_RegistrarCitaMedica\RegistrarCitaController;
 use App\Modules\GestionCitas\CU10_ReprogramarCitaMedica\ReprogramarCitaController;
@@ -34,4 +35,11 @@ Route::middleware(['auth', 'rol:Paciente'])->prefix('reservas')->name('reservas.
     Route::get('/reservar', [ReservarCitaController::class, 'reservar'])->name('reservar');
     Route::post('/', [ReservarCitaController::class, 'guardar'])->name('guardar');
     Route::get('/{cita}/comprobante', [ReservarCitaController::class, 'comprobante'])->whereNumber('cita')->name('comprobante');
+});
+
+// Pago con tarjeta (Stripe Checkout alojado) de CU-09 y CU-11: regreso de la página de pago y pago cancelado.
+// Solo quien inició la reserva (Recepcionista o Paciente); todo se comprueba contra la sesión del servidor y la API de Stripe.
+Route::middleware(['auth', 'rol:Recepcionista,Paciente'])->prefix('pagos/stripe')->name('pagos.stripe.')->group(function () {
+    Route::get('/retorno', [RetornoPagoController::class, 'retorno'])->name('retorno');
+    Route::get('/cancelado', [RetornoPagoController::class, 'cancelado'])->name('cancelado');
 });

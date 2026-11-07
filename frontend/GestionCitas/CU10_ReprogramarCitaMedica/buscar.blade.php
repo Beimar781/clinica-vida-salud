@@ -39,19 +39,23 @@
                             <th>Horario</th>
                             <th>Modalidad</th>
                             <th>Estado</th>
+                            <th>Monto</th>
+                            <th>Pago</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($citas as $cita)
                             <tr>
-                                <td><strong>{{ $cita->codigo }}</strong></td>
+                                <td class="precio"><strong>{{ $cita->codigo }}</strong></td>
                                 <td>{{ $cita->paciente->nombre_completo }}<br><small class="texto-suave">CI {{ $cita->paciente->ci }}</small></td>
                                 <td>{{ $cita->medico->nombre_completo }}<br><small class="texto-suave">{{ $cita->especialidad->nombre }}</small></td>
                                 <td>{{ $cita->fecha->format('d/m/Y') }}</td>
                                 <td>{{ $cita->hora_inicio_corta }} – {{ $cita->hora_fin_corta }}</td>
                                 <td>{{ $cita->modalidad === 'VIRTUAL' ? 'Virtual' : 'Presencial' }}</td>
                                 <td><x-estado-cita :estado="$cita->estado" /></td>
+                                <td class="precio">{{ $cita->monto_texto }}</td>
+                                <td><x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->metodo_pago === 'TARJETA' ? 'Tarjeta' : 'Efectivo' }}</small></td>
                                 <td>
                                     @if ($servicio->puedeReprogramarse($cita))
                                         <a class="btn btn-primario btn-sm" href="{{ route('citas.reprogramar', $cita) }}"><x-icono nombre="calendario" /> Reprogramar</a>
@@ -61,7 +65,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="vacio">{{ $buscar === '' ? 'No hay citas vigentes.' : 'No se encontraron citas con «'.$buscar.'».' }}</td></tr>
+                            <tr><td colspan="10" class="vacio">{{ $buscar === '' ? 'No hay citas vigentes.' : 'No se encontraron citas con «'.$buscar.'».' }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

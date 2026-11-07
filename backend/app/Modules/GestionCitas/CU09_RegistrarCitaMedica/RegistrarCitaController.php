@@ -9,6 +9,8 @@ use App\Models\Medico;
 use App\Models\Paciente;
 use App\Modules\GestionCitas\Compartido\CatalogoMedicosService;
 use App\Modules\GestionCitas\Compartido\HorarioOcupadoException;
+use App\Modules\GestionCitas\Compartido\PagoCitaService;
+use App\Modules\GestionCitas\Compartido\PagoException;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -31,18 +33,28 @@ use Throwable;
  *     únicamente los horarios libres.                                     -> index() con RegistrarCitaService::calcularLibres()
  *  5. Selecciona un horario y la modalidad (presencial o virtual) e
  *     ingresa, opcionalmente, el motivo breve de la consulta.             -> formulario de registrar.blade.php
- *  6. Confirma el registro; el sistema vuelve a verificar la
- *     disponibilidad dentro de una transacción.                           -> guardar() -> RegistrarCitaService::registrar() -> AgendarCitaService::crear() (lockForUpdate)
- *  7. El sistema genera el código de la cita (CM-0001), registra la
- *     fecha de creación, la guarda con estado Programada y muestra el
- *     comprobante con el paciente, la especialidad, el médico, la
- *     fecha, el horario y el motivo.                                      -> guardar() redirige a comprobante()
+ *  6. Selecciona el método de pago: tarjeta (Stripe) o efectivo en la
+ *     clínica; el sistema muestra el monto según la especialidad o el
+ *     servicio.                                                           -> formulario de registrar.blade.php (Compartido/metodo-pago.blade.php)
+ *  7. Confirma el registro; el sistema vuelve a verificar la
+ *     disponibilidad dentro de una transacción y, si el pago es con
+ *     tarjeta, lo procesa mediante Stripe.                                -> guardar() -> RegistrarCitaService::registrar() -> AgendarCitaService::crear() (lockForUpdate).
+ *                                                                            Con tarjeta: PagoCitaService::iniciar() valida y redirige a Stripe Checkout;
+ *                                                                            al volver, RetornoPagoController::retorno() agenda y captura el pago en la misma transacción
+ *  8. El sistema genera el código de la cita (CM-0001), registra la
+ *     fecha de creación, la guarda con estado Programada y con el pago
+ *     Pagado (tarjeta) o Pendiente (efectivo), y muestra el comprobante
+ *     con el paciente, la especialidad, el médico, la fecha, el
+ *     horario, el motivo y el monto.                                      -> guardar() / retorno() redirigen a comprobante()
  *
  * Excepciones:
  *  - El horario fue ocupado por otro usuario mientras tanto: se rechaza la operación, se explica el motivo y se
  *    vuelven a mostrar los horarios libres (HorarioOcupadoException; también la restricción EXCLUDE de la base, 23P01).
  *  - La fecha es pasada, feriado o día sin atención, o el médico no atiende ese día: se indica y no se muestran horarios.
  *  - El paciente está inactivo o ya tiene una cita a esa misma hora: no se permite continuar (ReglaCitaException).
+ *  - Stripe rechaza el pago con tarjeta (o se cancela): la cita no se registra y se puede elegir otro método de pago
+ *    (PagoException; RetornoPagoController::cancelado()). Si el horario se ocupó durante el pago, se cancela la
+ *    autorización y no se cobra nada.
  *  - Un error interno al guardar: el usuario ve un mensaje claro sin detalles técnicos y el error queda en el registro.
  *
  * @CU CU-09 @RF RF09 @CI CIRegistrarCita @CC CCRegistrarCita @CE CEPaciente, CECita, CEMedico
@@ -54,6 +66,7 @@ class RegistrarCitaController extends Controller
     public function __construct(
         private readonly RegistrarCitaService $citas,
         private readonly CatalogoMedicosService $catalogo,
+        private readonly PagoCitaService $pagos,
     ) {}
 
     /**
@@ -80,6 +93,7 @@ class RegistrarCitaController extends Controller
             'medico' => $medico,
             'fecha' => $fecha,
             'resultado' => $paciente?->estado && $medico && $fecha ? $this->citas->calcularLibres($medico, $fecha) : null,
+            'tarjetaDisponible' => $this->pagos->disponible(),
         ]);
     }
 
@@ -97,16 +111,31 @@ class RegistrarCitaController extends Controller
         ]);
 
         try {
+            $paciente = Paciente::findOrFail($request->integer('paciente_id'));
+            $especialidad = Especialidad::findOrFail($request->integer('especialidad_id'));
+            $medico = Medico::findOrFail($request->integer('medico_id'));
+
+            // Tarjeta (Stripe): se valida todo y se manda a la página de pago; la cita se agenda al volver (RetornoPagoController).
+            if ($request->input('metodo_pago') === Cita::METODO_TARJETA) {
+                return redirect()->away($this->pagos->iniciar(
+                    'CU-09', $request->user(), $paciente, $especialidad, $medico,
+                    $request->string('fecha')->toString(), $request->string('hora_inicio')->toString(),
+                    $request->string('modalidad')->toString(), $request->input('motivo'),
+                ));
+            }
+
             $cita = $this->citas->registrar(
-                Paciente::findOrFail($request->integer('paciente_id')),
-                Especialidad::findOrFail($request->integer('especialidad_id')),
-                Medico::findOrFail($request->integer('medico_id')),
+                $paciente, $especialidad, $medico,
                 $request->string('fecha')->toString(),
                 $request->string('hora_inicio')->toString(),
                 $request->string('modalidad')->toString(),
                 $request->input('motivo'),
                 $request->user(),
             );
+        } catch (PagoException $e) {
+            $this->pagos->registrarFallo($request->user(), $e->getMessage());
+
+            return $volver->withInput()->with('error', $e->getMessage());
         } catch (HorarioOcupadoException|ReglaCitaException $e) {
             return $volver->withInput()->with('error', $e->getMessage());
         } catch (Throwable $e) {
@@ -120,7 +149,7 @@ class RegistrarCitaController extends Controller
     }
 
     /**
-     * Paso 7: comprobante con el paciente, la especialidad, el médico, la fecha, el horario y el motivo.
+     * Paso 8: comprobante con el paciente, la especialidad, el médico, la fecha, el horario, el motivo y el monto con su pago.
      *
      * @CI CIRegistrarCita (mostrarComprobante) @CE CECita
      */

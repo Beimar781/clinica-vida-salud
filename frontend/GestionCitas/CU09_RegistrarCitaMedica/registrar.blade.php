@@ -1,5 +1,5 @@
-{{-- @CU CU-09 @RF RF09 @CI CIRegistrarCita (buscarPaciente, mostrarHorarios, confirmarCita) @CC CCRegistrarCita @CE CEPaciente, CECita, CEMedico
-     Pasos 1 a 6 del flujo: RegistrarCitaController::index() busca al paciente, ofrece especialidad, médico y fecha y muestra los
+{{-- @CU CU-09 @RF RF09 @CI CIRegistrarCita (buscarPaciente, mostrarHorarios, confirmarCita) @CC CCRegistrarCita @CE CEPaciente, CECita, CEMedico, CEEspecialidad
+     Pasos 1 a 7 del flujo (el 6 es el método de pago y el monto): RegistrarCitaController::index() busca al paciente, ofrece especialidad, médico y fecha y muestra los
      horarios libres (CU-08); guardar() confirma. Si el horario ya fue ocupado, vuelve aquí con el aviso y los horarios actualizados. --}}
 @extends('layouts.app')
 
@@ -94,7 +94,7 @@
         <div class="tarjeta">
             <div class="tarjeta__encabezado">
                 <x-icono nombre="reloj" />
-                <h2>3. Horario · {{ $medico->nombre_completo }} · {{ \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $fecha)->format('d/m/Y') }}</h2>
+                <h2>3. Horario y pago · {{ $medico->nombre_completo }} · {{ \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $fecha)->format('d/m/Y') }}</h2>
             </div>
             <div class="tarjeta__cuerpo">
                 @if ($resultado->hayLibres())
@@ -112,8 +112,10 @@
                             <x-areatexto nombre="motivo" etiqueta="Motivo breve de la consulta (opcional)" maxlength="200" rows="2" />
                         </div>
 
+                        @include('gestioncitas::Compartido.metodo-pago')
+
                         <div class="acciones">
-                            <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Confirmar cita</button>
+                            <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> <span>Confirmar cita</span></button>
                         </div>
                     </form>
                 @else

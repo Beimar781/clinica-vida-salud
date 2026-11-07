@@ -60,9 +60,10 @@ class AccionesBitacora
         'CITA_REGISTRADA' => 'Cita registrada',
         'CITA_REPROGRAMADA' => 'Cita reprogramada',
         'CITA_RESERVADA' => 'Cita reservada en línea',
+        'PAGO_TARJETA_FALLIDO' => 'Pago con tarjeta no completado',
     ];
 
-    private const ROJAS = ['LOGIN_FALLIDO', 'LOGIN_BLOQUEADO', 'LOGIN_RECHAZADO', 'ACCESO_DENEGADO'];
+    private const ROJAS = ['LOGIN_FALLIDO', 'LOGIN_BLOQUEADO', 'LOGIN_RECHAZADO', 'ACCESO_DENEGADO', 'PAGO_TARJETA_FALLIDO'];
 
     /** Texto legible de la acción; una acción desconocida se muestra con su código en forma legible. */
     public static function etiqueta(string $accion): string

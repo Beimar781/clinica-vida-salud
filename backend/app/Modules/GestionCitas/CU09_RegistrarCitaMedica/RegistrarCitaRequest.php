@@ -29,6 +29,7 @@ class RegistrarCitaRequest extends FormRequest
             'hora_inicio' => ['required', 'date_format:H:i'],
             'modalidad' => ['required', Rule::in([Cita::PRESENCIAL, Cita::VIRTUAL])],
             'motivo' => ['nullable', 'string', 'max:200'],
+            'metodo_pago' => ['required', Rule::in([Cita::METODO_EFECTIVO, Cita::METODO_TARJETA])],
         ];
     }
 
@@ -48,6 +49,8 @@ class RegistrarCitaRequest extends FormRequest
             'modalidad.required' => 'Elija la modalidad (presencial o virtual).',
             'modalidad.in' => 'La modalidad debe ser presencial o virtual.',
             'motivo.max' => 'El motivo no puede superar los 200 caracteres.',
+            'metodo_pago.required' => 'Elija el método de pago: efectivo en la clínica o tarjeta.',
+            'metodo_pago.in' => 'El método de pago debe ser efectivo en la clínica o tarjeta.',
         ];
     }
 }

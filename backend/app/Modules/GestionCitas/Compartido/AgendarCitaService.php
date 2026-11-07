@@ -7,9 +7,12 @@ use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Paciente;
 use App\Support\Codigos;
+use App\Support\Dinero;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Núcleo transaccional de las citas, compartido por CU-09 (registrar), CU-10 (reprogramar) y CU-11 (reservar en
@@ -20,6 +23,11 @@ use Illuminate\Support\Facades\DB;
  *     de datos rechaza la segunda con SQLSTATE 23P01, que se captura FUERA de la transacción y se traduce a
  *     «El horario fue ocupado por otro usuario».
  *
+ * Pago (v30): la cita guarda el monto (precio de la especialidad o servicio en ese momento), el método y el estado del
+ * pago. Con efectivo queda PENDIENTE; con tarjeta el pago ya está autorizado en Stripe y se CAPTURA dentro de esta misma
+ * transacción, justo antes de confirmarla (después de insertar la cita, así un 23P01 o cualquier regla lo detiene antes
+ * de cobrar). Si algo falla, se CANCELA la autorización: no se cobra nada.
+ *
  * @CU CU-09, CU-10, CU-11 @RF RF09, RF10, RF11 @CC CCRegistrarCita (validarReglas, registrar), CCReprogramarCita (reprogramar), CCReservarCita (reservar) @CE CECita (estaLibre, crear, reprogramar), CEPaciente, CEMedico
  */
 class AgendarCitaService
@@ -28,7 +36,10 @@ class AgendarCitaService
 
     public const MENSAJE_PACIENTE_INACTIVO = 'El paciente está inactivo: no se le pueden registrar citas.';
 
-    public function __construct(private readonly DisponibilidadService $disponibilidad) {}
+    public function __construct(
+        private readonly DisponibilidadService $disponibilidad,
+        private readonly PagoStripeService $stripe,
+    ) {}
 
     /**
      * Reglas del negocio sobre quién y con quién: paciente activo, médico activo, especialidad activa y que el
@@ -55,7 +66,25 @@ class AgendarCitaService
     }
 
     /**
-     * Crea la cita en estado PROGRAMADA con su código CM-0001 (secuencia citas_codigo_seq).
+     * Comprueba, SIN bloquear ni guardar nada, que la cita se podría registrar ahora (reglas, horario libre y paciente
+     * sin otra cita a esa hora). Se usa antes de mandar a la persona a pagar con tarjeta: no tiene sentido cobrarle si ya
+     * se sabe que no habrá cita. La verificación definitiva sigue siendo la de crear(), dentro de la transacción.
+     *
+     * @CC CCRegistrarCita (validarReglas, calcularLibres) @CE CECita (estaLibre)
+     *
+     * @throws HorarioOcupadoException
+     * @throws ReglaCitaException
+     */
+    public function prevalidar(Paciente $paciente, Medico $medico, Especialidad $especialidad, string $fecha, string $inicio): void
+    {
+        $this->validarReglas($paciente->fresh(), $medico->fresh(), $especialidad->fresh());
+        $bloque = $this->verificarBloque($medico, $fecha, $inicio, null);
+        $this->verificarPaciente($paciente, $fecha, $bloque, null);
+    }
+
+    /**
+     * Crea la cita en estado PROGRAMADA con su código CM-0001 (secuencia citas_codigo_seq) y su pago: efectivo
+     * (PENDIENTE) o tarjeta ya autorizada en Stripe (se captura aquí y queda PAGADO con la referencia).
      *
      * @CC CCRegistrarCita (registrar), CCReservarCita (reservar) @CE CECita (estaLibre, crear)
      *
@@ -63,12 +92,14 @@ class AgendarCitaService
      * @param  string  $inicio  «HH:MM» (debe ser el inicio de un bloque libre)
      *
      * @throws HorarioOcupadoException si el horario ya no está libre
-     * @throws ReglaCitaException si una regla impide la cita
+     * @throws ReglaCitaException si una regla impide la cita (también PagoException si la captura falla)
      */
-    public function crear(Paciente $paciente, Medico $medico, Especialidad $especialidad, string $fecha, string $inicio, string $modalidad, ?string $motivo, ?int $creadoPor): Cita
+    public function crear(Paciente $paciente, Medico $medico, Especialidad $especialidad, string $fecha, string $inicio, string $modalidad, ?string $motivo, ?int $creadoPor, ?PagoCita $pago = null): Cita
     {
+        $pago ??= PagoCita::efectivo();
+
         try {
-            return DB::transaction(function () use ($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $creadoPor) {
+            return DB::transaction(function () use ($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $creadoPor, $pago) {
                 $medicoBloqueado = Medico::whereKey($medico->id)->lockForUpdate()->firstOrFail();
                 $paciente = $paciente->fresh();
                 $especialidad = $especialidad->fresh();
@@ -77,7 +108,13 @@ class AgendarCitaService
                 $bloque = $this->verificarBloque($medicoBloqueado, $fecha, $inicio, null);
                 $this->verificarPaciente($paciente, $fecha, $bloque, null);
 
-                return Cita::create([
+                // El monto es el precio de ESTE momento (copia: un cambio de precio posterior no altera la cita).
+                $monto = number_format((float) $especialidad->precio, 2, '.', '');
+                if ($pago->esTarjeta() && $pago->montoAutorizado !== $monto) {
+                    throw new PagoException('El precio de «'.$especialidad->nombre.'» cambió mientras se realizaba el pago ('.Dinero::formato($pago->montoAutorizado).' → '.Dinero::formato($monto).'). No se cobró nada: vuelva a elegir el horario.');
+                }
+
+                $cita = Cita::create([
                     'codigo' => Codigos::cita(),
                     'paciente_id' => $paciente->id,
                     'medico_id' => $medicoBloqueado->id,
@@ -88,12 +125,45 @@ class AgendarCitaService
                     'modalidad' => $modalidad,
                     'motivo' => filled($motivo) ? trim($motivo) : null,
                     'estado' => Cita::PROGRAMADA,
+                    'monto' => $monto,
+                    'metodo_pago' => $pago->metodo,
+                    'estado_pago' => $pago->esTarjeta() ? Cita::PAGO_PAGADO : Cita::PAGO_PENDIENTE,
+                    'referencia_pago' => $pago->referencia,
+                    'fecha_pago' => $pago->esTarjeta() ? now() : null,
                     'creado_por' => $creadoPor,
                 ]);
+
+                // Lo último antes de confirmar: si la captura falla se lanza PagoException y la transacción deshace la cita.
+                if ($pago->esTarjeta()) {
+                    $this->stripe->capturar($pago->referencia);
+                }
+
+                return $cita;
             });
         } catch (QueryException $e) {
             // Fuera de la transacción: dentro de ella PostgreSQL ya marcó la transacción como abortada.
+            $this->cancelarAutorizacion($pago);
             throw $this->traducir($e) ?? $e;
+        } catch (Throwable $e) {
+            $this->cancelarAutorizacion($pago);
+            throw $e;
+        }
+    }
+
+    /**
+     * Cancela la autorización de Stripe cuando la cita no se pudo registrar: no se cobra nada. Si la cancelación
+     * misma falla se deja en el log (la autorización vence sola en Stripe) y se sigue con el error original.
+     */
+    public function cancelarAutorizacion(PagoCita $pago): void
+    {
+        if (! $pago->esTarjeta() || blank($pago->referencia)) {
+            return;
+        }
+
+        try {
+            $this->stripe->cancelar($pago->referencia);
+        } catch (Throwable $e) {
+            Log::error('No se pudo cancelar la autorización del pago; vence sola en Stripe.', ['payment_intent' => $pago->referencia, 'error' => $e->getMessage()]);
         }
     }
 
@@ -209,7 +279,7 @@ class AgendarCitaService
     }
 
     /** SQLSTATE 23P01 (exclusion_violation): las restricciones EXCLUDE de la tabla citas rechazaron la superposición. */
-    private function traducir(QueryException $e): ?\Throwable
+    private function traducir(QueryException $e): ?Throwable
     {
         if ($e->getCode() !== '23P01') {
             return null;

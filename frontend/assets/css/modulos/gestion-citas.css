@@ -8,7 +8,7 @@
 
 /* ---------- Horarios libres ---------- */
 .bloques { display: flex; flex-wrap: wrap; gap: .5rem; }
-.bloque { display: inline-flex; }
+.bloque { display: inline-flex; position: relative; }
 .bloque input { position: absolute; opacity: 0; }
 .bloque span { padding: .45rem .9rem; border: 1px solid var(--vs-sky-200); background: var(--vs-white); border-radius: 8px; color: var(--vs-blue-900); font-weight: 600; cursor: pointer; }
 .bloque input:checked + span { background: var(--vs-blue-600); color: #fff; border-color: var(--vs-blue-600); }
@@ -32,3 +32,18 @@
 .medico-tarjeta:last-child { margin-bottom: 0; }
 .medico-tarjeta h3 { margin: 0 0 .25rem; }
 .medico-tarjeta p { margin: .15rem 0; }
+
+/* ---------- Método de pago y monto (CU-09, CU-11) ---------- */
+.grupo-pago { border: 0; padding: 0; margin: 1.1rem 0 0; min-width: 0; }
+.grupo-pago legend { padding: 0; margin-bottom: .4rem; }
+.monto-pagar { margin: 0 0 .6rem; font-size: 1.05rem; }
+.monto-pagar strong { color: var(--vs-blue-900); font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.pago-opciones { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.pago-opcion { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .9rem; background: var(--vs-sky-50); border: 1px solid var(--vs-border); border-radius: 8px; cursor: pointer; }
+.pago-opcion:hover { border-color: var(--vs-sky-400); }
+.pago-opcion:has(input:checked) { border-color: var(--vs-blue-600); background: var(--vs-sky-100); box-shadow: 0 0 0 2px var(--vs-sky-200); }
+.pago-opcion input { width: 1.1rem; height: 1.1rem; margin-top: .2rem; accent-color: var(--vs-blue-600); }
+.pago-opcion span { display: flex; flex-direction: column; }
+.pago-opcion small { color: var(--vs-muted); font-size: .8rem; }
+.pago-opcion--deshabilitada { opacity: .55; cursor: not-allowed; background: #F5F7F9; }
+.campo--error .pago-opcion { border-color: var(--vs-danger); }
