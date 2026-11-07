@@ -41,6 +41,9 @@
                 @unless (request()->is('login'))
                     <a class="btn btn-primario btn-sm" href="{{ url('/login') }}"><x-icono nombre="entrar" /> Iniciar sesión</a>
                 @endunless
+                @unless (request()->is('registro'))
+                    <a class="btn btn-secundario btn-sm" href="{{ route('registro.mostrar') }}"><x-icono nombre="paciente" /> Crear cuenta</a>
+                @endunless
             </div>
         @endauth
     </header>

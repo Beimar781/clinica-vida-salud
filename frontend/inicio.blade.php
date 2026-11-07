@@ -13,6 +13,7 @@
                     <a class="btn btn-primario" href="{{ url('/panel') }}"><x-icono nombre="panel" /> Ir al panel</a>
                 @else
                     <a class="btn btn-primario" href="{{ url('/login') }}"><x-icono nombre="entrar" /> Iniciar sesión</a>
+                    <a class="btn btn-secundario" href="{{ route('registro.mostrar') }}"><x-icono nombre="paciente" /> Crear cuenta</a>
                 @endauth
             </div>
         </div>

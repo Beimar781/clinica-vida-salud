@@ -19,6 +19,14 @@
 
     <x-aviso-sin-ficha />
 
+    {{-- CU-20 paso 6: quien acaba de registrarse recibe la invitación a completar su perfil (CU-21). --}}
+    @if (session('invitar_perfil') && \Illuminate\Support\Facades\Route::has('perfil.mostrar'))
+        <div class="aviso aviso-info" role="status">
+            <x-icono nombre="info" />
+            <span>Completa tu perfil con tu dirección, tu información médica y tu contacto de emergencia: <a href="{{ route('perfil.mostrar') }}">ir a Mi perfil</a>.</span>
+        </div>
+    @endif
+
     @forelse ($paquetes as $paquete)
         @if ($loop->first)<div class="paquetes">@endif
         <section class="paquete" aria-labelledby="paquete-{{ $paquete['clave'] }}">

@@ -29,6 +29,7 @@
                         <a class="btn btn-secundario" href="{{ route('inicio') }}">Volver al inicio</a>
                     </div>
                 </form>
+                <p class="texto-suave enlace-olvido">¿Aún no tienes cuenta? <a href="{{ route('registro.mostrar') }}">Crear cuenta</a></p>
             </div>
         </div>
     </section>

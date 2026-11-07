@@ -2,10 +2,17 @@
 
 use App\Modules\GestionPacientes\CU07_GestionarPacientes\PacientesController;
 use App\Modules\GestionPacientes\CU15_ConsultarHistorialCitasPaciente\HistorialController;
+use App\Modules\GestionPacientes\CU20_RegistrarsePaciente\RegistroController;
 use Illuminate\Support\Facades\Route;
 
 // Paquete P3 - Gestión de Pacientes (CU-07, CU-15, CU-20 y CU-21).
 // Este archivo se carga solo (ver AppServiceProvider::cargarModulos) dentro del grupo «web» (sesión, CSRF).
+
+// CU-20: Registrarse como paciente (pública, solo para quien no ha iniciado sesión; el envío tiene límite por equipo)
+Route::middleware('guest')->group(function () {
+    Route::get('/registro', [RegistroController::class, 'mostrar'])->middleware('throttle:30,1,registro-pantalla')->name('registro.mostrar');
+    Route::post('/registro', [RegistroController::class, 'guardar'])->middleware('throttle:10,1,registro-envio')->name('registro.guardar');
+});
 
 // CU-07: Gestionar pacientes (Recepcionista y Administrador)
 Route::middleware(['auth', 'rol:Recepcionista,Administrador'])->prefix('pacientes')->name('pacientes.')->group(function () {

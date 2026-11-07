@@ -57,6 +57,8 @@ class AccionesBitacora
         'PACIENTE_EDITADO' => 'Paciente editado',
         'PACIENTE_ACTIVADO' => 'Paciente activado',
         'PACIENTE_DESACTIVADO' => 'Paciente desactivado',
+        'PACIENTE_REGISTRADO' => 'Paciente registrado desde la web',
+        'FICHA_VINCULADA' => 'Cuenta vinculada a la ficha del paciente',
         'CITA_REGISTRADA' => 'Cita registrada',
         'CITA_REPROGRAMADA' => 'Cita reprogramada',
         'CITA_RESERVADA' => 'Cita reservada en línea',
