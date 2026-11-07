@@ -12,6 +12,8 @@ use App\Modules\GestionCitas\Compartido\CatalogoMedicosService;
 use App\Modules\GestionCitas\Compartido\Disponibilidad;
 use App\Modules\GestionCitas\Compartido\DisponibilidadService;
 use App\Modules\GestionCitas\Compartido\HorarioOcupadoException;
+use App\Modules\GestionCitas\Compartido\PagoCita;
+use App\Modules\GestionCitas\Compartido\PagoCitaService;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
 use App\Services\BitacoraService;
 use Illuminate\Support\Collection;
@@ -35,6 +37,7 @@ class ReservarCitaService
         private readonly DisponibilidadService $disponibilidad,
         private readonly AgendarCitaService $agendar,
         private readonly CatalogoMedicosService $catalogo,
+        private readonly PagoCitaService $pagos,
     ) {}
 
     /**
@@ -85,28 +88,55 @@ class ReservarCitaService
     }
 
     /**
-     * Reserva la cita a nombre del paciente de la cuenta: vuelve a verificar la disponibilidad dentro de una transacción.
+     * Con tarjeta: valida la reserva y crea la sesión de pago de Stripe (la cita se registra al volver del pago). Los avisos
+     * salen en primera persona, igual que al reservar con efectivo.
+     *
+     * @CC CCReservarCita (reservar) @CE CECita (estaLibre)
+     *
+     * @return string URL de la página de pago de Stripe
+     *
+     * @throws HorarioOcupadoException
+     * @throws ReglaCitaException
+     */
+    public function iniciarPago(Paciente $paciente, Especialidad $especialidad, Medico $medico, string $fecha, string $inicio, string $modalidad, ?string $motivo, Usuario $actor): string
+    {
+        try {
+            return $this->pagos->iniciar('CU-11', $actor, $paciente, $especialidad, $medico, $fecha, $inicio, $modalidad, $motivo);
+        } catch (ReglaCitaException $e) {
+            throw $this->paraElPaciente($e);
+        }
+    }
+
+    /** Los mensajes de la recepción hablan del paciente en tercera persona; al paciente se le habla en primera. */
+    private function paraElPaciente(ReglaCitaException $e): ReglaCitaException
+    {
+        return match ($e->getMessage()) {
+            AgendarCitaService::MENSAJE_PACIENTE_OCUPADO => new ReglaCitaException('Ya tiene una cita activa a esa hora. Elija otro horario.'),
+            AgendarCitaService::MENSAJE_PACIENTE_INACTIVO => new ReglaCitaException(self::MENSAJE_FICHA_INACTIVA),
+            default => $e,
+        };
+    }
+
+    /**
+     * Reserva la cita a nombre del paciente de la cuenta: vuelve a verificar la disponibilidad dentro de una transacción y
+     * guarda su pago (efectivo Pendiente, o tarjeta ya autorizada en Stripe que se captura en la misma transacción).
      *
      * @CC CCReservarCita (reservar) @CE CECita (crear)
      *
      * @throws HorarioOcupadoException
      * @throws ReglaCitaException con el mensaje en primera persona para el paciente
      */
-    public function reservar(Paciente $paciente, Especialidad $especialidad, Medico $medico, string $fecha, string $inicio, string $modalidad, ?string $motivo, Usuario $actor): Cita
+    public function reservar(Paciente $paciente, Especialidad $especialidad, Medico $medico, string $fecha, string $inicio, string $modalidad, ?string $motivo, Usuario $actor, ?PagoCita $pago = null): Cita
     {
         try {
-            $cita = $this->agendar->crear($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $actor->id);
+            $cita = $this->agendar->crear($paciente, $medico, $especialidad, $fecha, $inicio, $modalidad, $motivo, $actor->id, $pago);
         } catch (ReglaCitaException $e) {
-            throw match ($e->getMessage()) {
-                AgendarCitaService::MENSAJE_PACIENTE_OCUPADO => new ReglaCitaException('Ya tiene una cita activa a esa hora. Elija otro horario.'),
-                AgendarCitaService::MENSAJE_PACIENTE_INACTIVO => new ReglaCitaException(self::MENSAJE_FICHA_INACTIVA),
-                default => $e,
-            };
+            throw $this->paraElPaciente($e);
         }
 
         BitacoraService::registrar(
             'CITA_RESERVADA', 'Cita',
-            "Cita {$cita->codigo} reservada en línea por {$paciente->nombre_completo} con {$medico->nombre_completo} el ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' ('.$modalidad.')',
+            "Cita {$cita->codigo} reservada en línea por {$paciente->nombre_completo} con {$medico->nombre_completo} el ".$cita->fecha->format('d/m/Y').' '.$cita->hora_inicio_corta.' ('.$modalidad.'); pago: '.$cita->resumenPago().($cita->referencia_pago ? ' ['.$cita->referencia_pago.']' : ''),
             $actor->id
         );
 

@@ -72,6 +72,20 @@ php artisan serve
 
 El sistema queda disponible en http://localhost:8000. No necesita Node ni conexión a internet: los estilos, íconos y scripts están en `frontend/assets` y los sirve el propio servidor de Laravel.
 
+### Pago con tarjeta (opcional)
+
+Al registrar o reservar una cita se puede pagar en efectivo en la clínica (siempre disponible) o con tarjeta mediante Stripe Checkout, en modo de prueba. Para activar la tarjeta, en `backend/.env` ponga la clave secreta de prueba de https://dashboard.stripe.com/test/apikeys (la que empieza con `sk_test_`); sin ella la opción de tarjeta aparece deshabilitada y el efectivo sigue funcionando:
+
+```
+STRIPE_SECRET=sk_test_...
+STRIPE_MONEDA=bob    # los montos están en bolivianos; si la cuenta de Stripe rechazara BOB: usd
+TIPO_CAMBIO=1        # con STRIPE_MONEDA=usd use 6.96
+```
+
+Tarjetas de prueba de Stripe: `4242 4242 4242 4242` (aprobada) y `4000 0000 0000 0002` (rechazada), con cualquier fecha futura y cualquier CVC. El sistema nunca ve ni guarda datos de tarjeta: la persona los escribe en la página de Stripe y aquí solo queda la referencia del pago.
+
+En Windows, si al pagar con tarjeta aparece el aviso «No se pudo procesar el pago con tarjeta» y en `backend/storage/logs/laravel.log` dice `cURL error 60: SSL certificate`, PHP no tiene los certificados raíz: descargue `cacert.pem` de https://curl.se/ca/cacert.pem y en su `php.ini` configure `curl.cainfo` y `openssl.cafile` con la ruta de ese archivo.
+
 ## Usuarios de demostración
 
 `php artisan migrate --seed` crea un usuario por rol. Todas las cuentas de demostración, incluida la del administrador, usan la contraseña `Demo1234*`. Si se define `ADMIN_PASSWORD` (en `backend/.env` o en las variables del servicio), el administrador usa esa contraseña en lugar de `Demo1234*`.

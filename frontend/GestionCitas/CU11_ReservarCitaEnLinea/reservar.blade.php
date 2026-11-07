@@ -1,5 +1,5 @@
 {{-- @CU CU-11 @RF RF11 @CI CIReservarCita (mostrarHorarios, confirmarReserva) @CC CCReservarCita @CE CECita, CEMedico
-     Pasos 3 a 5 del flujo: ReservarCitaController::reservar() muestra al médico elegido, la fecha y los horarios libres (CU-08);
+     Pasos 3 a 6 del flujo (el 6 es el método de pago y el monto): ReservarCitaController::reservar() muestra al médico elegido, la fecha y los horarios libres (CU-08);
      guardar() confirma. Si el horario ya fue ocupado, vuelve aquí con el aviso y los horarios actualizados. --}}
 @extends('layouts.app')
 
@@ -46,7 +46,7 @@
         <div class="tarjeta">
             <div class="tarjeta__encabezado">
                 <x-icono nombre="reloj" />
-                <h2>Horarios · {{ \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $fecha)->format('d/m/Y') }}</h2>
+                <h2>Horarios y pago · {{ \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $fecha)->format('d/m/Y') }}</h2>
             </div>
             <div class="tarjeta__cuerpo">
                 @if ($resultado->hayLibres())
@@ -63,8 +63,10 @@
                             <x-areatexto nombre="motivo" etiqueta="Motivo de la consulta (opcional)" maxlength="200" rows="2" />
                         </div>
 
+                        @include('gestioncitas::Compartido.metodo-pago')
+
                         <div class="acciones">
-                            <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Confirmar reserva</button>
+                            <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> <span>Confirmar reserva</span></button>
                         </div>
                     </form>
                 @else

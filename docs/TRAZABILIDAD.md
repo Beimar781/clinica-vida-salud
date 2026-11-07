@@ -16,9 +16,9 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 25 aprobadas (5 filas del 8.1 + 20 de reglas internas) |
 | CU-07 | Gestionar pacientes | I | RF07 | — | Hecho (C-I) | `GestionPacientes/CU07_GestionarPacientes` | 5 | 19 aprobadas |
 | CU-08 | Consultar disponibilidad de horarios | I | RF08 | — | Hecho (C-I) | `GestionCitas/CU08_ConsultarDisponibilidadHorarios` | 5 | 14 aprobadas |
-| CU-09 | Registrar cita médica | I | RF09 | 2 | Por ajustar | `GestionCitas/CU09_RegistrarCitaMedica` | 8 | 17 + 1 concurrencia (previas, ampliar) |
+| CU-09 | Registrar cita médica | I | RF09 | 2 | Hecho (v30, 07/11) | `GestionCitas/CU09_RegistrarCitaMedica` | 8 | 41 aprobadas (8 filas del 8.1 + 32 de reglas internas y pago + 1 concurrencia) |
 | CU-10 | Reprogramar cita médica | I | RF10 | 3 | Por ajustar | `GestionCitas/CU10_ReprogramarCitaMedica` | 6 | 17 (previas, ampliar) |
-| CU-11 | Reservar cita en línea | I | RF11 | 2 | Por ajustar | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 16 (previas, ampliar) |
+| CU-11 | Reservar cita en línea | I | RF11 | 2 | Hecho (v30, 07/11) | `GestionCitas/CU11_ReservarCitaEnLinea` | 7 | 33 aprobadas (7 filas del 8.1 + 26 de reglas internas y pago) |
 | CU-12 | Cancelar cita médica | II | RF12 | 4 | Pendiente | `GestionCitas/CU12_CancelarCitaMedica` | 4 | — |
 | CU-13 | Controlar asistencia y estados de cita | II | RF13 | 4 | Pendiente | `GestionCitas/CU13_ControlarAsistenciaEstadosCita` | 6 | — |
 | CU-14 | Consultar agenda médica | II | RF14 | 4 | Pendiente | `GestionCitas/CU14_ConsultarAgendaMedica` | 4 | — |
@@ -41,7 +41,7 @@ Referencia del Ciclo I (24/10): 250 pruebas, 1363 aserciones, todas aprobadas. L
 |---|---|---|
 | Migraciones v30 (`tipo`, `precio`, `registrado_por`, datos de pago en `citas`) y `schema.sql` nuevo | 0 | Hecho (07/11) |
 | Datos de demostración v30 (precios, laboratorio, enfermería, ficha sin cuenta, citas por estado y pago) | 0 | Hecho (07/11) |
-| Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | 2 | Pendiente |
+| Pago con tarjeta (Stripe Checkout, captura manual) y efectivo | 2 | Hecho (07/11): probado también con Stripe real en modo de prueba |
 | Proveedor de IA para el resumen de reportes | 7 | Pendiente |
 | Programador y comando `citas:enviar-recordatorios`; servicio cron en Railway | 8, 10 | Pendiente |
 | Auditoría documento ↔ código y prueba general | 9 | Pendiente |
@@ -61,6 +61,19 @@ Referencia del Ciclo I (24/10): 250 pruebas, 1363 aserciones, todas aprobadas. L
 | Seeders idempotentes | `EspecialidadSeeder`, `MedicoSeeder`, `PacienteSeeder`, `CitaSeeder` | datos base y demostración del v30 | `DespliegueTest` (17) |
 
 Resultado: `BaseDatosTest` 17 aprobadas (64 aserciones), `DespliegueTest` 17 aprobadas (76); CU-04 a CU-11 siguen en verde (125 pruebas, 767 aserciones).
+
+### Pago de citas (Prompt 2, 07/11/2026)
+
+| Elemento | Archivo | Uso | Prueba |
+|---|---|---|---|
+| Cliente de la API de Stripe (Checkout alojado, captura manual) | `GestionCitas/Compartido/PagoStripeService.php`, `SesionPago.php`, `PagoException.php` | crear sesión, consultarla, capturar y cancelar la autorización | `PagosTest` (14) |
+| Orquestación del pago | `Compartido/PagoCitaService.php`, `PagoCita.php` | validar, guardar la reserva en la sesión, verificar el retorno | CU-09 y CU-11 |
+| Núcleo transaccional | `Compartido/AgendarCitaService.php` (`prevalidar`, `crear` con pago) | lock del médico + captura dentro de la transacción; cancela si algo falla | CU-09, CU-11 |
+| Retorno de Stripe | `Compartido/RetornoPagoController.php`, rutas `GET /pagos/stripe/retorno` y `/pagos/stripe/cancelado` | agenda al volver del pago o devuelve al formulario | CU-09, CU-11 |
+| Pantallas | `Compartido/metodo-pago.blade.php`, `Compartido/comprobante-datos.blade.php`, `components/estado-pago.blade.php` | método de pago, monto, comprobante y etiqueta Pendiente/Pagado | navegador |
+| Bitácora | `CITA_REGISTRADA` / `CITA_RESERVADA` con método, estado y monto; `PAGO_TARJETA_FALLIDO` | auditoría del cobro | CU-09, CU-11, CU-19 |
+
+Resultado: CU-09 41, CU-11 33, `PagosTest` 14, CU-10 18, CU-19 23 aprobadas. Conjunto CU-04 a CU-11 + base + despliegue + CU-19 + pagos: 255 pruebas, todas aprobadas.
 
 ## 3. Prueba general (la llena el Prompt 9)
 

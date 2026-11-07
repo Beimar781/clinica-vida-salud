@@ -8,6 +8,8 @@ use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Modules\GestionCitas\Compartido\CatalogoMedicosService;
 use App\Modules\GestionCitas\Compartido\HorarioOcupadoException;
+use App\Modules\GestionCitas\Compartido\PagoCitaService;
+use App\Modules\GestionCitas\Compartido\PagoException;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -27,15 +29,25 @@ use Throwable;
  *  3. Selecciona el médico y la fecha.                                    -> reservar() (pantalla reservar.blade.php)
  *  4. El sistema consulta la disponibilidad (CU-08) y muestra
  *     únicamente los horarios libres.                                     -> reservar() con ReservarCitaService::calcularLibres()
- *  5. Selecciona un horario y la modalidad (presencial o virtual),
- *     ingresa opcionalmente el motivo y confirma.                         -> formulario de reservar.blade.php (ReservarCitaRequest)
- *  6. El sistema vuelve a verificar la disponibilidad dentro de una
- *     transacción, genera el código, guarda la cita en estado
- *     Programada y muestra el comprobante.                                -> guardar() -> ReservarCitaService::reservar() -> AgendarCitaService::crear() (lockForUpdate); redirige a comprobante()
+ *  5. Selecciona un horario y la modalidad (presencial o virtual) e
+ *     ingresa opcionalmente el motivo.                                    -> formulario de reservar.blade.php (ReservarCitaRequest)
+ *  6. Elige el método de pago: tarjeta mediante Stripe o efectivo en la
+ *     clínica, y confirma.                                                -> formulario de reservar.blade.php (Compartido/metodo-pago.blade.php)
+ *  7. El sistema vuelve a verificar la disponibilidad dentro de una
+ *     transacción y, si el pago es con tarjeta, lo procesa mediante
+ *     Stripe.                                                             -> guardar() -> ReservarCitaService::reservar() -> AgendarCitaService::crear() (lockForUpdate).
+ *                                                                            Con tarjeta: PagoCitaService::iniciar() valida y redirige a Stripe Checkout;
+ *                                                                            al volver, RetornoPagoController::retorno() agenda y captura el pago en la misma transacción
+ *  8. El sistema genera el código, guarda la cita en estado Programada
+ *     con el pago Pagado (tarjeta) o Pendiente (efectivo) y muestra el
+ *     comprobante.                                                        -> guardar() / retorno() redirigen a comprobante()
  *
  * Excepciones:
  *  - El horario fue ocupado mientras tanto: se rechaza la reserva y se vuelven a mostrar los horarios libres.
  *  - El paciente ya tiene una cita a esa misma hora: no se permite la reserva.
+ *  - Stripe rechaza el pago o el paciente lo cancela: la cita no se registra y puede elegir otro método de pago
+ *    (PagoException; RetornoPagoController::cancelado()). Si el horario se ocupó durante el pago, se cancela la
+ *    autorización y no se cobra nada.
  *  - La fecha es pasada, feriado o día sin atención, o el médico no atiende ese día: se indica y no se muestran horarios.
  *  - Ningún médico coincide con la especialidad y la ubicación elegidas: se indica y se permite cambiar la búsqueda.
  *
@@ -48,6 +60,7 @@ class ReservarCitaController extends Controller
     public function __construct(
         private readonly ReservarCitaService $reservas,
         private readonly CatalogoMedicosService $catalogo,
+        private readonly PagoCitaService $pagos,
     ) {}
 
     /**
@@ -94,6 +107,7 @@ class ReservarCitaController extends Controller
             'medico' => $medico,
             'fecha' => $fecha,
             'resultado' => ! $impedimento && $fecha ? $this->reservas->calcularLibres($medico, $fecha) : null,
+            'tarjetaDisponible' => $this->pagos->disponible(),
         ]);
     }
 
@@ -116,16 +130,30 @@ class ReservarCitaController extends Controller
         }
 
         try {
+            $especialidad = Especialidad::findOrFail($request->integer('especialidad_id'));
+            $medico = Medico::findOrFail($request->integer('medico_id'));
+
+            // Tarjeta (Stripe): se valida todo y se manda a la página de pago; la cita se agenda al volver (RetornoPagoController).
+            if ($request->input('metodo_pago') === Cita::METODO_TARJETA) {
+                return redirect()->away($this->reservas->iniciarPago(
+                    $paciente, $especialidad, $medico,
+                    $request->string('fecha')->toString(), $request->string('hora_inicio')->toString(),
+                    $request->string('modalidad')->toString(), $request->input('motivo'), $request->user(),
+                ));
+            }
+
             $cita = $this->reservas->reservar(
-                $paciente,
-                Especialidad::findOrFail($request->integer('especialidad_id')),
-                Medico::findOrFail($request->integer('medico_id')),
+                $paciente, $especialidad, $medico,
                 $request->string('fecha')->toString(),
                 $request->string('hora_inicio')->toString(),
                 $request->string('modalidad')->toString(),
                 $request->input('motivo'),
                 $request->user(),
             );
+        } catch (PagoException $e) {
+            $this->pagos->registrarFallo($request->user(), $e->getMessage());
+
+            return $volver->withInput()->with('error', $e->getMessage());
         } catch (HorarioOcupadoException|ReglaCitaException $e) {
             return $volver->withInput()->with('error', $e->getMessage());
         } catch (Throwable $e) {
@@ -138,7 +166,7 @@ class ReservarCitaController extends Controller
     }
 
     /**
-     * Paso 6: comprobante de la reserva. Cada paciente solo ve los de sus propias citas.
+     * Paso 8: comprobante de la reserva con el monto y su pago. Cada paciente solo ve los de sus propias citas.
      *
      * @CI CIReservarCita (mostrarComprobante) @CE CECita
      */
