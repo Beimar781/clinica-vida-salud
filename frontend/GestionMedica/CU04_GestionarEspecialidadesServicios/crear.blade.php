@@ -2,7 +2,7 @@
      Pasos 3 a 5 del flujo: EspecialidadController::crear() muestra el formulario y guardar() lo procesa. --}}
 @extends('layouts.app')
 
-@section('titulo', 'Nueva especialidad')
+@section('titulo', 'Nueva especialidad o servicio')
 
 @push('estilos')
     <link rel="stylesheet" href="@recurso('css/modulos/gestion-medica.css')">
@@ -10,19 +10,19 @@
 
 @section('contenido')
     <div class="encabezado-pagina">
-        <h1>Nueva especialidad</h1>
+        <h1>Nueva especialidad o servicio</h1>
         <a class="btn btn-secundario" href="{{ route('especialidades.index') }}">Volver al listado</a>
     </div>
 
     <div class="tarjeta">
-        <div class="tarjeta__encabezado"><x-icono nombre="mas" /><h2>Datos de la especialidad</h2></div>
+        <div class="tarjeta__encabezado"><x-icono nombre="mas" /><h2>Datos de la especialidad o servicio</h2></div>
         <div class="tarjeta__cuerpo">
             <form method="POST" action="{{ route('especialidades.guardar') }}" data-validar novalidate>
                 @csrf
-                @include('gestionmedica::CU04_GestionarEspecialidadesMedicas.campos')
+                @include('gestionmedica::CU04_GestionarEspecialidadesServicios.campos')
 
                 <div class="acciones">
-                    <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Registrar especialidad</button>
+                    <button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Registrar</button>
                     <a class="btn btn-secundario" href="{{ route('especialidades.index') }}">Cancelar</a>
                 </div>
             </form>

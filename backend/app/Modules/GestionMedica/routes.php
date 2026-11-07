@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\GestionMedica\CU04_GestionarEspecialidadesMedicas\EspecialidadController;
+use App\Modules\GestionMedica\CU04_GestionarEspecialidadesServicios\EspecialidadController;
 use App\Modules\GestionMedica\CU05_GestionarMedicos\MedicosController;
 use App\Modules\GestionMedica\CU06_GestionarHorariosDiasSinAtencion\DiasSinAtencionController;
 use App\Modules\GestionMedica\CU06_GestionarHorariosDiasSinAtencion\HorariosController;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'rol:Administrador'])->group(function () {
 
-    // CU-04: Gestionar especialidades médicas
+    // CU-04: Gestionar especialidades y servicios
     Route::prefix('especialidades')->name('especialidades.')->group(function () {
         Route::get('/', [EspecialidadController::class, 'index'])->name('index');
         Route::get('/crear', [EspecialidadController::class, 'crear'])->name('crear');

@@ -28,6 +28,10 @@
     function mensajeDe(campo) {
         if (campo.validity.valueMissing) { return 'Este campo es obligatorio.'; }
         if (campo.validity.typeMismatch) { return 'El formato no es válido.'; }
+        if (campo.validity.badInput) { return 'Ingrese un número válido.'; }
+        if (campo.validity.rangeUnderflow) { return 'El valor no puede ser menor que ' + campo.min + '.'; }
+        if (campo.validity.rangeOverflow) { return 'El valor no puede ser mayor que ' + campo.max + '.'; }
+        if (campo.validity.stepMismatch) { return 'Use como máximo dos decimales.'; }
         if (campo.validity.tooShort) { return 'Debe tener al menos ' + campo.minLength + ' caracteres.'; }
         if (campo.validity.patternMismatch) { return campo.getAttribute('data-mensaje') || 'El formato no es válido.'; }
         return campo.validationMessage;

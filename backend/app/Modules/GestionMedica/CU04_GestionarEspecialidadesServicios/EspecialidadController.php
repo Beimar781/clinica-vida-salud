@@ -1,21 +1,25 @@
 <?php
 
-namespace App\Modules\GestionMedica\CU04_GestionarEspecialidadesMedicas;
+namespace App\Modules\GestionMedica\CU04_GestionarEspecialidadesServicios;
 
 use App\Http\Controllers\Controller;
 use App\Models\Especialidad;
+use App\Support\Dinero;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * CU-04: Gestionar especialidades médicas (paquete P2 Gestión Médica, RF04). Solo el Administrador.
+ * CU-04: Gestionar especialidades y servicios (paquete P2 Gestión Médica, RF04). Solo el Administrador.
  *
  * Flujo de suceso (ficha 4.3 del documento):
- *  1. El administrador accede a la sección «Especialidades».          -> index() (la ruta exige el rol Administrador)
- *  2. El sistema muestra el listado de especialidades con su estado.   -> index() con EspecialidadService::listar()
+ *  1. El administrador accede a la sección «Especialidades y
+ *     servicios».                                                      -> index() (la ruta exige el rol Administrador)
+ *  2. El sistema muestra el listado de especialidades y servicios
+ *     con su precio y su estado.                                       -> index() con EspecialidadService::listar()
  *  3. Selecciona registrar una nueva o editar una existente.           -> crear() / editar()
- *  4. Ingresa el nombre y, opcionalmente, la descripción.              -> pantallas crear.blade.php, editar.blade.php y campos.blade.php
+ *  4. Ingresa el nombre, el tipo (consulta médica, laboratorio o
+ *     enfermería), el precio y, opcionalmente, la descripción.         -> pantallas crear.blade.php, editar.blade.php y campos.blade.php
  *  5. El sistema valida los datos y verifica que el nombre
  *     normalizado no exista.                                           -> EspecialidadRequest (usa EspecialidadService::existeNombre())
  *  6. El sistema guarda la especialidad y muestra el listado
@@ -34,15 +38,18 @@ class EspecialidadController extends Controller
     public function __construct(private readonly EspecialidadService $especialidades) {}
 
     /**
-     * Pasos 1 y 2: listado con su estado (y búsqueda por nombre).
+     * Pasos 1 y 2: listado con tipo, precio y estado (búsqueda por nombre y filtro por tipo).
      *
      * @CI CIEspecialidad (mostrarListado) @CE CEEspecialidad
      */
     public function index(Request $request): View
     {
-        return view('gestionmedica::CU04_GestionarEspecialidadesMedicas.index', [
-            'especialidades' => $this->especialidades->listar($request->query('q')),
+        $tipo = (string) $request->query('tipo');
+
+        return view('gestionmedica::CU04_GestionarEspecialidadesServicios.index', [
+            'especialidades' => $this->especialidades->listar($request->query('q'), $tipo),
             'buscar' => (string) $request->query('q'),
+            'tipo' => array_key_exists($tipo, Especialidad::TIPOS) ? $tipo : '',
         ]);
     }
 
@@ -53,7 +60,7 @@ class EspecialidadController extends Controller
      */
     public function crear(): View
     {
-        return view('gestionmedica::CU04_GestionarEspecialidadesMedicas.crear');
+        return view('gestionmedica::CU04_GestionarEspecialidadesServicios.crear');
     }
 
     /**
@@ -65,7 +72,10 @@ class EspecialidadController extends Controller
     {
         $especialidad = $this->especialidades->guardar($request->validated(), $request->user());
 
-        return redirect()->route('especialidades.index')->with('exito', "Especialidad {$especialidad->nombre} registrada correctamente.");
+        return redirect()->route('especialidades.index')->with(
+            'exito',
+            "{$especialidad->nombre} registrada correctamente ({$especialidad->tipo_texto}, ".Dinero::formato($especialidad->precio).').'
+        );
     }
 
     /**
@@ -75,7 +85,7 @@ class EspecialidadController extends Controller
      */
     public function editar(Especialidad $especialidad): View
     {
-        return view('gestionmedica::CU04_GestionarEspecialidadesMedicas.editar', ['especialidad' => $especialidad]);
+        return view('gestionmedica::CU04_GestionarEspecialidadesServicios.editar', ['especialidad' => $especialidad]);
     }
 
     /**
@@ -85,9 +95,12 @@ class EspecialidadController extends Controller
      */
     public function actualizar(EspecialidadRequest $request, Especialidad $especialidad): RedirectResponse
     {
-        $this->especialidades->actualizar($especialidad, $request->validated(), $request->user());
+        $especialidad = $this->especialidades->actualizar($especialidad, $request->validated(), $request->user());
 
-        return redirect()->route('especialidades.index')->with('exito', "Especialidad {$especialidad->nombre} actualizada correctamente.");
+        return redirect()->route('especialidades.index')->with(
+            'exito',
+            "{$especialidad->nombre} actualizada correctamente ({$especialidad->tipo_texto}, ".Dinero::formato($especialidad->precio).'). Las citas ya registradas conservan su monto.'
+        );
     }
 
     /**
@@ -99,11 +112,11 @@ class EspecialidadController extends Controller
     {
         $this->especialidades->desactivar($especialidad, $request->user());
 
-        return back()->with('exito', "Especialidad {$especialidad->nombre} desactivada. Deja de ofrecerse para nuevas citas; las citas históricas se conservan.");
+        return back()->with('exito', "{$especialidad->nombre} desactivada. Deja de ofrecerse para nuevas citas; las citas históricas se conservan.");
     }
 
     /**
-     * Vuelve a ofrecer una especialidad desactivada.
+     * Vuelve a ofrecer una especialidad o servicio desactivado.
      *
      * @CI CIEspecialidad (mostrarResultado) @CC CCEspecialidad (actualizar) @CE CEEspecialidad (actualizar)
      */
@@ -111,6 +124,6 @@ class EspecialidadController extends Controller
     {
         $this->especialidades->activar($especialidad, $request->user());
 
-        return back()->with('exito', "Especialidad {$especialidad->nombre} activada.");
+        return back()->with('exito', "{$especialidad->nombre} activada: vuelve a ofrecerse para nuevas citas.");
     }
 }

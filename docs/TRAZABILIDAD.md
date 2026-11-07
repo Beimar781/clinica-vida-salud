@@ -11,7 +11,7 @@ Estados: **Hecho (C-I)** = implementado en el Ciclo I y sin cambios en el v30 ·
 | CU-01 | Iniciar sesión | I | RF01 | — | Hecho (C-I) | `SeguridadUsuarios/CU01_IniciarSesion` | 4 | 39 aprobadas (incluye recuperación) |
 | CU-02 | Cerrar sesión | I | RF02 | — | Hecho (C-I) | `SeguridadUsuarios/CU02_CerrarSesion` | 2 | 6 aprobadas |
 | CU-03 | Gestionar usuarios y roles | I | RF03 | 3 (aviso paciente sin ficha) | Hecho (C-I) | `SeguridadUsuarios/CU03_GestionarUsuariosRoles` | 3 | 18 aprobadas |
-| CU-04 | Gestionar especialidades y servicios | I | RF04 | 1 | Por ajustar | `GestionMedica/CU04_GestionarEspecialidadesServicios` | 3 | 8 (previas, rehacer) |
+| CU-04 | Gestionar especialidades y servicios | I | RF04 | 1 | Hecho (v30, 07/11) | `GestionMedica/CU04_GestionarEspecialidadesServicios` | 3 | 18 aprobadas (3 filas del 8.1 + 15 de reglas internas) |
 | CU-05 | Gestionar médicos | I | RF05 | — | Hecho (C-I) | `GestionMedica/CU05_GestionarMedicos` | 4 | 16 aprobadas |
 | CU-06 | Gestionar horarios y días sin atención | I | RF06 | 1 | Por ajustar | `GestionMedica/CU06_GestionarHorariosDiasSinAtencion` | 5 | 17 (previas, rehacer) |
 | CU-07 | Gestionar pacientes | I | RF07 | — | Hecho (C-I) | `GestionPacientes/CU07_GestionarPacientes` | 5 | 19 aprobadas |

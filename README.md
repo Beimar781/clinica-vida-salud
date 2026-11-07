@@ -21,7 +21,7 @@ Además de los casos de uso del Ciclo I, el sistema incluye la recuperación de 
 | Paquete | Casos de uso | Quién los usa |
 |---|---|---|
 | Seguridad y usuarios | CU-01 Iniciar sesión · CU-02 Cerrar sesión · CU-03 Gestionar usuarios y roles | Todos los usuarios; la gestión de usuarios, el administrador |
-| Gestión médica | CU-04 Gestionar especialidades médicas · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención | Administrador |
+| Gestión médica | CU-04 Gestionar especialidades y servicios · CU-05 Gestionar médicos · CU-06 Gestionar horarios y días sin atención | Administrador |
 | Gestión de pacientes | CU-07 Gestionar pacientes | Administrador y recepcionista |
 | Gestión de citas | CU-08 Consultar disponibilidad de horarios · CU-09 Registrar cita médica · CU-10 Reprogramar cita médica · CU-11 Reservar cita en línea | Recepcionista y administrador (consultar, registrar y reprogramar citas) y paciente (consultar y reservar en línea; la reserva la hace el propio paciente) |
 

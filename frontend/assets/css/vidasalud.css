@@ -168,6 +168,12 @@ small, .texto-suave { color: var(--vs-muted); }
 .estado-activo { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }
 .estado-inactivo { background: #ECEFF2; color: #4C5B69; border-color: #D3D9DF; }
 
+/* Tipo de especialidad o servicio (CU-04) */
+.tipo-consulta { background: var(--vs-sky-100); color: var(--vs-blue-700); border-color: var(--vs-sky-200); }
+.tipo-laboratorio { background: #E4E8FA; color: #2F3E9E; border-color: #C4CCF0; }
+.tipo-enfermeria { background: #DDF1F1; color: #0F6B6B; border-color: #A9DCDC; }
+.precio { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
 /* ---------- Inicio público ---------- */
 .portada { min-height: calc(100vh - 9rem); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem 1rem; }
 .portada__caja { max-width: 560px; background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 16px; box-shadow: var(--vs-shadow); padding: 2.5rem 2rem; }

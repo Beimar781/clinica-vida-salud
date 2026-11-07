@@ -54,12 +54,14 @@ abstract class SistemaTestCase extends TestCase
         return Rol::where('nombre', $nombre)->value('id');
     }
 
-    /** Especialidad de prueba; el nombre normalizado se calcula igual que en el sistema. */
-    protected function crearEspecialidad(string $nombre = 'T-Especialidad', bool $activa = true): Especialidad
+    /** Especialidad o servicio de prueba; el nombre normalizado se calcula igual que en el sistema (v30: tipo y precio en Bs). */
+    protected function crearEspecialidad(string $nombre = 'T-Especialidad', bool $activa = true, string $tipo = Especialidad::CONSULTA, float $precio = 0): Especialidad
     {
         return Especialidad::create([
             'nombre' => $nombre,
             'nombre_normalizado' => Texto::normalizar($nombre),
+            'tipo' => $tipo,
+            'precio' => $precio,
             'estado' => $activa,
         ]);
     }
