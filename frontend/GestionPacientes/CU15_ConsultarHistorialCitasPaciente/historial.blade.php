@@ -86,6 +86,8 @@
             </form>
         </div>
 
+        <x-leyenda-estados />
+
         @if ($errorRango)
             <div class="aviso aviso-alerta" role="alert"><x-icono nombre="alerta" /> <span>{{ $errorRango }}</span></div>
         @elseif ($citas)

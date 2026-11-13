@@ -14,6 +14,8 @@
         <a class="btn btn-primario" href="{{ route('citas.registrar') }}"><x-icono nombre="mas" /> Registrar cita</a>
     </div>
 
+    <x-leyenda-estados />
+
     <div class="tarjeta">
         <div class="tarjeta__encabezado"><x-icono nombre="calendario" /><h2>{{ $buscar === '' ? 'Citas vigentes (programadas y confirmadas) e inasistencias pagadas por reprogramar' : 'Resultado de la búsqueda' }}</h2></div>
         <div class="tarjeta__cuerpo">

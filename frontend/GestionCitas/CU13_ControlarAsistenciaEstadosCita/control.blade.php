@@ -50,6 +50,8 @@
         </form>
     </div>
 
+    <x-leyenda-estados />
+
     <div class="tarjeta">
         <div class="tarjeta__encabezado">
             <x-icono nombre="calendario" />

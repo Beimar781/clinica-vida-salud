@@ -235,3 +235,10 @@ small, .texto-suave { color: var(--vs-muted); }
 .etiqueta-vencida { background: #FFF6E0; color: #7A5000; border: 1px dashed #E39A1B; margin-top: .25rem; white-space: normal; }
 .fila-alerta td { background: #FFF8E8 !important; }
 .aviso-cobro { display: block; margin-top: .3rem; font-size: .8rem; color: #7A5000; max-width: 15rem; }
+
+/* Leyenda de estados de la cita (<x-leyenda-estados>) */
+.leyenda-estados { margin: 0 0 1rem; font-size: .88rem; }
+.leyenda-estados summary { cursor: pointer; color: var(--vs-blue-700); font-weight: 600; }
+.leyenda-estados__lista { list-style: none; margin: .6rem 0 0; padding: .6rem .8rem; display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 8px; }
+.leyenda-estados__lista li { display: inline-flex; align-items: center; gap: .35rem; color: var(--vs-muted); }
+.leyenda-estados .etiqueta-vencida { margin-top: 0; }
