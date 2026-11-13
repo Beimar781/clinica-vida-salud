@@ -44,4 +44,23 @@
             });
         });
     });
+
+    // CU-03 (ficha del paciente): los datos de la ficha se piden solo con el rol Paciente marcado. Si el CI es de una ficha que ya existe,
+    // el servidor la vincula y no exige fecha, nombres ni teléfono (por eso en el navegador solo se exige el CI).
+    document.querySelectorAll('form[data-requiere-rol]').forEach(function (form) {
+        var bloque = form.querySelector('[data-ficha-paciente]');
+        var casilla = form.querySelector('input[data-rol-paciente]');
+        if (!bloque || !casilla) { return; }
+
+        function mostrar() {
+            bloque.hidden = !casilla.checked;
+            bloque.querySelectorAll('[data-ficha-campo]').forEach(function (campo) {
+                campo.disabled = !casilla.checked;
+                campo.required = casilla.checked && campo.name === 'ci';
+            });
+        }
+
+        casilla.addEventListener('change', mostrar);
+        mostrar();
+    });
 })();

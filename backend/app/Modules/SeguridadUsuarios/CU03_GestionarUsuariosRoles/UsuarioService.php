@@ -2,11 +2,16 @@
 
 namespace App\Modules\SeguridadUsuarios\CU03_GestionarUsuariosRoles;
 
+use App\Models\HistoriaClinica;
+use App\Models\Paciente;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Modules\GestionPacientes\CU07_GestionarPacientes\PacienteService;
 use App\Services\BitacoraService;
+use App\Support\Codigos;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +24,9 @@ use Illuminate\Validation\ValidationException;
 class UsuarioService
 {
     public const POR_PAGINA = 10;
+
+    /** Qué pasó con la ficha en el último guardar/actualizar: ['paciente' => Paciente, 'vinculada' => bool] o null (para el mensaje en pantalla). */
+    public ?array $fichaResultante = null;
 
     /**
      * Listado con búsqueda por nombre de usuario o correo.
@@ -72,6 +80,7 @@ class UsuarioService
             $usuario->roles()->sync($datos['roles']);
 
             BitacoraService::registrar('USUARIO_CREADO', 'Usuario', $this->resumen($usuario), $actor->id);
+            $this->asegurarFicha($usuario, $datos, $actor);
 
             return $usuario;
         });
@@ -108,6 +117,7 @@ class UsuarioService
             $usuario->update($cambios);
             $usuario->roles()->sync($datos['roles']);
             $usuario->load('roles');
+            $this->asegurarFicha($usuario, $datos, $actor);
 
             BitacoraService::registrar('USUARIO_EDITADO', 'Usuario', $this->resumen($usuario).'; roles antes: '.implode(', ', $rolesAntes), $actor->id);
             if ($restablece) {
@@ -140,6 +150,76 @@ class UsuarioService
     {
         $usuario->update(['estado' => true]);
         BitacoraService::registrar('USUARIO_ACTIVADO', 'Usuario', 'Cuenta activada: '.$usuario->nombre_usuario, $actor->id);
+    }
+
+    /**
+     * Garantiza que ninguna cuenta con el rol Paciente quede sin ficha (dentro de la transacción del alta o la edición): si ya existe una ficha
+     * con ese CI y sin cuenta, la vincula (conserva su historia y sus citas); si esa ficha ya tiene otra cuenta, rechaza; si no existe, crea la
+     * ficha (con su código y su historia clínica). Quitar el rol Paciente NO borra la ficha.
+     *
+     * @CC CCUsuarios (guardar, actualizar) @CE CEPaciente (existeCI, crear), CEHistoriaClinica (crearParaPaciente)
+     *
+     * @param  array<string, mixed>  $datos
+     *
+     * @throws ValidationException
+     */
+    private function asegurarFicha(Usuario $usuario, array $datos, Usuario $actor): void
+    {
+        $this->fichaResultante = null;
+        $idPaciente = Rol::where('nombre', Rol::PACIENTE)->value('id');
+        $tieneRol = in_array($idPaciente, array_map('intval', $datos['roles'] ?? []), true);
+
+        if (! $tieneRol || Paciente::where('usuario_id', $usuario->id)->exists()) {
+            return;
+        }
+
+        $ci = PacienteService::normalizarCI((string) ($datos['ci'] ?? ''));
+        try {
+            $ficha = Paciente::where('ci', $ci)->lockForUpdate()->first();
+
+            if ($ficha && $ficha->usuario_id !== null) {
+                throw ValidationException::withMessages(['ci' => "Ese CI ya pertenece a la ficha {$ficha->codigo}, que ya tiene otra cuenta de usuario."]);
+            }
+
+            if ($ficha) {
+                $ficha->usuario_id = $usuario->id;
+                $ficha->correo ??= $usuario->correo;
+                $ficha->save();
+                HistoriaClinica::firstOrCreate(['paciente_id' => $ficha->id]);
+                BitacoraService::registrar(
+                    'FICHA_VINCULADA', 'Paciente',
+                    "Cuenta {$usuario->nombre_usuario} vinculada por {$actor->nombre_usuario} a la ficha {$ficha->codigo} (CI {$ficha->ci}); se conservan su historia clínica y sus citas",
+                    $actor->id
+                );
+                $this->fichaResultante = ['paciente' => $ficha, 'vinculada' => true];
+
+                return;
+            }
+
+            $ficha = Paciente::create([
+                'usuario_id' => $usuario->id,
+                'codigo' => Codigos::paciente(),
+                'ci' => $ci,
+                'nombres' => $datos['nombres'],
+                'apellidos' => $datos['apellidos'],
+                'fecha_nacimiento' => $datos['fecha_nacimiento'],
+                'telefono' => $datos['telefono'],
+                'correo' => $usuario->correo,
+                'recibe_recordatorios' => true,
+                'mostrar_contacto_medico' => true,
+                'estado' => true,
+            ]);
+            HistoriaClinica::crearParaPaciente($ficha);
+            BitacoraService::registrar(
+                'PACIENTE_REGISTRADO', 'Paciente',
+                "Ficha {$ficha->codigo} {$ficha->nombre_completo} (CI {$ficha->ci}) creada por {$actor->nombre_usuario} junto con la cuenta {$usuario->nombre_usuario}; historia clínica creada",
+                $actor->id
+            );
+            $this->fichaResultante = ['paciente' => $ficha, 'vinculada' => false];
+        } catch (UniqueConstraintViolationException) {
+            // Dos altas a la vez con el mismo CI: la restricción UNIQUE de la base rechaza la segunda.
+            throw ValidationException::withMessages(['ci' => 'Ese CI ya está registrado en otra ficha. Vuelva a intentarlo.']);
+        }
     }
 
     private function resumen(Usuario $usuario): string

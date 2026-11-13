@@ -4,6 +4,7 @@ namespace App\Modules\GestionPacientes\CU07_GestionarPacientes;
 
 use App\Http\Controllers\Controller;
 use App\Models\Paciente;
+use App\Models\Usuario;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,7 +71,8 @@ class PacientesController extends Controller
         $paciente = $this->pacientes->guardar($request->validated(), $request->user());
 
         return redirect()->route('pacientes.index')
-            ->with('exito', "Paciente {$paciente->nombre_completo} registrado con el código {$paciente->codigo}; su historia clínica quedó creada.");
+            ->with('exito', "Paciente {$paciente->nombre_completo} registrado con el código {$paciente->codigo}; su historia clínica quedó creada."
+                .($this->pacientes->cuentaVinculada ? " Se vinculó con la cuenta {$this->pacientes->cuentaVinculada->nombre_usuario}." : ''));
     }
 
     /**
@@ -84,6 +86,8 @@ class PacientesController extends Controller
             'paciente' => $paciente->load('historiaClinica'),
             'antecedentes' => $this->pacientes->antecedentes($paciente),
             'existente' => $this->pacienteConElMismoCI($request, $paciente->id),
+            'cuentaVinculada' => $paciente->usuario_id ? Usuario::find($paciente->usuario_id) : null,
+            'cuentasSinFicha' => $paciente->usuario_id ? collect() : $this->pacientes->cuentasSinFicha(),
         ]);
     }
 
@@ -97,6 +101,24 @@ class PacientesController extends Controller
         $this->pacientes->actualizar($paciente, $request->validated(), $request->user());
 
         return redirect()->route('pacientes.index')->with('exito', "Paciente {$paciente->nombre_completo} actualizado correctamente.");
+    }
+
+    /**
+     * Vincular cuenta existente (CU-03 ↔ CU-07): une esta ficha con una cuenta de usuario con rol Paciente que todavía no tiene ficha. Solo
+     * Recepcionista y Administrador (ruta); el servicio valida en una transacción que ni la ficha ni la cuenta estén ya enlazadas.
+     *
+     * @CI CIPacientes (mostrarResultado) @CC CCPacientes (vincularCuenta) @CE CEPaciente (actualizar), CEUsuario
+     */
+    public function vincularCuenta(Request $request, Paciente $paciente): RedirectResponse
+    {
+        $datos = $request->validate(['usuario_id' => ['required', 'integer']], [
+            'usuario_id.required' => 'Seleccione la cuenta que quiere vincular.',
+            'usuario_id.integer' => 'Seleccione una cuenta de la lista.',
+        ]);
+        $this->pacientes->vincularCuenta($paciente, (int) $datos['usuario_id'], $request->user());
+
+        return redirect()->route('pacientes.editar', $paciente)
+            ->with('exito', "La ficha {$paciente->codigo} quedó vinculada con la cuenta «".Usuario::find($datos['usuario_id'])->nombre_usuario.'»: la persona ya puede ver su perfil y sus citas.');
     }
 
     /**

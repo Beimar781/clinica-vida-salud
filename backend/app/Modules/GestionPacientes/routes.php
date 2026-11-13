@@ -29,6 +29,7 @@ Route::middleware(['auth', 'rol:Recepcionista,Administrador'])->prefix('paciente
     Route::post('/', [PacientesController::class, 'guardar'])->name('guardar');
     Route::get('/{paciente}/editar', [PacientesController::class, 'editar'])->name('editar');
     Route::put('/{paciente}', [PacientesController::class, 'actualizar'])->name('actualizar');
+    Route::post('/{paciente}/vincular-cuenta', [PacientesController::class, 'vincularCuenta'])->name('vincular-cuenta');
     Route::post('/{paciente}/desactivar', [PacientesController::class, 'desactivar'])->name('desactivar');
     Route::post('/{paciente}/activar', [PacientesController::class, 'activar'])->name('activar');
 });

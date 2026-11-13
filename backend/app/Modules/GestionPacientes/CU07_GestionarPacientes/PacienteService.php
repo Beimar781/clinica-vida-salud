@@ -5,6 +5,7 @@ namespace App\Modules\GestionPacientes\CU07_GestionarPacientes;
 use App\Models\AntecedenteExterno;
 use App\Models\HistoriaClinica;
 use App\Models\Paciente;
+use App\Models\Rol;
 use App\Models\Usuario;
 use App\Services\BitacoraService;
 use App\Support\Codigos;
@@ -27,6 +28,9 @@ class PacienteService
     public const POR_PAGINA = 10;
 
     public const MENSAJE_CI_REPETIDO = 'El CI ya está registrado.';
+
+    /** Cuenta que se vinculó sola con la ficha recién registrada (mismo correo); null si no hubo ninguna. Sirve para el aviso en pantalla. */
+    public ?Usuario $cuentaVinculada = null;
 
     /**
      * Listado con búsqueda por CI, nombre, apellido o código (sin distinguir mayúsculas).
@@ -114,6 +118,7 @@ class PacienteService
                 // Una sola historia clínica por paciente (paciente_id es UNIQUE en la tabla).
                 $historia = HistoriaClinica::crearParaPaciente($paciente);
                 $antecedente = $this->guardarAntecedente($historia, $datos, $actor);
+                $this->vincularPorCorreo($paciente, $actor);
 
                 BitacoraService::registrar(
                     'PACIENTE_CREADO', 'Paciente',
@@ -127,6 +132,87 @@ class PacienteService
         } catch (UniqueConstraintViolationException) {
             // Dos personas registrando el mismo CI a la vez: la restricción UNIQUE de la base lo rechaza.
             throw ValidationException::withMessages(['ci' => self::MENSAJE_CI_REPETIDO]);
+        }
+    }
+
+    /**
+     * Si ya existe UNA cuenta con rol Paciente, sin ficha y con el mismo correo que la ficha (sin distinguir mayúsculas), la vincula sola
+     * para que la persona no vea «Tu cuenta aún no tiene ficha». Con cero o varias coincidencias no hace nada (queda la vinculación manual).
+     *
+     * @CC CCPacientes (guardar) @CE CEPaciente (crear), CEUsuario (buscar)
+     */
+    private function vincularPorCorreo(Paciente $paciente, Usuario $actor): void
+    {
+        $this->cuentaVinculada = null;
+        if (blank($paciente->correo)) {
+            return;
+        }
+
+        $cuentas = Usuario::conRolPacienteSinFicha()->whereRaw('lower(correo) = ?', [mb_strtolower(trim($paciente->correo))])->lockForUpdate()->get();
+        if ($cuentas->count() !== 1) {
+            return;
+        }
+
+        $cuenta = $cuentas->first();
+        $paciente->update(['usuario_id' => $cuenta->id]);
+        BitacoraService::registrar(
+            'FICHA_VINCULADA', 'Paciente',
+            "Cuenta {$cuenta->nombre_usuario} vinculada automáticamente (mismo correo) a la ficha {$paciente->codigo} registrada por {$actor->nombre_usuario}",
+            $actor->id
+        );
+        $this->cuentaVinculada = $cuenta;
+    }
+
+    /**
+     * Cuentas con rol Paciente que todavía no tienen ficha (para elegir a cuál vincular una ficha existente).
+     *
+     * @CC CCPacientes (editar) @CE CEUsuario (buscar)
+     *
+     * @return Collection<int, Usuario>
+     */
+    public function cuentasSinFicha(): Collection
+    {
+        return Usuario::conRolPacienteSinFicha()->orderBy('nombre_usuario')->get(['id', 'nombre_usuario', 'correo', 'estado']);
+    }
+
+    /**
+     * Vincula una ficha existente con una cuenta con rol Paciente que no tiene ficha. Dentro de una transacción y con las dos filas bloqueadas,
+     * comprueba que la ficha no tenga cuenta y que la cuenta no tenga ficha (dos personas vinculando a la vez no pueden duplicarlo).
+     *
+     * @CC CCPacientes (vincularCuenta) @CE CEPaciente (actualizar), CEUsuario
+     *
+     * @throws ValidationException
+     */
+    public function vincularCuenta(Paciente $paciente, int $usuarioId, Usuario $actor): Paciente
+    {
+        try {
+            return DB::transaction(function () use ($paciente, $usuarioId, $actor) {
+                $ficha = Paciente::whereKey($paciente->id)->lockForUpdate()->firstOrFail();
+                $cuenta = Usuario::whereKey($usuarioId)->lockForUpdate()->first();
+
+                if ($ficha->usuario_id !== null) {
+                    throw ValidationException::withMessages(['usuario_id' => 'Esta ficha ya tiene una cuenta de usuario vinculada.']);
+                }
+                if (! $cuenta || ! $cuenta->nombresRoles()->contains(Rol::PACIENTE)) {
+                    throw ValidationException::withMessages(['usuario_id' => 'Seleccione una cuenta con el rol Paciente.']);
+                }
+                if (Paciente::where('usuario_id', $cuenta->id)->exists()) {
+                    throw ValidationException::withMessages(['usuario_id' => 'Esa cuenta ya tiene otra ficha de paciente.']);
+                }
+
+                $ficha->usuario_id = $cuenta->id;
+                $ficha->correo ??= $cuenta->correo;
+                $ficha->save();
+                BitacoraService::registrar(
+                    'FICHA_VINCULADA', 'Paciente',
+                    "Cuenta {$cuenta->nombre_usuario} vinculada por {$actor->nombre_usuario} a la ficha {$ficha->codigo} (CI {$ficha->ci}); se conservan su historia clínica y sus citas",
+                    $actor->id
+                );
+
+                return $ficha;
+            });
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['usuario_id' => 'Esa cuenta ya tiene otra ficha de paciente.']);
         }
     }
 

@@ -139,6 +139,7 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
     public function test_editar_sin_contrasena_conserva_la_actual(): void
     {
         $usuario = $this->crearUsuario('t-conserva', [Rol::PACIENTE], 'Vieja12345');
+        $this->crearPaciente(['usuario_id' => $usuario->id]); // la cuenta ya tiene su ficha
         $hash = $usuario->password_hash;
 
         $this->actingAs($this->admin)->put(route('usuarios.actualizar', $usuario), [
@@ -267,6 +268,8 @@ class CU03_GestionarUsuariosRolesTest extends SistemaTestCase
             'correo' => 't-nuevo@prueba.test',
             'password' => 'Clave1234',
             'roles' => [$this->idRol(Rol::PACIENTE)],
+            // Toda cuenta con el rol Paciente necesita su ficha: los datos mínimos para crearla.
+            'ci' => 'T-NUEVO01', 'nombres' => 'Nuevo', 'apellidos' => 'Tusuario', 'fecha_nacimiento' => '1990-05-05', 'telefono' => '70000001',
         ];
     }
 }

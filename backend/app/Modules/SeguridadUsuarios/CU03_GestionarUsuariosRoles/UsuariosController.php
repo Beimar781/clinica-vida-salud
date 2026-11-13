@@ -72,7 +72,7 @@ class UsuariosController extends Controller
     {
         $usuario = $this->usuarios->guardar($request->validated(), $request->user());
 
-        return redirect()->route('usuarios.index')->with('exito', "Usuario {$usuario->nombre_usuario} registrado correctamente.");
+        return redirect()->route('usuarios.index')->with('exito', "Usuario {$usuario->nombre_usuario} registrado correctamente.".$this->avisoDeFicha());
     }
 
     /**
@@ -98,7 +98,19 @@ class UsuariosController extends Controller
     {
         $this->usuarios->actualizar($usuario, $request->validated(), $request->user());
 
-        return redirect()->route('usuarios.index')->with('exito', "Usuario {$usuario->nombre_usuario} actualizado correctamente.");
+        return redirect()->route('usuarios.index')->with('exito', "Usuario {$usuario->nombre_usuario} actualizado correctamente.".$this->avisoDeFicha());
+    }
+
+    /** Texto sobre la ficha del paciente que se creó o se vinculó con la cuenta (vacío si no hubo cambios). */
+    private function avisoDeFicha(): string
+    {
+        $ficha = $this->usuarios->fichaResultante;
+
+        return match (true) {
+            $ficha === null => '',
+            $ficha['vinculada'] => " Se vinculó con la ficha {$ficha['paciente']->codigo} ({$ficha['paciente']->nombre_completo}); se conservan su historia clínica y sus citas.",
+            default => " Se creó la ficha de paciente {$ficha['paciente']->codigo} con su historia clínica.",
+        };
     }
 
     /**

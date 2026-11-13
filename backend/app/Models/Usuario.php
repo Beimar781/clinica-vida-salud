@@ -117,6 +117,14 @@ class Usuario extends Authenticatable
         return $this->hasOne(Paciente::class, 'usuario_id');
     }
 
+    /** Cuentas con el rol Paciente que todavía no tienen ficha de paciente (candidatas a vincularse con una ficha existente). */
+    public function scopeConRolPacienteSinFicha($consulta)
+    {
+        return $consulta
+            ->whereHas('roles', fn ($q) => $q->where('nombre', Rol::PACIENTE))
+            ->whereDoesntHave('paciente');
+    }
+
     /** ¿Tiene el rol Paciente pero ninguna ficha de paciente? Debe ver un aviso claro, nunca un error. */
     public function esPacienteSinFicha(): bool
     {

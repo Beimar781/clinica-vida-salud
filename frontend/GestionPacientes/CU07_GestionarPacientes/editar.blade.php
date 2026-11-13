@@ -36,4 +36,27 @@
             </form>
         </div>
     </div>
+
+    {{-- Cuenta de acceso del paciente (CU-03 ↔ CU-07): vincular una cuenta Paciente existente que todavía no tiene ficha --}}
+    <div class="tarjeta" style="margin-top:1.25rem" id="cuenta-del-paciente">
+        <div class="tarjeta__encabezado"><x-icono nombre="llave" /><h2>Cuenta de acceso</h2></div>
+        <div class="tarjeta__cuerpo">
+            @if ($cuentaVinculada)
+                <p class="sin-margen">Esta ficha está vinculada con la cuenta <strong>{{ $cuentaVinculada->nombre_usuario }}</strong> ({{ $cuentaVinculada->correo }}).</p>
+            @elseif ($cuentasSinFicha->isEmpty())
+                <p class="texto-suave sin-margen">Esta ficha no tiene cuenta de usuario y no hay cuentas con rol Paciente sin ficha para vincular.</p>
+            @else
+                <p class="texto-suave">Esta ficha no tiene cuenta de usuario. Si la persona ya tiene una cuenta con el rol Paciente que todavía no tiene ficha (la creó el administrador), vincúlela aquí: conservará su historia clínica y sus citas.</p>
+                <form method="POST" action="{{ route('pacientes.vincular-cuenta', $paciente) }}" data-validar novalidate
+                      onsubmit="return confirm('¿Vincular esta ficha con la cuenta elegida? La persona verá desde esa cuenta su perfil y sus citas.')">
+                    @csrf
+                    <div class="formulario">
+                        <x-seleccion nombre="usuario_id" etiqueta="Cuenta con rol Paciente sin ficha" vacio="— Seleccione una cuenta —" required
+                                     :opciones="$cuentasSinFicha->mapWithKeys(fn ($c) => [$c->id => $c->nombre_usuario.' · '.$c->correo.($c->estado ? '' : ' (inactiva)')])->all()" />
+                    </div>
+                    <div class="acciones"><button type="submit" class="btn btn-primario"><x-icono nombre="check" /> Vincular cuenta</button></div>
+                </form>
+            @endif
+        </div>
+    </div>
 @endsection
