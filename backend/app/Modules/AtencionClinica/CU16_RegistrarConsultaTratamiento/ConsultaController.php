@@ -73,7 +73,9 @@ class ConsultaController extends Controller
             return redirect()->route('consultas.mostrar', $cita)->withInput()->with('error', 'No se pudo guardar la consulta por un problema interno. Intente nuevamente; si el problema continúa, avise al administrador.');
         }
 
-        return redirect()->route('consultas.mostrar', $cita)->with('exito', "Consulta registrada en la historia clínica. La cita {$cita->codigo} pasó a Atendida.");
+        $aviso = $cita->refresh()->atendida_sin_cobro ? " Atención: el pago de {$cita->monto_texto} sigue pendiente; recepción debe registrar el cobro." : '';
+
+        return redirect()->route('consultas.mostrar', $cita)->with('exito', "Consulta registrada en la historia clínica. La cita {$cita->codigo} pasó a Atendida.".$aviso);
     }
 
     /**

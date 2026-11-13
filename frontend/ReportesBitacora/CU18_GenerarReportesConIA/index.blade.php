@@ -184,7 +184,7 @@
                                         @foreach ($reporte['columnas'] as $columna)
                                             <td @class(['num' => $columna['tipo'] === 'monto'])>
                                                 @if ($columna['tipo'] === 'estado')
-                                                    <x-estado-cita :estado="$fila['estado']" />
+                                                    <x-estado-cita :estado="explode('|', $fila['estado'])[0]" :vencida="str_contains($fila['estado'], '|VENCIDA')" />
                                                 @else
                                                     {{ ReporteService::textoCelda($columna['tipo'], $fila[$columna['clave']] ?? null) }}
                                                 @endif

@@ -69,18 +69,22 @@
                                 $acciones = $servicio->acciones($cita, $usuario);
                                 $esperaHora = $servicio->inasistenciaPendienteDeHora($cita, $usuario);
                             @endphp
-                            <tr>
+                            <tr @class(['fila-alerta' => $cita->atendida_sin_cobro || $cita->vencida])>
                                 <td class="precio">{{ $cita->hora_inicio_corta }} – {{ $cita->hora_fin_corta }}</td>
                                 <td class="precio"><strong>{{ $cita->codigo }}</strong></td>
                                 <td>{{ $cita->paciente->nombre_completo }}<br><small class="texto-suave">CI {{ $cita->paciente->ci }}</small></td>
                                 <td>{{ $cita->medico->nombre_completo }}<br><small class="texto-suave">{{ $cita->especialidad->nombre }}</small></td>
-                                <td><x-estado-cita :estado="$cita->estado" /></td>
-                                <td><x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->monto_texto }} · {{ $cita->metodo_pago === 'TARJETA' ? 'Tarjeta' : 'Efectivo' }}</small></td>
+                                <td><x-estado-cita :estado="$cita->estado" :vencida="$cita->vencida" /></td>
+                                <td>
+                                    <x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->monto_texto }} · {{ $cita->metodo_pago === 'TARJETA' ? 'Tarjeta' : 'Efectivo' }}</small>
+                                    @if ($cita->atendida_sin_cobro)<small class="aviso-cobro"><strong>Atendida sin cobrar:</strong> registre el cobro de {{ $cita->monto_texto }}.</small>@endif
+                                </td>
                                 <td>
                                     <div class="tabla__acciones">
                                         @foreach ($acciones as $accion)
                                             @continue($accion === TransicionesCita::CORREGIR)
-                                            <form method="POST" action="{{ route('citas.estado', $cita) }}">
+                                            <form method="POST" action="{{ route('citas.estado', $cita) }}"
+                                                  @if ($accion === 'atendida' && $cita->cobro_pendiente) onsubmit="return confirm('El pago de esta cita está pendiente. ¿Marcarla como atendida de todos modos? Recepción deberá registrar el cobro.')" @endif>
                                                 @csrf
                                                 <input type="hidden" name="accion" value="{{ $accion }}">
                                                 @foreach ($filtros as $nombre => $valor)<input type="hidden" name="{{ $nombre }}" value="{{ $valor }}">@endforeach
@@ -89,6 +93,9 @@
                                                 </button>
                                             </form>
                                         @endforeach
+                                        @if (in_array('atendida', $acciones, true) && $cita->cobro_pendiente)
+                                            <small class="aviso-cobro">Pago pendiente: al marcarla atendida, recepción deberá cobrarla.</small>
+                                        @endif
                                         @if ($esperaHora)
                                             <button type="button" class="btn btn-secundario btn-sm" disabled title="La inasistencia se registra a partir de la hora de la cita ({{ $cita->hora_inicio_corta }}).">
                                                 <x-icono nombre="bloquear" /> Inasistencia (desde las {{ $cita->hora_inicio_corta }})

@@ -104,14 +104,19 @@ class ReporteService
             count(*) filter (where c.estado_pago = 'PAGADO' and c.metodo_pago = 'EFECTIVO') as pagos_efectivo,
             coalesce(sum(c.monto) filter (where c.estado_pago = 'PAGADO' and c.metodo_pago = 'EFECTIVO'), 0) as ingreso_efectivo,
             count(*) filter (where c.estado_pago = 'PAGADO' and c.metodo_pago = 'TARJETA') as pagos_tarjeta,
-            coalesce(sum(c.monto) filter (where c.estado_pago = 'PAGADO' and c.metodo_pago = 'TARJETA'), 0) as ingreso_tarjeta
-        ")->first();
+            coalesce(sum(c.monto) filter (where c.estado_pago = 'PAGADO' and c.metodo_pago = 'TARJETA'), 0) as ingreso_tarjeta,
+            count(*) filter (where c.estado in ('PROGRAMADA', 'CONFIRMADA') and (c.fecha + c.hora_fin) < ?) as vencidas,
+            count(*) filter (where c.estado = 'ATENDIDA' and c.estado_pago = 'PENDIENTE' and c.monto > 0) as atendidas_sin_cobro,
+            coalesce(sum(c.monto) filter (where c.estado = 'ATENDIDA' and c.estado_pago = 'PENDIENTE' and c.monto > 0), 0) as por_cobrar
+        ", [Carbon::now()->format('Y-m-d H:i:s')])->first();
 
         $totales = [
             'total' => (int) $t->total, 'programadas' => (int) $t->programadas, 'confirmadas' => (int) $t->confirmadas,
             'atendidas' => (int) $t->atendidas, 'canceladas' => (int) $t->canceladas, 'inasistencias' => (int) $t->inasistencias,
             'pagos_efectivo' => (int) $t->pagos_efectivo, 'ingreso_efectivo' => (float) $t->ingreso_efectivo,
             'pagos_tarjeta' => (int) $t->pagos_tarjeta, 'ingreso_tarjeta' => (float) $t->ingreso_tarjeta,
+            // Control: citas que siguen Programadas o Confirmadas con la hora ya pasada, y atendidas todavía sin cobrar.
+            'vencidas' => (int) $t->vencidas, 'atendidas_sin_cobro' => (int) $t->atendidas_sin_cobro, 'por_cobrar_atendidas' => (float) $t->por_cobrar,
         ];
         $totales['ingreso_total'] = $totales['ingreso_efectivo'] + $totales['ingreso_tarjeta'];
 
@@ -234,7 +239,8 @@ class ReporteService
             'medico' => $f->medico,
             'especialidad' => $f->especialidad,
             'modalidad' => $f->modalidad === Cita::VIRTUAL ? 'Virtual' : 'Presencial',
-            'estado' => $f->estado,
+            // «PROGRAMADA|VENCIDA»: la cita sigue abierta aunque su hora ya pasó (señal, no un estado).
+            'estado' => $f->estado.(in_array($f->estado, [Cita::PROGRAMADA, Cita::CONFIRMADA], true) && Carbon::parse($f->fecha.' '.$f->hora_fin)->lt(Carbon::now()) ? '|VENCIDA' : ''),
             'metodo' => $f->metodo_pago === Cita::METODO_TARJETA ? 'Tarjeta (Stripe)' : 'Efectivo',
             'pago' => ($f->metodo_pago === Cita::METODO_TARJETA ? 'Tarjeta' : 'Efectivo').' · '.($f->estado_pago === Cita::PAGO_PAGADO ? 'Pagado' : 'Pendiente'),
             'monto' => $f->monto,
@@ -285,6 +291,8 @@ class ReporteService
             ['Atendidas', (string) $t['atendidas']],
             ['Canceladas', (string) $t['canceladas']],
             ['Inasistencias', (string) $t['inasistencias']],
+            ['Vencidas (pendientes de cierre)', (string) $t['vencidas']],
+            ['Atendidas con el pago pendiente', $t['atendidas_sin_cobro'].' · '.Dinero::formato($t['por_cobrar_atendidas'])],
         ];
         $cobrado = $tipo === 'ingresos' ? 'Ingresos' : 'Cobrado en estas citas';
 
@@ -395,7 +403,7 @@ class ReporteService
         return match ($tipo) {
             'fecha' => Carbon::parse($valor)->format('d/m/Y'),
             'fechahora' => Carbon::parse($valor)->format('d/m/Y H:i'),
-            'estado' => self::ESTADOS[$valor] ?? (string) $valor,
+            'estado' => (self::ESTADOS[explode('|', (string) $valor)[0]] ?? (string) $valor).(str_contains((string) $valor, '|VENCIDA') ? ' (vencida: pendiente de cierre)' : ''),
             'monto' => $destino === 'csv' ? number_format((float) $valor, 2, ',', '') : Dinero::formato($valor),
             default => (string) $valor,
         };

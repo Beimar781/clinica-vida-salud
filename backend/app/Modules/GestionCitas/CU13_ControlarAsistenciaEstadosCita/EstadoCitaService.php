@@ -160,10 +160,15 @@ class EstadoCitaService
 
     private function marcarAtendida(Cita $cita, Usuario $usuario): array
     {
+        $sinCobro = $cita->cobro_pendiente;
         $this->transiciones->cambiarEstado($cita, Cita::ATENDIDA);
-        BitacoraService::registrar('CITA_ATENDIDA', 'Cita', "Cita {$cita->codigo} marcada como atendida por el médico {$cita->medico->codigo}", $usuario->id);
+        BitacoraService::registrar(
+            'CITA_ATENDIDA', 'Cita',
+            "Cita {$cita->codigo} marcada como atendida por el médico {$cita->medico->codigo}".($sinCobro ? ' (con el pago pendiente: falta registrar el cobro)' : ''),
+            $usuario->id
+        );
 
-        return $this->resultado($cita, "Cita {$cita->codigo} marcada como atendida.");
+        return $this->resultado($cita, "Cita {$cita->codigo} marcada como atendida.".($sinCobro ? " Atención: el pago de {$cita->monto_texto} sigue pendiente; recepción debe registrar el cobro en «Control de citas»." : ''));
     }
 
     private function registrarInasistencia(Cita $cita, Usuario $usuario): array
