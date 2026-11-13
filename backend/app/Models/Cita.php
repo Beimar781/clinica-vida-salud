@@ -62,6 +62,46 @@ class Cita extends Model
         return $this->fecha->copy()->setTimeFromTimeString($this->hora_inicio);
     }
 
+    /** Momento en que termina la cita (fecha + hora final). */
+    public function getFinAttribute(): Carbon
+    {
+        return $this->fecha->copy()->setTimeFromTimeString($this->hora_fin);
+    }
+
+    /** ¿Ya empezó (o pasó) la hora de la cita? */
+    public function getYaPasoAttribute(): bool
+    {
+        return $this->inicio->lte(Carbon::now());
+    }
+
+    /**
+     * «Vencida · pendiente de cierre»: sigue Programada o Confirmada pero su hora final ya pasó. Es una señal calculada (no un estado):
+     * recepción la cierra con Atender/Inasistencia/Cancelar según corresponda, con su bitácora.
+     */
+    public function getVencidaAttribute(): bool
+    {
+        return in_array($this->estado, [self::PROGRAMADA, self::CONFIRMADA], true) && $this->fin->lt(Carbon::now());
+    }
+
+    /** Pago pendiente de verdad: falta cobrar y el monto es mayor que cero (un servicio sin costo no tiene nada por cobrar). */
+    public function getCobroPendienteAttribute(): bool
+    {
+        return $this->estado_pago === self::PAGO_PENDIENTE && (float) $this->monto > 0;
+    }
+
+    /** Atendida pero con el pago todavía pendiente (hay que cobrarla). */
+    public function getAtendidaSinCobroAttribute(): bool
+    {
+        return $this->estado === self::ATENDIDA && $this->cobro_pendiente;
+    }
+
+    /** Citas vencidas (SQL): Programada o Confirmada cuya hora final ya pasó. */
+    public function scopeVencidas(Builder $consulta): Builder
+    {
+        return $consulta->whereIn('estado', [self::PROGRAMADA, self::CONFIRMADA])
+            ->whereRaw('(fecha + hora_fin) < ?', [Carbon::now()->format('Y-m-d H:i:s')]);
+    }
+
     /** Citas con el pago registrado (estado_pago = PAGADO). */
     public function scopePagadas(Builder $consulta): Builder
     {

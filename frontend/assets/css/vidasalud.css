@@ -230,3 +230,8 @@ small, .texto-suave { color: var(--vs-muted); }
 /* Estado de pago de la cita (CU-09, CU-11, CU-13): Pendiente en ámbar, Pagado en verde */
 .pago-pendiente { background: #FDEFD0; color: #7A5000; border-color: #F0D49A; }
 .pago-pagado { background: #DDF3E8; color: #11643F; border-color: #A9DEC6; }
+
+/* Cita vencida (Programada o Confirmada con la hora ya pasada) y atendida con el cobro pendiente */
+.etiqueta-vencida { background: #FFF6E0; color: #7A5000; border: 1px dashed #E39A1B; margin-top: .25rem; white-space: normal; }
+.fila-alerta td { background: #FFF8E8 !important; }
+.aviso-cobro { display: block; margin-top: .3rem; font-size: .8rem; color: #7A5000; max-width: 15rem; }

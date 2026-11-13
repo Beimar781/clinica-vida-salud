@@ -104,12 +104,14 @@
                                         <td class="precio"><strong>{{ $cita->codigo }}</strong></td>
                                         <td>{{ $cita->medico->nombre_completo }}</td>
                                         <td>{{ $cita->especialidad->nombre }}</td>
-                                        <td><x-estado-cita :estado="$cita->estado" /></td>
+                                        <td><x-estado-cita :estado="$cita->estado" :vencida="$cita->vencida" /></td>
                                         <td class="precio">{{ $cita->created_at->format('d/m/Y') }}<br><small class="texto-suave">{{ $cita->created_at->format('H:i') }}</small></td>
                                         <td><x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->monto_texto }}</small></td>
                                         <td>
                                             @if ($cancelaciones->puedeCancelarAhora($cita, $usuario))
                                                 <a class="btn btn-peligro btn-sm" href="{{ route('citas.cancelar', $cita) }}"><x-icono nombre="bloquear" /> Cancelar</a>
+                                            @elseif ($cancelaciones->puedeCancelarse($cita) && $cita->ya_paso)
+                                                <small class="texto-suave">Esta cita ya pasó. Si no pudo asistir, comuníquese con recepción.</small>
                                             @elseif ($cancelaciones->puedeCancelarse($cita))
                                                 <small class="texto-suave">Faltan menos de 2 h: comunícate con recepción para cancelarla.</small>
                                             @else
