@@ -3,6 +3,7 @@
 namespace App\Modules\GestionCitas\Compartido;
 
 use App\Models\Cita;
+use App\Models\CitaEvento;
 use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Paciente;
@@ -133,6 +134,10 @@ class AgendarCitaService
                     'creado_por' => $creadoPor,
                 ]);
 
+                CitaEvento::registrar($cita, CitaEvento::REGISTRADA, $creadoPor, [
+                    'fecha_nueva' => $fecha, 'hora_nueva' => $bloque['inicio'], 'estado_nuevo' => Cita::PROGRAMADA,
+                ]);
+
                 // Lo último antes de confirmar: si la captura falla se lanza PagoException y la transacción deshace la cita.
                 if ($pago->esTarjeta()) {
                     $this->stripe->capturar($pago->referencia);
@@ -202,10 +207,10 @@ class AgendarCitaService
      * @throws HorarioOcupadoException
      * @throws ReglaCitaException
      */
-    public function mover(Cita $cita, string $fecha, string $inicio): Cita
+    public function mover(Cita $cita, string $fecha, string $inicio, ?int $usuarioId = null, ?string $motivoCambio = null): Cita
     {
         try {
-            return DB::transaction(function () use ($cita, $fecha, $inicio) {
+            return DB::transaction(function () use ($cita, $fecha, $inicio, $usuarioId, $motivoCambio) {
                 // Siempre en el mismo orden (primero el médico, luego la cita) para no provocar bloqueos cruzados.
                 $medico = Medico::whereKey($cita->medico_id)->lockForUpdate()->firstOrFail();
                 $actual = Cita::whereKey($cita->id)->lockForUpdate()->firstOrFail();
@@ -224,13 +229,20 @@ class AgendarCitaService
                 $this->verificarPaciente($actual->paciente, $fecha, $bloque, $actual->id);
 
                 // Conserva el código y el pago (no hay nuevo cobro); la cita vuelve a PROGRAMADA y, como cambió la
-                // fecha, el recordatorio de CU-22 se vuelve a enviar.
+                // fecha, el recordatorio de CU-22 se vuelve a enviar. El evento guarda el horario anterior y el nuevo.
+                $anterior = ['fecha' => $actual->fecha->toDateString(), 'hora' => $actual->hora_inicio, 'estado' => $actual->estado];
                 $actual->update([
                     'fecha' => $fecha,
                     'hora_inicio' => $bloque['inicio'],
                     'hora_fin' => $bloque['fin'],
                     'estado' => Cita::PROGRAMADA,
                     'recordatorio_enviado' => false,
+                ]);
+
+                CitaEvento::registrar($actual, CitaEvento::REPROGRAMADA, $usuarioId, [
+                    'fecha_anterior' => $anterior['fecha'], 'hora_anterior' => $anterior['hora'],
+                    'fecha_nueva' => $fecha, 'hora_nueva' => $bloque['inicio'],
+                    'estado_anterior' => $anterior['estado'], 'estado_nuevo' => Cita::PROGRAMADA, 'motivo' => $motivoCambio,
                 ]);
 
                 return $actual;

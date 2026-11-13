@@ -88,13 +88,34 @@ class HistorialCitasService
      */
     public function citas(Paciente $paciente, ?string $filtro = null, ?string $desde = null, ?string $hasta = null): LengthAwarePaginator
     {
-        return Cita::with(['medico', 'especialidad'])
+        return Cita::with(['medico', 'especialidad', 'paciente', 'eventos.usuario'])
             ->where('paciente_id', $paciente->id)
             ->when(array_key_exists((string) $filtro, self::FILTROS), fn ($q) => $q->whereIn('estado', self::FILTROS[$filtro][1]))
             ->when(filled($desde), fn ($q) => $q->whereDate('fecha', '>=', $desde))
             ->when(filled($hasta), fn ($q) => $q->whereDate('fecha', '<=', $hasta))
             ->orderByDesc('fecha')->orderByDesc('hora_inicio')->orderByDesc('id')
             ->paginate(self::POR_PAGINA)->withQueryString();
+    }
+
+    /**
+     * Cuántas citas tiene el paciente en total y por grupo de estado (para los enlaces de arriba de la tabla). Una sola consulta agrupada.
+     *
+     * @CC CCHistorial (consultar) @CE CECita (citasDelPaciente)
+     *
+     * @return array<string, int> claves: todas, pendientes, atendidas, canceladas, inasistencias
+     */
+    public function contadores(Paciente $paciente): array
+    {
+        $porEstado = Cita::where('paciente_id', $paciente->id)->selectRaw('estado, count(*) as total')->groupBy('estado')->pluck('total', 'estado');
+        $suma = fn (array $estados) => (int) collect($estados)->sum(fn ($e) => $porEstado[$e] ?? 0);
+
+        return [
+            'todas' => (int) $porEstado->sum(),
+            'pendientes' => $suma([Cita::PROGRAMADA, Cita::CONFIRMADA]),
+            'atendidas' => $suma([Cita::ATENDIDA]),
+            'canceladas' => $suma([Cita::CANCELADA]),
+            'inasistencias' => $suma([Cita::INASISTENCIA]),
+        ];
     }
 
     /** Opciones del filtro para la lista desplegable. */

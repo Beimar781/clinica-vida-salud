@@ -3,6 +3,7 @@
 namespace App\Modules\GestionCitas\CU12_CancelarCitaMedica;
 
 use App\Models\Cita;
+use App\Models\CitaEvento;
 use App\Models\Usuario;
 use App\Modules\GestionCitas\Compartido\AgendarCitaService;
 use App\Modules\GestionCitas\Compartido\ReglaCitaException;
@@ -110,7 +111,9 @@ class CancelarCitaService
             }
 
             $motivo = trim($motivo);
+            $estadoAnterior = $actual->estado;
             $this->transiciones->cambiarEstado($actual, Cita::CANCELADA, ['motivo_cancelacion' => $motivo]);
+            CitaEvento::registrar($actual, CitaEvento::CANCELADA, $usuario->id, ['estado_anterior' => $estadoAnterior, 'estado_nuevo' => Cita::CANCELADA, 'motivo' => $motivo]);
 
             BitacoraService::registrar(
                 'CITA_CANCELADA', 'Cita',

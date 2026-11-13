@@ -3,6 +3,7 @@
 namespace App\Modules\GestionCitas\CU13_ControlarAsistenciaEstadosCita;
 
 use App\Models\Cita;
+use App\Models\CitaEvento;
 use App\Models\Medico;
 use App\Models\Rol;
 use App\Models\Usuario;
@@ -141,6 +142,7 @@ class EstadoCitaService
     private function confirmar(Cita $cita, Usuario $usuario): array
     {
         $this->transiciones->cambiarEstado($cita, Cita::CONFIRMADA);
+        CitaEvento::registrar($cita, CitaEvento::CONFIRMADA, $usuario->id, ['estado_anterior' => Cita::PROGRAMADA, 'estado_nuevo' => Cita::CONFIRMADA]);
         BitacoraService::registrar('CITA_CONFIRMADA', 'Cita', "Cita {$cita->codigo} confirmada (antes Programada)", $usuario->id);
 
         return $this->resultado($cita, "Cita {$cita->codigo} confirmada.");
@@ -161,7 +163,9 @@ class EstadoCitaService
     private function marcarAtendida(Cita $cita, Usuario $usuario): array
     {
         $sinCobro = $cita->cobro_pendiente;
+        $antes = $cita->estado;
         $this->transiciones->cambiarEstado($cita, Cita::ATENDIDA);
+        CitaEvento::registrar($cita, CitaEvento::ATENDIDA, $usuario->id, ['estado_anterior' => $antes, 'estado_nuevo' => Cita::ATENDIDA]);
         BitacoraService::registrar(
             'CITA_ATENDIDA', 'Cita',
             "Cita {$cita->codigo} marcada como atendida por el médico {$cita->medico->codigo}".($sinCobro ? ' (con el pago pendiente: falta registrar el cobro)' : ''),
@@ -174,7 +178,9 @@ class EstadoCitaService
     private function registrarInasistencia(Cita $cita, Usuario $usuario): array
     {
         $pagada = $cita->estaPagada();
+        $antes = $cita->estado;
         $this->transiciones->cambiarEstado($cita, Cita::INASISTENCIA);
+        CitaEvento::registrar($cita, CitaEvento::INASISTENCIA, $usuario->id, ['estado_anterior' => $antes, 'estado_nuevo' => Cita::INASISTENCIA]);
         BitacoraService::registrar(
             'INASISTENCIA_REGISTRADA', 'Cita',
             "Inasistencia registrada en la cita {$cita->codigo}".($pagada ? ' (pago conservado: puede reprogramarse)' : ' (sin pago)'),
@@ -218,6 +224,7 @@ class EstadoCitaService
             $extra['recordatorio_enviado'] = false; // vuelve a recibir su recordatorio
         }
         $this->transiciones->cambiarEstado($cita, $nuevo, $extra);
+        CitaEvento::registrar($cita, CitaEvento::ESTADO_CORREGIDO, $usuario->id, ['estado_anterior' => $antes, 'estado_nuevo' => $nuevo, 'motivo' => $justificacion]);
 
         BitacoraService::registrar(
             'ESTADO_CORREGIDO', 'Cita',

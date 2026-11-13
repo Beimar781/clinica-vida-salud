@@ -249,3 +249,4 @@ CREATE TRIGGER trg_bitacora_inmutable
 -- Adiciones técnicas posteriores (fuera del modelo del documento; ya están en migraciones):
 --   tabla password_reset_tokens (correo PK, token, created_at): recuperación de contraseña (flujo A3 de CU-01).
 --   columna bitacora.ip VARCHAR(45): dirección desde la que se hizo la operación.
+--   tabla cita_eventos (id, cita_id FK citas ON DELETE CASCADE, tipo, fecha/hora anterior y nueva, estado anterior y nuevo, motivo, usuario_id, created_at): historial de cambios de cada cita, visible para el paciente en «Mis citas» (extra aprobado de CU-10, CU-12, CU-13 y CU-15).

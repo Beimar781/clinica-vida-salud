@@ -242,3 +242,13 @@ small, .texto-suave { color: var(--vs-muted); }
 .leyenda-estados__lista { list-style: none; margin: .6rem 0 0; padding: .6rem .8rem; display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; background: var(--vs-white); border: 1px solid var(--vs-border); border-radius: 8px; }
 .leyenda-estados__lista li { display: inline-flex; align-items: center; gap: .35rem; color: var(--vs-muted); }
 .leyenda-estados .etiqueta-vencida { margin-top: 0; }
+
+/* Cambios de una cita (<x-cambios-cita>) y contadores de «Mis citas» */
+.etiqueta-reprogramada { background: var(--vs-sky-50); color: var(--vs-blue-700); border-color: var(--vs-sky-400); margin-top: .25rem; }
+.cambios-cita { margin-top: .35rem; font-size: .82rem; }
+.cambios-cita summary { cursor: pointer; color: var(--vs-blue-700); font-weight: 600; }
+.cambios-cita ul { list-style: none; margin: .35rem 0 0; padding: 0 0 0 .6rem; border-left: 2px solid var(--vs-sky-200); display: grid; gap: .2rem; color: var(--vs-text); }
+.cambios-cita li small { color: var(--vs-muted); }
+.contadores-citas { display: flex; flex-wrap: wrap; gap: .4rem .5rem; margin: 0 0 1rem; font-size: .88rem; }
+.contadores-citas a { padding: .2rem .75rem; border-radius: 999px; border: 1px solid var(--vs-border); background: var(--vs-white); color: var(--vs-blue-700); text-decoration: none; font-weight: 600; }
+.contadores-citas a[aria-current="true"] { background: var(--vs-blue-600); border-color: var(--vs-blue-600); color: #fff; }

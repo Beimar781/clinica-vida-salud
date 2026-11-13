@@ -3,6 +3,7 @@
 namespace App\Modules\AtencionClinica\CU16_RegistrarConsultaTratamiento;
 
 use App\Models\Cita;
+use App\Models\CitaEvento;
 use App\Models\Consulta;
 use App\Models\HistoriaClinica;
 use App\Models\Medico;
@@ -150,9 +151,12 @@ class ConsultaService
                 // implica que el paciente llegó), igual que si la recepción la hubiera confirmado.
                 if ($actual->estado === Cita::PROGRAMADA) {
                     $this->transiciones->cambiarEstado($actual, Cita::CONFIRMADA);
+                    CitaEvento::registrar($actual, CitaEvento::CONFIRMADA, $usuario->id, ['estado_anterior' => Cita::PROGRAMADA, 'estado_nuevo' => Cita::CONFIRMADA]);
                 }
                 if ($actual->estado !== Cita::ATENDIDA) {
+                    $antes = $actual->estado;
                     $this->transiciones->cambiarEstado($actual, Cita::ATENDIDA);
+                    CitaEvento::registrar($actual, CitaEvento::ATENDIDA, $usuario->id, ['estado_anterior' => $antes, 'estado_nuevo' => Cita::ATENDIDA]);
                 }
 
                 BitacoraService::registrar(

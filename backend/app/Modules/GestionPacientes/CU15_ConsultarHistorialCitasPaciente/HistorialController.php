@@ -78,6 +78,7 @@ class HistorialController extends Controller
             'hasta' => $hasta,
             'errorRango' => $errorRango,
             'citas' => $paciente && ! $errorRango ? $this->historial->citas($paciente, $filtro, $desde, $hasta) : null,
+            'contadores' => $paciente ? $this->historial->contadores($paciente) : null,
             'cancelaciones' => $this->cancelaciones,
             'usuario' => $usuario,
         ]);

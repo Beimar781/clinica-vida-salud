@@ -12,7 +12,7 @@
 
 @section('contenido')
     @php
-        $ruta = fn (array $extra = []) => route('historial.index', array_filter(['paciente' => $paciente?->id, 'estado' => $filtro, 'desde' => $desde, 'hasta' => $hasta] + $extra, fn ($v) => filled($v)));
+        $ruta = fn (array $extra = []) => route('historial.index', array_filter(array_merge(['paciente' => $esPersonal ? $paciente?->id : null, 'estado' => $filtro, 'desde' => $desde, 'hasta' => $hasta], $extra), fn ($v) => filled($v)));
     @endphp
 
     <div class="encabezado-pagina">
@@ -86,6 +86,16 @@
             </form>
         </div>
 
+        {{-- Resumen por estado: cada enlace aplica el filtro; «Todas» es el valor por defecto --}}
+        @if ($contadores)
+            <nav class="contadores-citas" aria-label="Resumen de citas por estado">
+                <a href="{{ $ruta(['estado' => '']) }}" @if ($filtro === '') aria-current="true" @endif>Todas {{ $contadores['todas'] }}</a>
+                @foreach (['pendientes' => 'Pendientes', 'atendidas' => 'Atendidas', 'canceladas' => 'Canceladas', 'inasistencias' => 'Inasistencias'] as $clave => $texto)
+                    <a href="{{ $ruta(['estado' => $clave]) }}" @if ($filtro === $clave) aria-current="true" @endif>{{ $texto }} {{ $contadores[$clave] }}</a>
+                @endforeach
+            </nav>
+        @endif
+
         <x-leyenda-estados />
 
         @if ($errorRango)
@@ -106,7 +116,7 @@
                                         <td class="precio"><strong>{{ $cita->codigo }}</strong></td>
                                         <td>{{ $cita->medico->nombre_completo }}</td>
                                         <td>{{ $cita->especialidad->nombre }}</td>
-                                        <td><x-estado-cita :estado="$cita->estado" :vencida="$cita->vencida" /></td>
+                                        <td><x-estado-cita :estado="$cita->estado" :vencida="$cita->vencida" /><br><x-cambios-cita :cita="$cita" :personal="$esPersonal" /></td>
                                         <td class="precio">{{ $cita->created_at->format('d/m/Y') }}<br><small class="texto-suave">{{ $cita->created_at->format('H:i') }}</small></td>
                                         <td><x-estado-pago :estado="$cita->estado_pago" /><br><small class="texto-suave">{{ $cita->monto_texto }}</small></td>
                                         <td>

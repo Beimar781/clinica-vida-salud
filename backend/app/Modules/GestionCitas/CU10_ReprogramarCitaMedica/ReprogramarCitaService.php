@@ -112,8 +112,8 @@ class ReprogramarCitaService
             'pago_conservado' => $cita->estado === Cita::INASISTENCIA,
         ];
 
-        $cita = $this->agendar->mover($cita, $fecha, $inicio);
         $motivoCambio = trim($motivoCambio);
+        $cita = $this->agendar->mover($cita, $fecha, $inicio, $actor->id, $motivoCambio);
 
         // Detalle de la bitácora (300 caracteres): código, horario anterior y nuevo y, al final, el motivo completo.
         $origen = $anterior['pago_conservado'] ? ' (inasistencia pagada, sin nuevo cobro)' : '';

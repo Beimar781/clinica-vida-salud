@@ -6,6 +6,7 @@ use App\Support\Dinero;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -173,6 +174,12 @@ class Cita extends Model
     public function especialidad(): BelongsTo
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
+    }
+
+    /** Historial de cambios de la cita (del más antiguo al más reciente). */
+    public function eventos(): HasMany
+    {
+        return $this->hasMany(CitaEvento::class, 'cita_id')->orderBy('created_at')->orderBy('id');
     }
 
     /** La consulta registrada en esta cita (CU-16); una cita tiene como máximo una. */
