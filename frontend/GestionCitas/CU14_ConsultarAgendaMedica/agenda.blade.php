@@ -46,6 +46,15 @@
                 <div class="campo"><button type="submit" class="btn btn-primario"><x-icono nombre="buscar" /> Ver agenda</button></div>
             </div>
         </form>
+        {{-- Accesos rápidos (conservan el médico elegido) --}}
+        @php
+            $hoyIso = \Illuminate\Support\Carbon::today()->toDateString();
+            $base = array_filter(['medico' => $medico?->id, 'estado' => $filtro ?: null]);
+        @endphp
+        <p class="sin-margen" style="margin-top:.75rem">
+            <a class="btn btn-secundario btn-sm" href="{{ route('agenda.index', $base + ['desde' => $hoyIso]) }}"><x-icono nombre="calendario" /> Hoy</a>
+            <a class="btn btn-secundario btn-sm" href="{{ route('agenda.index', $base + ['desde' => $hoyIso, 'hasta' => \Illuminate\Support\Carbon::today()->addDays(6)->toDateString()]) }}"><x-icono nombre="calendario" /> Próximos 7 días</a>
+        </p>
     </div>
 
     @if ($errorRango)
@@ -112,7 +121,7 @@
                                             </details>
                                         </td>
                                         <td>{{ $cita->especialidad->nombre }}</td>
-                                        <td><x-estado-cita :estado="$cita->estado" /></td>
+                                        <td><x-estado-cita :estado="$cita->estado" :vencida="$cita->vencida" />@if ($cita->atendida_sin_cobro)<small class="aviso-cobro">Atendida con el pago pendiente</small>@endif</td>
                                         <td>
                                             @if ($servicio->puedeVerMotivo($usuario, $cita))
                                                 {{ $cita->motivo ?: '—' }}

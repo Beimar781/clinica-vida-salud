@@ -8,6 +8,7 @@ use App\Modules\GestionCitas\CU11_ReservarCitaEnLinea\ReservarCitaController;
 use App\Modules\GestionCitas\CU12_CancelarCitaMedica\CancelarCitaController;
 use App\Modules\GestionCitas\CU13_ControlarAsistenciaEstadosCita\EstadoCitaController;
 use App\Modules\GestionCitas\CU14_ConsultarAgendaMedica\AgendaController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Paquete P4 - Gestión de Citas (CU-08 a CU-14 y CU-22).
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'rol:Recepcionista,Médico'])->group(function () {
 
 // CU-14: Consultar agenda médica (Médico: solo su propia agenda; Recepcionista y Administrador: eligen el médico)
 Route::middleware(['auth', 'rol:Recepcionista,Médico'])->get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+// Alias: el menú se llama «Agenda médica», así que /agenda-medica también funciona (mismos permisos; conserva los filtros de la URL).
+Route::middleware(['auth', 'rol:Recepcionista,Médico'])->get('/agenda-medica', fn (Request $request) => redirect()->route('agenda.index', $request->query()))->name('agenda.alias');
 
 // Pago con tarjeta (Stripe Checkout alojado) de CU-09 y CU-11: regreso de la página de pago y pago cancelado.
 // Solo quien inició la reserva (Recepcionista o Paciente); todo se comprueba contra la sesión del servidor y la API de Stripe.
