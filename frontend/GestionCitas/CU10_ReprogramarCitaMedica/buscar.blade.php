@@ -66,6 +66,7 @@
                                         @if ($servicio->puedeCancelarse($cita))
                                             <a class="btn btn-peligro btn-sm" href="{{ route('citas.cancelar', $cita) }}"><x-icono nombre="bloquear" /> Cancelar</a>
                                         @endif
+                                        @include('gestioncitas::CU22_EnviarRecordatoriosCitas.boton-recordatorio', ['cita' => $cita])
                                     </div>
                                 </td>
                             </tr>

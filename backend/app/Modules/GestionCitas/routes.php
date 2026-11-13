@@ -8,6 +8,7 @@ use App\Modules\GestionCitas\CU11_ReservarCitaEnLinea\ReservarCitaController;
 use App\Modules\GestionCitas\CU12_CancelarCitaMedica\CancelarCitaController;
 use App\Modules\GestionCitas\CU13_ControlarAsistenciaEstadosCita\EstadoCitaController;
 use App\Modules\GestionCitas\CU14_ConsultarAgendaMedica\AgendaController;
+use App\Modules\GestionCitas\CU22_EnviarRecordatoriosCitas\EnviarRecordatorioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,9 @@ Route::middleware(['auth', 'rol:Recepcionista,Médico'])->group(function () {
     Route::get('/control-citas', [EstadoCitaController::class, 'index'])->name('control.index');
     Route::post('/citas/{cita}/estado', [EstadoCitaController::class, 'cambiar'])->whereNumber('cita')->name('citas.estado');
 });
+
+// CU-22 (extendido): enviar ahora el recordatorio de una cita (Recepcionista y Administrador; 10 por minuto por usuario)
+Route::middleware(['auth', 'rol:Recepcionista', 'throttle:10,1'])->post('/citas/{cita}/recordatorio', [EnviarRecordatorioController::class, 'enviar'])->whereNumber('cita')->name('citas.recordatorio');
 
 // CU-14: Consultar agenda médica (Médico: solo su propia agenda; Recepcionista y Administrador: eligen el médico)
 Route::middleware(['auth', 'rol:Recepcionista,Médico'])->get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');

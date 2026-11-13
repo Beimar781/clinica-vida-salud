@@ -83,6 +83,12 @@ class Cita extends Model
         return in_array($this->estado, [self::PROGRAMADA, self::CONFIRMADA], true) && $this->fin->lt(Carbon::now());
     }
 
+    /** ¿Se le puede enviar un recordatorio ahora? Programada o Confirmada y que todavía no haya empezado. */
+    public function getRecordableAttribute(): bool
+    {
+        return in_array($this->estado, [self::PROGRAMADA, self::CONFIRMADA], true) && ! $this->ya_paso;
+    }
+
     /** Pago pendiente de verdad: falta cobrar y el monto es mayor que cero (un servicio sin costo no tiene nada por cobrar). */
     public function getCobroPendienteAttribute(): bool
     {

@@ -16,7 +16,7 @@
         <tr>
             <td style="padding:24px;font-size:15px;line-height:1.55;">
                 <p style="margin:0 0 12px;color:#0B3D75;font-size:18px;font-weight:700;">Hola, {{ $paciente->nombres }}</p>
-                <p style="margin:0 0 16px;">Te recordamos {{ $una ? 'tu cita médica' : 'tus citas médicas' }} de mañana, <strong>{{ $dia->translatedFormat('l d/m/Y') }}</strong>:</p>
+                <p style="margin:0 0 16px;">Te recordamos {{ $una ? 'tu cita médica' : 'tus citas médicas' }} {{ $cuando }} <strong>{{ $dia->translatedFormat('l d/m/Y') }}</strong>:</p>
 
                 @foreach ($lista as $cita)
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px;background:#F1F8FD;border:1px solid #D5E5F2;border-radius:8px;">

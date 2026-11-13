@@ -96,6 +96,7 @@
                                         @if (in_array('atendida', $acciones, true) && $cita->cobro_pendiente)
                                             <small class="aviso-cobro">Pago pendiente: al marcarla atendida, recepción deberá cobrarla.</small>
                                         @endif
+                                        @include('gestioncitas::CU22_EnviarRecordatoriosCitas.boton-recordatorio', ['cita' => $cita])
                                         @if ($esperaHora)
                                             <button type="button" class="btn btn-secundario btn-sm" disabled title="La inasistencia se registra a partir de la hora de la cita ({{ $cita->hora_inicio_corta }}).">
                                                 <x-icono nombre="bloquear" /> Inasistencia (desde las {{ $cita->hora_inicio_corta }})

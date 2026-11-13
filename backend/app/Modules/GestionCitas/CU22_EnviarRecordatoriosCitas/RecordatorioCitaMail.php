@@ -36,7 +36,9 @@ class RecordatorioCitaMail extends Mailable
             ->view(
                 ['gestioncitas::CU22_EnviarRecordatoriosCitas.correo-recordatorio', 'gestioncitas::CU22_EnviarRecordatoriosCitas.correo-recordatorio-texto'],
                 // Ojo: Laravel agrega al correo las propiedades públicas ($citas son modelos); por eso el detalle en arreglos se llama «lista».
-                ['paciente' => $this->paciente, 'lista' => $this->detalle(), 'dia' => $this->dia, 'una' => $una]
+                ['paciente' => $this->paciente, 'lista' => $this->detalle(), 'dia' => $this->dia, 'una' => $una,
+                    // El aviso automático es del día siguiente; el envío manual (recepción) puede ser de hoy o de otra fecha.
+                    'cuando' => $this->dia->isTomorrow() ? 'de mañana,' : ($this->dia->isToday() ? 'de hoy,' : 'del día')]
             );
     }
 

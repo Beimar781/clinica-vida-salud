@@ -1,7 +1,7 @@
 {{-- @CU CU-22 @RF RF22 @CI CIRecordatorio (armarAviso) — versión en texto plano del correo --}}
 Hola, {{ $paciente->nombres }}
 
-Te recordamos {{ $una ? 'tu cita médica' : 'tus citas médicas' }} de mañana, {{ $dia->translatedFormat('l d/m/Y') }}:
+Te recordamos {{ $una ? 'tu cita médica' : 'tus citas médicas' }} {{ $cuando }} {{ $dia->translatedFormat('l d/m/Y') }}:
 @foreach ($lista as $cita)
 
 Cita {{ $cita['codigo'] }}

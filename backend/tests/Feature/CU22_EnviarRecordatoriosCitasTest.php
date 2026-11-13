@@ -7,6 +7,7 @@ use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Paciente;
 use App\Models\Rol;
+use App\Models\Usuario;
 use App\Modules\GestionCitas\CU22_EnviarRecordatoriosCitas\RecordatorioCitaMail;
 use App\Modules\GestionCitas\CU22_EnviarRecordatoriosCitas\RecordatorioService;
 use Illuminate\Console\Scheduling\Schedule;
@@ -372,6 +373,211 @@ class CU22_EnviarRecordatoriosCitasTest extends SistemaTestCase
     {
         $this->assertSame('log', config('mail.mailers.log.transport'));
         $this->assertContains(config('mail.default'), ['log', 'array'], 'En local y en las pruebas el correo no sale a ningún proveedor.');
+    }
+
+    // ---------- Envío manual de un recordatorio (extra aprobado por el equipo) ----------
+
+    private function recepcionista(): Usuario
+    {
+        return $this->crearUsuario('t-rec-manual', [Rol::RECEPCIONISTA]);
+    }
+
+    #[Test]
+    public function test_manual_la_recepcion_envia_el_recordatorio_de_una_cita_lo_marca_y_lo_registra(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $cita = $this->cita($this->paciente('man1'), '09:00');
+
+        $this->actingAs($recepcion)->from('/control-citas')->post(route('citas.recordatorio', $cita))
+            ->assertRedirect('/control-citas')->assertSessionHas('exito', 'Recordatorio enviado a t***@p***.test.');
+
+        Mail::assertSent(RecordatorioCitaMail::class, 1);
+        Mail::assertSent(RecordatorioCitaMail::class, fn ($m) => $m->hasTo('t-rec-man1@prueba.test') && $m->citas->pluck('codigo')->all() === [$cita->codigo]);
+        $this->assertTrue($cita->fresh()->recordatorio_enviado);
+        $registro = DB::table('bitacora')->where('accion', 'RECORDATORIO_MANUAL')->latest('id')->first();
+        $this->assertSame($recepcion->id, $registro->usuario_id);
+        $this->assertStringContainsString($cita->codigo, $registro->detalle);
+        $this->assertStringContainsString($cita->paciente->codigo, $registro->detalle);
+        $this->assertStringContainsString('t-rec-manual', $registro->detalle);
+        $this->assertStringNotContainsString('prueba.test', $registro->detalle, 'La bitácora no guarda el correo.');
+    }
+
+    #[Test]
+    public function test_manual_el_administrador_hereda_el_permiso_de_recepcion(): void
+    {
+        Mail::fake();
+        $admin = $this->crearUsuario('t-rec-adm', [Rol::ADMINISTRADOR]);
+        $cita = $this->cita($this->paciente('man2'), '09:00');
+
+        $this->actingAs($admin)->post(route('citas.recordatorio', $cita))->assertSessionHas('exito');
+
+        Mail::assertSent(RecordatorioCitaMail::class, 1);
+    }
+
+    #[Test]
+    public function test_manual_el_correo_dice_de_hoy_o_de_mañana_segun_la_fecha_de_la_cita(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $hoy = $this->cita($this->paciente('man3'), '15:00', fecha: '2035-03-04');
+        $manana = $this->cita($this->paciente('man4'), '09:00');
+        $lejos = $this->cita($this->paciente('man5'), '09:00', fecha: '2035-03-09');
+
+        foreach ([$hoy, $manana, $lejos] as $cita) {
+            $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita))->assertSessionHas('exito');
+        }
+
+        Mail::assertSent(RecordatorioCitaMail::class, fn ($m) => $m->citas->first()->id === $hoy->id && str_contains($m->render(), 'de hoy,'));
+        Mail::assertSent(RecordatorioCitaMail::class, fn ($m) => $m->citas->first()->id === $manana->id && str_contains($m->render(), 'de mañana,'));
+        Mail::assertSent(RecordatorioCitaMail::class, fn ($m) => $m->citas->first()->id === $lejos->id && str_contains($m->render(), 'del día') && ! str_contains($m->render(), 'de mañana'));
+    }
+
+    #[Test]
+    public function test_manual_el_comando_de_las_18_horas_no_repite_el_aviso_de_la_cita_ya_enviada(): void
+    {
+        Mail::fake();
+        $cita = $this->cita($this->paciente('man6'), '09:00');
+        $this->actingAs($this->recepcionista())->post(route('citas.recordatorio', $cita))->assertSessionHas('exito');
+
+        $this->ejecutar()->assertExitCode(0);
+
+        Mail::assertSent(RecordatorioCitaMail::class, fn ($m) => $m->hasTo('t-rec-man6@prueba.test'));
+        Mail::assertSent(RecordatorioCitaMail::class, 1);
+    }
+
+    #[Test]
+    public function test_manual_si_ya_se_envio_antes_pide_confirmar_y_con_confirmacion_lo_reenvia(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $cita = $this->cita($this->paciente('man7'), '09:00', extra: ['recordatorio_enviado' => true]);
+
+        $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita))
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'ya se le envió el recordatorio antes'));
+        Mail::assertNothingSent();
+
+        $this->post(route('citas.recordatorio', $cita), ['reenviar' => '1'])->assertSessionHas('exito');
+        Mail::assertSent(RecordatorioCitaMail::class, 1);
+        $this->assertTrue($cita->fresh()->recordatorio_enviado);
+    }
+
+    #[Test]
+    public function test_manual_no_se_envia_si_el_paciente_no_tiene_correo_esta_inactivo_o_desactivo_los_recordatorios(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $casos = [
+            'sin correo' => [['correo' => null], 'el paciente no tiene correo'],
+            'sin avisos' => [['recibe_recordatorios' => false], 'el paciente tiene las notificaciones desactivadas'],
+            'inactivo' => [['estado' => false], 'el paciente está inactivo'],
+        ];
+
+        $hora = 8;
+        foreach ($casos as $nombre => [$datos, $motivo]) {
+            $cita = $this->cita($this->paciente('man8'.md5($nombre), $datos), sprintf('%02d:00', $hora++));
+            $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita))->assertSessionHas('error', "No se envió: {$motivo}.");
+            $this->assertFalse($cita->fresh()->recordatorio_enviado, $nombre);
+        }
+        Mail::assertNothingSent();
+        $this->assertDatabaseMissing('bitacora', ['accion' => 'RECORDATORIO_MANUAL', 'usuario_id' => $recepcion->id]);
+    }
+
+    #[Test]
+    public function test_manual_no_se_envia_de_una_cita_cancelada_atendida_con_inasistencia_o_pasada(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $paciente = $this->paciente('man9');
+        $citas = [
+            'cancelada' => $this->cita($paciente, '08:00', estado: Cita::CANCELADA),
+            'atendida' => $this->cita($paciente, '08:30', estado: Cita::ATENDIDA),
+            'inasistencia' => $this->cita($paciente, '09:00', estado: Cita::INASISTENCIA),
+        ];
+        foreach ($citas as $cita) {
+            $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita))
+                ->assertSessionHas('error', fn ($m) => str_starts_with($m, 'No se envió: la cita está ') && str_contains($m, 'Programadas o Confirmadas'));
+        }
+
+        $pasada = $this->cita($paciente, '08:00', fecha: '2035-03-04'); // son las 10:00 del 04/03/2035
+        $this->post(route('citas.recordatorio', $pasada))->assertSessionHas('error', 'No se envió: la cita ya pasó (solo se recuerdan citas que todavía no empezaron).');
+
+        Mail::assertNothingSent();
+    }
+
+    #[Test]
+    public function test_manual_si_el_correo_falla_se_avisa_sin_detalles_tecnicos_y_la_cita_no_se_marca(): void
+    {
+        config(['mail.default' => 'brevo', 'mail.mailers.brevo' => ['transport' => 'brevo'], 'services.brevo.key' => '']);
+        $recepcion = $this->recepcionista();
+        $cita = $this->cita($this->paciente('man10'), '09:00');
+
+        $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita))
+            ->assertSessionHas('error', 'No se pudo enviar el recordatorio en este momento. Inténtelo de nuevo en unos minutos.')
+            ->assertSessionMissing('exito');
+
+        $this->assertFalse($cita->fresh()->recordatorio_enviado);
+        $this->assertDatabaseHas('bitacora', ['accion' => 'RECORDATORIO_FALLIDO', 'usuario_id' => $recepcion->id]);
+        $this->assertStringNotContainsString('BREVO', session('error') ?? '');
+    }
+
+    #[Test]
+    public function test_manual_el_medico_y_el_paciente_reciben_403_y_sin_sesion_va_al_login(): void
+    {
+        Mail::fake();
+        $cita = $this->cita($this->paciente('man11'), '09:00');
+
+        $this->post(route('citas.recordatorio', $cita))->assertRedirect(route('login'));
+        foreach ([Rol::MEDICO, Rol::PACIENTE] as $rol) {
+            $usuario = $this->crearUsuario('t-rec-'.mb_strtolower(substr($rol, 0, 3)).'-x', [$rol]);
+            $this->actingAs($usuario)->post(route('citas.recordatorio', $cita))->assertForbidden();
+        }
+
+        Mail::assertNothingSent();
+        $this->assertFalse($cita->fresh()->recordatorio_enviado);
+    }
+
+    #[Test]
+    public function test_manual_tiene_limite_de_10_envios_por_minuto(): void
+    {
+        Mail::fake();
+        $recepcion = $this->recepcionista();
+        $cita = $this->cita($this->paciente('man12'), '09:00');
+
+        for ($i = 1; $i <= 10; $i++) {
+            $this->actingAs($recepcion)->post(route('citas.recordatorio', $cita), ['reenviar' => '1'])->assertRedirect();
+        }
+        $this->post(route('citas.recordatorio', $cita), ['reenviar' => '1'])->assertStatus(429);
+    }
+
+    #[Test]
+    public function test_manual_el_boton_solo_lo_ve_la_recepcion_y_solo_en_citas_elegibles(): void
+    {
+        $recepcion = $this->recepcionista();
+        $medicoUsuario = $this->crearUsuario('t-rec-medvista', [Rol::MEDICO]);
+        $elegible = $this->cita($this->paciente('man13'), '09:00');
+        $enviada = $this->cita($this->paciente('man14'), '10:30', extra: ['recordatorio_enviado' => true]);
+        $cancelada = $this->cita($this->paciente('man15'), '11:00', estado: Cita::CANCELADA);
+        $pasada = $this->cita($this->paciente('man16'), '08:00', fecha: '2035-03-04');
+
+        $control = $this->actingAs($recepcion)->get(route('control.index', ['fecha' => '2035-03-05']))->assertOk()
+            ->assertSee(route('citas.recordatorio', $elegible), false)->assertSee('Enviar recordatorio')
+            ->assertSee(route('citas.recordatorio', $enviada), false)->assertSee('Reenviar recordatorio')
+            ->assertSee('ya se le envió el recordatorio antes', false);
+        $this->assertStringNotContainsString(route('citas.recordatorio', $cancelada), $control->getContent());
+        $this->get(route('control.index', ['fecha' => '2035-03-04']))->assertOk()->assertDontSee(route('citas.recordatorio', $pasada), false);
+
+        $this->get(route('citas.index', ['q' => $elegible->codigo]))->assertOk()->assertSee(route('citas.recordatorio', $elegible), false);
+
+        $this->actingAs($medicoUsuario)->get(route('control.index', ['fecha' => '2035-03-05']))->assertOk()->assertDontSee('Enviar recordatorio');
+    }
+
+    #[Test]
+    public function test_manual_el_correo_se_enmascara_para_la_pantalla(): void
+    {
+        $this->assertSame('m***@c***.test', RecordatorioService::enmascarar('maria.rojas@correo.test'));
+        $this->assertSame('a***@g***.com', RecordatorioService::enmascarar('ana@gmail.com'));
+        $this->assertSame('j***@e***.bo', RecordatorioService::enmascarar('juan@empresa.com.bo'));
     }
 
     /** Versión en texto plano del correo. */

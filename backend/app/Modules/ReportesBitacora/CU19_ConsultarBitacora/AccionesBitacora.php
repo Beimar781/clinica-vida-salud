@@ -60,6 +60,7 @@ class AccionesBitacora
         'PACIENTE_REGISTRADO' => 'Paciente registrado desde la web',
         'FICHA_VINCULADA' => 'Cuenta vinculada a la ficha del paciente',
         'RECORDATORIO_ENVIADO' => 'Recordatorio de cita enviado',
+        'RECORDATORIO_MANUAL' => 'Recordatorio de cita enviado a mano',
         'RECORDATORIO_FALLIDO' => 'Recordatorio de cita no enviado',
         'REPORTE_GENERADO' => 'Reporte generado',
         'REPORTE_EXPORTADO' => 'Reporte exportado',

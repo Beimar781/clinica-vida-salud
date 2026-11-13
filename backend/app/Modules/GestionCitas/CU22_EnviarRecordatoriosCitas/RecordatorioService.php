@@ -4,6 +4,8 @@ namespace App\Modules\GestionCitas\CU22_EnviarRecordatoriosCitas;
 
 use App\Models\Cita;
 use App\Models\Paciente;
+use App\Models\Usuario;
+use App\Modules\GestionCitas\Compartido\TransicionesCita;
 use App\Services\BitacoraService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -115,6 +117,63 @@ class RecordatorioService
         }
 
         return $resultado;
+    }
+
+    /**
+     * Envío manual (extra del equipo, para mostrar en vivo): la recepción envía ahora el recordatorio de UNA cita a su paciente, con el mismo correo
+     * que el automático. No cambia el comando de las 18:00: si sale bien, la cita queda marcada y ese comando no repite su aviso.
+     *
+     * @CC CCRecordatorio (enviar, verificarNotificaciones) @CE CECita (marcarRecordatorio), CEPaciente (obtener)
+     *
+     * @return array{ok: bool, mensaje: string}
+     */
+    public function enviarACita(Cita $cita, Usuario $quien, bool $reenviar = false): array
+    {
+        $cita->loadMissing(['paciente', 'medico', 'especialidad']);
+
+        if (! in_array($cita->estado, [Cita::PROGRAMADA, Cita::CONFIRMADA], true)) {
+            return ['ok' => false, 'mensaje' => 'No se envió: la cita está '.TransicionesCita::legible($cita->estado).' y solo se recuerdan las citas Programadas o Confirmadas.'];
+        }
+        if ($cita->ya_paso) {
+            return ['ok' => false, 'mensaje' => 'No se envió: la cita ya pasó (solo se recuerdan citas que todavía no empezaron).'];
+        }
+        if ($motivo = $this->verificarNotificaciones($cita->paciente)) {
+            return ['ok' => false, 'mensaje' => "No se envió: {$motivo}."];
+        }
+        if ($cita->recordatorio_enviado && ! $reenviar) {
+            return ['ok' => false, 'mensaje' => 'A esta cita ya se le envió el recordatorio antes. Confirme el reenvío si quiere enviarlo de nuevo.'];
+        }
+
+        try {
+            $this->enviarCorreo($cita->paciente, collect([$cita]), Carbon::parse($cita->fecha));
+        } catch (Throwable $e) {
+            Log::error("CU-22: no se pudo enviar a mano el recordatorio de la cita {$cita->codigo}: ".get_class($e).': '.mb_substr($e->getMessage(), 0, 300));
+            BitacoraService::registrar('RECORDATORIO_FALLIDO', 'Cita', "No se pudo enviar a mano el recordatorio de la cita {$cita->codigo} a {$cita->paciente->codigo}", $quien->id);
+
+            return ['ok' => false, 'mensaje' => 'No se pudo enviar el recordatorio en este momento. Inténtelo de nuevo en unos minutos.'];
+        }
+
+        DB::transaction(function () use ($cita, $quien) {
+            $cita->update(['recordatorio_enviado' => true]);
+            BitacoraService::registrar(
+                'RECORDATORIO_MANUAL', 'Cita',
+                "Recordatorio enviado a mano: cita {$cita->codigo}, paciente {$cita->paciente->codigo}, por {$quien->nombre_usuario}",
+                $quien->id
+            );
+        });
+
+        return ['ok' => true, 'mensaje' => 'Recordatorio enviado a '.self::enmascarar($cita->paciente->correo).'.'];
+    }
+
+    /** «maria.rojas@correo.test» → «m***@c***.test» (para no mostrar el correo completo en pantalla). */
+    public static function enmascarar(string $correo): string
+    {
+        [$usuario, $dominio] = array_pad(explode('@', $correo, 2), 2, '');
+        $partes = explode('.', $dominio);
+        $final = count($partes) > 1 ? array_pop($partes) : '';
+        $base = implode('.', $partes);
+
+        return mb_substr($usuario, 0, 1).'***@'.mb_substr($base, 0, 1).'***'.($final !== '' ? '.'.$final : '');
     }
 
     /**
