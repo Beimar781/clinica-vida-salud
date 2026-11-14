@@ -2,7 +2,7 @@
 {{-- Historial de cambios de la cita (extra aprobado de CU-10, CU-12, CU-13 y CU-15): insignia «Reprogramada» y «Ver cambios», del más antiguo al más
      reciente. Al paciente no se le muestra el nombre del personal (solo «recepción» o «usted»); al personal sí. Los eventos llegan con eager loading. --}}
 @php
-    $eventos = $cita->eventos;
+    $eventos = $cita->relationLoaded('eventos') ? $cita->eventos : collect();
     $reprogramada = $eventos->contains('tipo', 'REPROGRAMADA');
     $nombres = ['PROGRAMADA' => 'Programada', 'CONFIRMADA' => 'Confirmada', 'ATENDIDA' => 'Atendida', 'CANCELADA' => 'Cancelada', 'INASISTENCIA' => 'Inasistencia'];
     $duenoId = $cita->paciente?->usuario_id;
@@ -33,7 +33,7 @@
                             @break
                         @case('REPROGRAMADA')
                             @if ($e->fecha_anterior)
-                                Reprogramada: de {{ $e->fecha_anterior->format('d/m') }} {{ $e->hora_anterior_corta }} a {{ $e->fecha_nueva->format('d/m') }} {{ $e->hora_nueva_corta }}
+                                Reprogramada: de {{ $e->fecha_anterior->format('d/m') }} {{ $e->hora_anterior_corta }} a {{ $e->fecha_nueva?->format('d/m') }} {{ $e->hora_nueva_corta }}
                             @else
                                 Reprogramada a {{ $e->fecha_nueva?->format('d/m') }} {{ $e->hora_nueva_corta }}
                             @endif

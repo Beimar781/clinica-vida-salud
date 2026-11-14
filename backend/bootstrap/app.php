@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     // CU-22: el comando citas:enviar-recordatorios vive en su carpeta de CU (no en app/Console/Commands).
-    ->withCommands([EnviarRecordatoriosCommand::class])
+    ->withCommands([EnviarRecordatoriosCommand::class, \App\Console\Commands\ReconstruirHistorialCitasCommand::class])
     ->withMiddleware(function (Middleware $middleware): void {
         // Las páginas internas sin sesión redirigen al inicio de sesión; con sesión, /login lleva al panel.
         // Detrás del proxy de Railway (HTTPS termina en el proxy): se confía en sus cabeceras X-Forwarded-* para que

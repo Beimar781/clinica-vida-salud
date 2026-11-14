@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Historial de cambios de una cita (extra aprobado de CU-10, CU-12, CU-13 y CU-15): cada alta, confirmación, atención, inasistencia,
  * reprogramación, cancelación o corrección deja un evento con lo que cambió, para que el paciente vea la historia de SU cita
- * (la bitácora solo la ve el administrador). Se escribe dentro de las mismas transacciones que cambian la cita.
+ * (la bitácora solo la ve el administrador). Se escribe al terminar con éxito la operación que cambia la cita y nunca la afecta si falla.
  *
  * @CU CU-10, CU-12, CU-13, CU-15 @CE CECita (historial de cambios)
  */
@@ -43,13 +45,23 @@ class CitaEvento extends Model
     }
 
     /**
-     * Deja el evento de un cambio de la cita. Debe llamarse DENTRO de la transacción que hace el cambio: si algo falla se deshace todo junto.
+     * Deja el evento de un cambio de la cita. Se llama dentro de la operación, pero se escribe al confirmarla.
      *
      * @param  array{fecha_anterior?: ?string, hora_anterior?: ?string, fecha_nueva?: ?string, hora_nueva?: ?string, estado_anterior?: ?string, estado_nuevo?: ?string, motivo?: ?string}  $datos
      */
-    public static function registrar(Cita $cita, string $tipo, ?int $usuarioId, array $datos = []): self
+    public static function registrar(Cita $cita, string $tipo, ?int $usuarioId, array $datos = []): void
     {
-        return self::create(['cita_id' => $cita->id, 'tipo' => $tipo, 'usuario_id' => $usuarioId] + $datos);
+        $fila = ['cita_id' => $cita->id, 'tipo' => $tipo, 'usuario_id' => $usuarioId] + $datos;
+
+        // Después de que la operación principal terminó con éxito (si se deshace, el evento no se escribe). Un fallo aquí se reporta y se
+        // ignora: guardar el historial nunca cancela ni muestra error en el registro, la reserva, la reprogramación, la cancelación ni el estado.
+        DB::afterCommit(function () use ($fila) {
+            try {
+                DB::transaction(fn () => self::create($fila));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        });
     }
 
     public function cita(): BelongsTo

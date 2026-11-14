@@ -8,6 +8,8 @@ use App\Models\Usuario;
 use App\Support\Texto;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Historial de citas de un paciente: todas sus citas a lo largo del tiempo (fecha y hora, médico, especialidad, estado, fecha de
@@ -88,13 +90,33 @@ class HistorialCitasService
      */
     public function citas(Paciente $paciente, ?string $filtro = null, ?string $desde = null, ?string $hasta = null): LengthAwarePaginator
     {
-        return Cita::with(['medico', 'especialidad', 'paciente', 'eventos.usuario'])
+        $citas = Cita::with(['medico', 'especialidad', 'paciente'])
             ->where('paciente_id', $paciente->id)
             ->when(array_key_exists((string) $filtro, self::FILTROS), fn ($q) => $q->whereIn('estado', self::FILTROS[$filtro][1]))
             ->when(filled($desde), fn ($q) => $q->whereDate('fecha', '>=', $desde))
             ->when(filled($hasta), fn ($q) => $q->whereDate('fecha', '<=', $hasta))
             ->orderByDesc('fecha')->orderByDesc('hora_inicio')->orderByDesc('id')
             ->paginate(self::POR_PAGINA)->withQueryString();
+
+        $this->cargarEventos($citas->getCollection());
+
+        return $citas;
+    }
+
+    /**
+     * Historial de cambios de las citas de la página, con una sola consulta. Es un complemento: si falla (tabla ausente, error de base),
+     * se reporta y «Mis citas» se muestra normal, sin cambios.
+     *
+     * @param  Collection<int, Cita>  $citas
+     */
+    private function cargarEventos(Collection $citas): void
+    {
+        try {
+            DB::transaction(fn () => $citas->load('eventos.usuario'));
+        } catch (Throwable $e) {
+            report($e);
+            $citas->each(fn (Cita $cita) => $cita->setRelation('eventos', new Collection));
+        }
     }
 
     /**

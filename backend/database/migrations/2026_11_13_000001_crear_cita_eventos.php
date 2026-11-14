@@ -1,12 +1,12 @@
 <?php
 
-use App\Support\EventosDeCitasDesdeBitacora;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /*
  * Extra aprobado (CU-10, CU-12, CU-13, CU-15): historial de cambios de cada cita, visible para el paciente en «Mis citas».
- * Tabla nueva (no modifica ninguna existente) y relleno desde la bitácora para las citas anteriores; el relleno omite lo que no entiende.
+ * Solo crea una tabla nueva (no modifica ni borra nada existente). El historial de las citas anteriores se rellena a mano,
+ * cuando se decida, con `php artisan citas:reconstruir-historial` (no corre durante el despliegue).
  */
 return new class extends Migration
 {
@@ -30,8 +30,6 @@ CREATE TABLE cita_eventos (
 
 CREATE INDEX idx_cita_eventos_cita ON cita_eventos (cita_id);
 SQL);
-
-        EventosDeCitasDesdeBitacora::ejecutar();
     }
 
     public function down(): void

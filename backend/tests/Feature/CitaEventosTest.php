@@ -249,4 +249,71 @@ class CitaEventosTest extends SistemaTestCase
         $this->assertSame(0, EventosDeCitasDesdeBitacora::ejecutar(), 'Una segunda ejecución no repite eventos.');
         $this->assertSame(4, CitaEvento::where('cita_id', $cita->id)->count());
     }
+
+    // ---------- Aislamiento: el historial nunca afecta a la operación principal ----------
+
+    #[Test]
+    public function si_guardar_el_evento_falla_las_operaciones_principales_siguen_funcionando(): void
+    {
+        $lunes = $this->proximaFecha(1);
+        CitaEvento::creating(fn () => throw new \RuntimeException('falla simulada del historial'));
+
+        try {
+            // Registrar (CU-09) y reservar en línea (CU-11)
+            $cita = app(RegistrarCitaService::class)->registrar($this->paciente, $this->especialidad, $this->medico, $lunes, '08:00', 'PRESENCIAL', null, $this->recepcion);
+            $this->assertSame(Cita::PROGRAMADA, $cita->fresh()->estado);
+            $enLinea = app(ReservarCitaService::class)->reservar($this->paciente, $this->especialidad, $this->medico, $lunes, '08:30', 'PRESENCIAL', null, $this->usuarioPaciente);
+            $this->assertNotNull($enLinea->fresh());
+
+            // Estado (CU-13): confirmar
+            $this->actingAs($this->recepcion)->post(route('citas.estado', $cita), ['accion' => 'confirmar'])->assertSessionHas('exito')->assertSessionMissing('error');
+            $this->assertSame(Cita::CONFIRMADA, $cita->fresh()->estado);
+
+            // Reprogramar (CU-10)
+            $nuevo = Carbon::parse($lunes)->addWeek()->toDateString();
+            app(ReprogramarCitaService::class)->reprogramar($cita, $nuevo, '09:00', 'Cambio', $this->recepcion);
+            $cita->refresh();
+            $this->assertSame([$nuevo, '09:00', Cita::PROGRAMADA], [$cita->fecha->toDateString(), $cita->hora_inicio_corta, $cita->estado]);
+
+            // Cancelar (CU-12)
+            app(CancelarCitaService::class)->cancelar($cita, $this->recepcion, 'Ya no puede venir', false);
+            $this->assertSame(Cita::CANCELADA, $cita->fresh()->estado);
+
+            // Corregir (CU-13) con el administrador
+            $this->actingAs($this->admin)->post(route('citas.estado', $cita), ['accion' => 'corregir', 'estado_nuevo' => 'PROGRAMADA', 'justificacion' => 'Error'])->assertSessionHas('exito')->assertSessionMissing('error');
+            $this->assertSame(Cita::PROGRAMADA, $cita->fresh()->estado);
+        } finally {
+            CitaEvento::flushEventListeners();
+        }
+
+        $this->assertSame(0, CitaEvento::whereIn('cita_id', Cita::where('paciente_id', $this->paciente->id)->pluck('id'))->count(), 'Sin eventos, pero con todas las operaciones hechas.');
+        $this->assertDatabaseHas('bitacora', ['accion' => 'CITA_CANCELADA', 'usuario_id' => $this->recepcion->id]);
+    }
+
+    #[Test]
+    public function mis_citas_se_ve_igual_sin_eventos_y_no_se_rompe_si_la_lectura_falla(): void
+    {
+        $cita = $this->cita();
+
+        // Sin eventos: sin insignia ni «Ver cambios».
+        $this->actingAs($this->usuarioPaciente)->get(route('historial.index'))->assertOk()->assertSee($cita->codigo)->assertDontSee('Ver cambios')->assertDontSee('etiqueta-reprogramada', false);
+
+        // La tabla no existe (o la lectura falla): se muestra la lista normal.
+        DB::statement('alter table cita_eventos rename to cita_eventos_fuera');
+        $this->get(route('historial.index'))->assertOk()->assertSee($cita->codigo)->assertSee('Todas 1')->assertDontSee('Ver cambios');
+        $this->actingAs($this->recepcion)->get(route('historial.index', ['paciente' => $this->paciente->id]))->assertOk()->assertSee($cita->codigo);
+    }
+
+    #[Test]
+    public function el_comando_reconstruir_historial_es_manual_e_idempotente(): void
+    {
+        $cita = $this->cita();
+        $cita->update(['codigo' => 'CM-9927']);
+        DB::table('bitacora')->insert(['usuario_id' => $this->recepcion->id, 'accion' => 'CITA_CONFIRMADA', 'entidad' => 'Cita', 'detalle' => 'Cita CM-9927 confirmada (antes Programada)', 'fecha_hora' => '2026-11-13 09:00:00']);
+
+        $this->artisan('citas:reconstruir-historial')->assertSuccessful();
+        $this->artisan('citas:reconstruir-historial')->expectsOutputToContain('0 cambio(s) nuevo(s)')->assertSuccessful();
+
+        $this->assertSame(1, CitaEvento::where('cita_id', $cita->id)->count());
+    }
 }
